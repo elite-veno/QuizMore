@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Niet gevonden · QuizMore</title>
+<script>
+/* Adressen zijn niet hoofdlettergevoelig: alles na /QuizMore/ wordt in kleine letters opnieuw geprobeerd. */
+(function(){
+  var p=location.pathname, m=p.match(/^\/quizmore(\/.*)?$/i);
+  if(!m)return;
+  var doel='/QuizMore'+(m[1]||'/').toLowerCase();
+  if(doel!==p)location.replace(doel+location.search+location.hash);
+})();
+</script>
+<style>
+:root{--bg:#F2F5F7;--ink:#14232D;--muted:#566873;--accent:#0B7A75}
+@media (prefers-color-scheme: dark){:root{--bg:#0F1A21;--ink:#E6EEF2;--muted:#93A7B2;--accent:#3CC3BB}}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,sans-serif;padding:48px 16px;text-align:center}
+h1{font-size:28px;margin:0 0 8px}
+p{color:var(--muted);margin:0 0 20px}
+a{color:var(--accent);font-weight:600}
+</style>
+</head>
+<body>
+<h1>Pagina niet gevonden</h1>
+<p>Deze quiz bestaat (nog) niet.</p>
+<a href="/QuizMore/">← Naar alle vakken</a>
+</body>
+</html>
