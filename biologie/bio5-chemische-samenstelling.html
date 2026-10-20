@@ -1,0 +1,669 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>BIO5 Chemische samenstelling · QuizMore</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Layout: één smalle werkkolom. Overzicht met onderwerpkaarten, daarna een vraag per scherm met directe uitleg. */
+:root{
+  --bg:#F2F5F7; --surface:#FFFFFF; --surface2:#E7EDF1; --ink:#14232D; --muted:#566873; --line:#D3DDE3;
+  --accent:#0B7A75; --accent-ink:#FFFFFF; --accent-soft:#D9EFEC;
+  --good:#1B7F47; --good-soft:#DDF1E4; --bad:#BE3326; --bad-soft:#F9E1DE; --warn:#9A6200; --warn-soft:#FBEFD3;
+  --font-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --font-body:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1A21; --surface:#16252E; --surface2:#1D303B; --ink:#E6EEF2; --muted:#93A7B2; --line:#2A404D;
+    --accent:#3CC3BB; --accent-ink:#072320; --accent-soft:#12383A;
+    --good:#4CC17F; --good-soft:#12341F; --bad:#F0776A; --bad-soft:#3B1A17; --warn:#E9B04A; --warn-soft:#3A2C0E;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1A21; --surface:#16252E; --surface2:#1D303B; --ink:#E6EEF2; --muted:#93A7B2; --line:#2A404D;
+  --accent:#3CC3BB; --accent-ink:#072320; --accent-soft:#12383A;
+  --good:#4CC17F; --good-soft:#12341F; --bad:#F0776A; --bad-soft:#3B1A17; --warn:#E9B04A; --warn-soft:#3A2C0E;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.5;
+  padding-block:24px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:20px;min-width:0}
+h1,h2,h3{font-family:var(--font-display);font-weight:700;line-height:1.15;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(28px,5.5vw,40px)}
+h2{font-size:clamp(20px,3.6vw,25px)}
+h3{font-size:18px}
+p{margin:0}
+.eyebrow{font-family:var(--font-mono);font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--accent)}
+.muted{color:var(--muted)}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.btn{appearance:none;border:1.5px solid var(--line);background:var(--surface);border-radius:8px;padding:10px 16px;font-weight:600;cursor:pointer;min-height:44px;transition:background .15s,border-color .15s}
+.btn:hover:not(:disabled){border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover:not(:disabled){filter:brightness(1.08)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.small{min-height:36px;padding:6px 12px;font-size:14px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;min-width:0}
+.hero{display:flex;flex-direction:column;gap:10px}
+.hero p{max-width:62ch;color:var(--muted)}
+
+.mastery{display:flex;flex-direction:column;gap:14px}
+.mastery-top{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:baseline;justify-content:space-between}
+.big{font-family:var(--font-display);font-weight:700;font-size:34px;font-variant-numeric:tabular-nums;line-height:1}
+.big small{font-size:18px;color:var(--muted);font-weight:600}
+.bar{height:10px;border-radius:6px;background:var(--surface2);overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--accent);border-radius:6px;transition:width .4s}
+.bar.thin{height:6px}
+
+.exam{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:12px;align-items:end}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label{font-family:var(--font-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+select,input[type=text]{background:var(--surface);border:1.5px solid var(--line);border-radius:8px;padding:9px 10px;min-height:44px;width:100%;min-width:0}
+
+.topics{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:14px}
+.topic{display:flex;flex-direction:column;gap:12px;justify-content:space-between}
+.topic .tag{font-family:var(--font-mono);font-size:12px;color:var(--muted);letter-spacing:.05em}
+.topic .count{font-variant-numeric:tabular-nums;font-size:14px;color:var(--muted);display:flex;justify-content:space-between}
+.topic.done{border-color:var(--good)}
+.topic .actions{display:flex;gap:8px;flex-wrap:wrap}
+.topic .actions .btn{flex:1 1 auto}
+
+/* sessie */
+.topbar{display:flex;align-items:center;gap:14px}
+.topbar .bar{flex:1}
+.topbar .n{font-family:var(--font-mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.qcard{display:flex;flex-direction:column;gap:18px}
+.meta{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-family:var(--font-mono);font-size:12px;letter-spacing:.04em;padding:3px 9px;border-radius:999px;background:var(--surface2);color:var(--muted)}
+.chip.a{background:var(--accent-soft);color:var(--accent)}
+.qtext{font-family:var(--font-display);font-weight:600;font-size:clamp(19px,3.4vw,23px);line-height:1.3}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{appearance:none;text-align:left;display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;cursor:pointer;min-height:48px;width:100%}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt .key{flex:none;font-family:var(--font-mono);font-size:12px;width:24px;height:24px;border-radius:6px;background:var(--surface2);color:var(--muted);display:grid;place-items:center;margin-top:1px}
+.opt .txt{min-width:0;overflow-wrap:anywhere}
+.opt.sel{border-color:var(--accent);background:var(--accent-soft)}
+.opt.good{border-color:var(--good);background:var(--good-soft)}
+.opt.bad{border-color:var(--bad);background:var(--bad-soft)}
+.opt.missed{border-color:var(--good);border-style:dashed}
+.opt:disabled{cursor:default;color:inherit}
+.hintline{font-size:14px;color:var(--muted)}
+.fillrow{display:flex;gap:10px;flex-wrap:wrap}
+.fillrow input{flex:1 1 220px}
+input.good,select.good{border-color:var(--good);background:var(--good-soft)}
+input.bad,select.bad{border-color:var(--bad);background:var(--bad-soft)}
+.matchrows{display:flex;flex-direction:column;gap:10px}
+.mrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:10px;align-items:center}
+.mrow .l{font-weight:600;overflow-wrap:anywhere}
+.mrow .fix{grid-column:1/-1;font-size:14px;color:var(--good)}
+@media (max-width:520px){.mrow{grid-template-columns:1fr}}
+.fb{border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;border:1.5px solid}
+.fb.good{background:var(--good-soft);border-color:var(--good)}
+.fb.bad{background:var(--bad-soft);border-color:var(--bad)}
+.fb .h{font-weight:700}
+.fb.good .h{color:var(--good)} .fb.bad .h{color:var(--bad)}
+.fb .ans{overflow-wrap:anywhere}
+.fb ul{margin:0;padding-left:18px}
+.fb .ex{color:var(--ink)}
+.actions-row{display:flex;gap:10px;flex-wrap:wrap}
+.why{display:flex;flex-direction:column;gap:4px}
+.why ul{margin:0;padding-left:18px}
+.fb .yours{color:var(--muted)}
+
+/* theorie en resultaat */
+.theory ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px}
+.theory li{max-width:68ch}
+.theory b{font-weight:600}
+.score{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:baseline}
+.rev{display:flex;flex-direction:column;gap:10px}
+details.r{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:0}
+details.r>summary{cursor:pointer;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;list-style:none}
+details.r>summary::-webkit-details-marker{display:none}
+details.r .mark{flex:none;font-weight:700;width:20px}
+details.r.ok .mark{color:var(--good)} details.r.no .mark{color:var(--bad)}
+details.r .body{padding:0 14px 14px 44px;display:flex;flex-direction:column;gap:6px;font-size:15px}
+details.r .body ul{margin:0;padding-left:18px}
+.back{align-self:flex-start;font-size:14px;font-weight:600;color:var(--accent);text-decoration:none}
+.back:hover{text-decoration:underline}
+.foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+/* ============ VRAGEN ============ */
+const TOPICS=[
+{id:'el',tag:'§1 en §2',title:'Elementen en moleculen',sum:[
+ '<b>Hoofdbestanddelen</b> van organische moleculen: <b>O, C, H, N</b>.',
+ 'Kleine fracties, wel belangrijk: <b>Ca</b> (beenderen gewervelden, celwand planten, prikkelgeleiding), <b>P</b> (o.a. nucleïnezuren), <b>Fe</b> (hemoglobine, O₂-transport in bloed), <b>Si</b> (bouwsteen collageen in bindweefsel, essentieel voor ontwikkeling).',
+ '<b>Anorganisch</b>: H₂O, CO₂, O₂, anorganische zuren, anorganische zouten.',
+ '<b>Organisch</b>: sachariden (suikers), lipiden (vetten), proteïnen (eiwitten), nucleïnezuren.',
+ 'Zo goed als alle functies in de cel worden door die vier groepen organische moleculen uitgevoerd.']},
+{id:'wa',tag:'§2.1',title:'Water',sum:[
+ '<b>Polair</b>: zuurstof δ⁻, waterstof δ⁺. Tegengestelde deelladingen trekken elkaar aan: sterke interactie tussen watermoleculen, de <b>waterstofbruggen</b>.',
+ '<b>Polair oplosmiddel</b>: polaire moleculen, ionen en moleculen met polaire groepen lossen goed op.',
+ '<b>Chemische reacties</b>: molecule splitsen met water = <b>hydrolyse</b>. Molecule vormen met afsplitsing van water = <b>condensatiereactie</b>.',
+ '<b>Transport</b>: bloed- en lymfevatenstelsel (mens), vaatbundels (planten).',
+ '<b>Warmteregulatie</b>: hoge specifieke warmtecapaciteit, behoud lichaamstemperatuur door transpiratie.',
+ '<b>Smeermiddel</b>: bestanddeel van slijm (mucus), bescherming interne organen en gewrichtssmeer.']},
+{id:'ga',tag:'§2.2 en §2.3',title:'Zuurstofgas en koolstofdioxide',sum:[
+ '<b>O₂</b>: apolair, lost slecht op in water, nodig voor cellen. Transport naar cellen via gespecialiseerde moleculen zoals <b>hemoglobine</b>.',
+ '<b>CO₂</b>: bijproduct van celademhaling in de mitochondriën, van weefsels naar het bloed.',
+ 'Het grootste deel CO₂ wordt omgezet naar <b>koolzuur (H₂CO₃)</b>, dat ioniseert tot <b>H⁺ en HCO₃⁻</b>. Dit regelt de <b>pH van het bloed</b>.',
+ 'Reactie: CO₂ + H₂O ⇌ H₂CO₃ ⇌ H⁺ + HCO₃⁻.',
+ 'Planten hebben CO₂ nodig voor de <b>fotosynthese</b>.']},
+{id:'sa',tag:'§3.1',title:'Sachariden',sum:[
+ '<b>Monosachariden</b>: 5 of 6 C-atomen (keten of ring). Glucose (energiebron, bouwsteen polysachariden), fructose (energiebron in vruchten), galactose.',
+ '<b>Disachariden</b>: covalente binding tussen 2 monosachariden. Sucrose = glucose + fructose (tafelsuiker, uit suikerbiet of suikerriet). Lactose = galactose + glucose (melksuiker).',
+ '<b>Polysachariden</b>: covalente binding tussen meerdere monosachariden, voor structuur en energieopslag.',
+ '<b>Glycogeen</b>: vertakt, energieopslag in lever en spieren (dieren), energiebron bij schimmels.',
+ '<b>Zetmeel</b>: amylose (lineair) + amylopectine (vertakt), belangrijkste energiereserve van planten.',
+ '<b>Chitine</b>: celwand schimmels, exoskelet ongewervelden.',
+ '<b>Cellulose</b>: celwand planten en wieren, lange onvertakte glucoseketens, H-bruggen tussen ketens voor stevigheid, onverteerbaar voor de mens en de meeste dieren.']},
+{id:'li',tag:'§3.2',title:'Lipiden',sum:[
+ 'Grotendeels <b>apolair</b>, slecht of niet oplosbaar in water. Drie groepen: <b>triglyceriden, fosfolipiden, steroïden</b>.',
+ '<b>Triglyceride</b> = glycerol + 3 vetzuren (condensatiereactie). Glycerol: C₃-molecule met 3 hydroxylgroepen (-OH). Vetzuur: lineair carbonzuur (-COOH).',
+ '<b>Verzadigd</b>: alleen enkelvoudige bindingen, vast bij kamertemperatuur, risico op hart- en vaatziekten. <b>Onverzadigd</b>: een of meer dubbele bindingen, vloeibaar, in planten, zaden en vruchten, onderdeel van een gezond dieet.',
+ 'Functies triglyceriden: <b>energieopslag</b> (vetcellen, zaden), <b>isolatie</b> (slechte warmtegeleiders), <b>waterafstoting</b> (veren, huid, cuticula).',
+ '<b>Fosfolipide</b> = glycerol + 2 vetzuren + fosfaatgroep. Belangrijkste bouwsteen van membranen. Dubbelmembraan: apolaire hydrofobe vetzuurstaarten binnenin naar elkaar toe (barrière voor vrije verplaatsing), polaire hydrofiele fosfaatkoppen naar de waterige omgeving.',
+ '<b>Steroïden</b>: 4 ringvormige moleculen, geen vetzuren, wel apolair. Cholesterol (onderdeel biomembraan, beïnvloedt soepelheid en stabiliteit), geslachtshormonen, bijnierschorshormonen, vitamine D.']},
+{id:'az',tag:'§3.3',title:'Aminozuren en eiwitstructuur',sum:[
+ '<b>Aminozuur</b> (monomeer van eiwit): centraal C-atoom, aminogroep (-NH₂), H-atoom, carboxygroep (-COOH) en restgroep (R). De restgroep verschilt per aminozuur: <b>20 verschillende aminozuren</b>.',
+ 'Aminogroep + carboxygroep: H₂O wordt afgesplitst (condensatiereactie) en er ontstaat een <b>peptidebinding</b>. 2 AZ = dipeptide, meerdere = polypeptide (= eiwit). Een eiwit is een onvertakt polymeer.',
+ '<b>Primair</b>: volgorde van aminozuren in de keten (peptidebindingen als ruggengraat).',
+ '<b>Secundair</b>: waterstofbruggen tussen O van C=O en H van N-H in de peptidebindingen geven <b>α-helix</b> en <b>β-plaat</b>.',
+ '<b>Tertiair</b>: verdere 3D-plooiing door interacties tussen restgroepen: waterstofbruggen, ionbindingen, apolaire interacties, S-S-bindingen.',
+ '<b>Quaternair</b>: meerdere polypeptideketens (subeenheden) vormen samen één functioneel eiwit, geassocieerd via interacties tussen restgroepen (bv. hemoglobine: 4 subeenheden).']},
+{id:'ei',tag:'§3.3',title:'Eiwitten: denaturatie en functies',sum:[
+ '<b>Denaturatie</b> = een eiwit verliest zijn 3D-structuur. Oorzaken: hoge temperatuur, lage pH, hoge zoutconcentraties (interacties verbroken).',
+ 'Structuur en functie hangen nauw samen: een gedenatureerd eiwit is niet meer functioneel.',
+ '<b>Structuur</b>: tubuline (microtubuli), keratine en collageen (haar, nagels, pezen, bindweefsel).',
+ '<b>Enzymen</b>: biokatalysatoren. <b>Transport</b>: transmembraaneiwitten, hemoglobine. <b>Communicatie</b>: prikkels opvangen, hormonen zoals insuline (signaalmolecule), werking organen en weefsels regelen.']},
+{id:'en',tag:'§3.3',title:'Enzymen',sum:[
+ 'Reacties in de cel vragen <b>activeringsenergie</b>. Zonder genoeg energie (warmte) zijn reacties te traag. Enzymen zijn <b>biokatalysatoren</b>: ze versnellen de reactie door de activeringsenergie te verlagen. Het enzym zelf blijft onveranderd.',
+ '<b>Actief centrum</b> = specifieke bindingsplaats in de 3D-structuur. Het houdt moleculen in een bepaalde positie en vergroot de kans op reactie van het <b>substraat</b>. Binding geeft het <b>enzym-substraatcomplex</b>.',
+ '<b>Regulatie</b>: meer enzym aanmaken (meer activiteit) of <b>inhibitoren</b> (remmend). Een inhibitor bindt op het actief centrum (competitie) of elders op het enzym en beïnvloedt de structuur van het actief centrum.',
+ '<b>Co-enzym</b> = organische molecule nodig voor de werking (bv. ATP, NADH). <b>Cofactor</b> = ion.',
+ '<b>Naamgeving</b>: functie of substraat + <b>-ase</b> (lipase, protease, lactase). Soms minder duidelijk: pepsine (afbraak eiwitten in de spijsvertering), lysozyme (afbraak celwand bacteriën).']},
+{id:'nu',tag:'§3.4',title:'Nucleïnezuren',sum:[
+ 'Polymeren van lineair gebonden <b>nucleotiden</b>: 5 tot miljoenen nucleotiden per polynucleotide. Twee soorten: <b>DNA</b> en <b>RNA</b>.',
+ '<b>Nucleotide</b> = fosfaatgroep + monosacharide (ribose in RNA, desoxyribose in DNA) + stikstofhoudende base. Basen: A, C, G, <b>T (enkel DNA)</b>, <b>U (enkel RNA)</b>.',
+ '<b>DNA</b>: suiker-fosfaat als ruggengraat (covalent). Uiteinde met sacharide = <b>3\'-einde</b>, uiteinde met fosfaatgroep = <b>5\'-einde</b>.',
+ 'Dubbelhelix: 2 ketens, N-basen naar elkaar toe met <b>H-bruggen</b>, ketens <b>antiparallel</b> en <b>complementair</b>: A-T en C-G.',
+ 'DNA draagt de genetische informatie in de <b>volgorde van de basen</b>, die bij eiwitsynthese wordt omgezet in de volgorde van aminozuren.',
+ '<b>RNA</b>: enkele streng, ook suiker-fosfaat ruggengraat, verschillende soorten met een specifieke functie in de eiwitsynthese.']},
+{id:'mx',tag:'Alles samen',title:'Overkoepelend',sum:[
+ 'Condensatie (water af) vormt triglyceriden, disachariden, polysachariden en peptiden. Hydrolyse (water erbij) splitst ze weer.',
+ 'Bouwstenen: sachariden uit monosachariden, eiwitten uit aminozuren, nucleïnezuren uit nucleotiden, triglyceriden uit glycerol en vetzuren.',
+ 'Let op het verschil tussen vertakt (glycogeen, amylopectine) en onvertakt (cellulose, amylose, eiwitketen).']}
+];
+
+const Qs=[];
+const mc=(t,q,ans,wrong,ex)=>Qs.push({t,type:'mc',q,opts:[ans,...wrong],ex});
+const tf=(t,q,val,ex)=>Qs.push({t,type:'tf',q,val,ex});
+const fill=(t,q,acc,ex,show)=>Qs.push({t,type:'fill',q,acc,ex,show:show||acc[0]});
+const multi=(t,q,good,bad,ex)=>Qs.push({t,type:'multi',q,good,bad,ex});
+const match=(t,q,pairs,ex)=>Qs.push({t,type:'match',q,pairs,ex});
+
+/* --- Elementen en moleculen --- */
+mc('el','Welke vier elementen vormen de hoofdbestanddelen van de organische moleculen in cellen?','O, C, H en N',['C, H, Ca en P','O, C, Fe en Si','H, N, P en Ca'],'Zuurstof, koolstof, waterstof en stikstof. Ca, Fe, P en Si komen maar in kleine fracties voor.');
+match('el','Koppel elk element aan zijn functie.',[['Calcium (Ca)','Beenderen, celwand planten, prikkelgeleiding'],['IJzer (Fe)','Werking van hemoglobine'],['Fosfor (P)','Element in biomoleculen zoals nucleïnezuren'],['Silicium (Si)','Bouwsteen van collageen']],'Ca: beenderen van gewervelden, celwand van planten en prikkelgeleiding. Fe: hemoglobine (O₂-transport). P: o.a. nucleïnezuren. Si: collageen in bindweefsel.');
+fill('el','Welk element is nodig voor de werking van hemoglobine?',['ijzer','fe'],'IJzer (Fe) zit in hemoglobine, dat O₂ in het bloed transporteert.','ijzer (Fe)');
+fill('el','Welk element is een belangrijk onderdeel van nucleïnezuren (naast C, H, O, N)?',['fosfor','p'],'Fosfor (P) zit in de fosfaatgroep van elk nucleotide.','fosfor (P)');
+multi('el','Welke functies heeft calcium (Ca)? Kies alle juiste antwoorden.',['Opbouw van beenderen bij gewervelden','Opbouw van de celwand bij planten','Prikkelgeleiding'],['O₂-transport in het bloed','Bouwsteen van collageen'],'O₂-transport hoort bij ijzer (hemoglobine). Collageen bevat silicium.');
+mc('el','Welk element is een bouwsteen van collageen in bindweefsel?','Silicium (Si)',['Calcium (Ca)','IJzer (Fe)','Fosfor (P)'],'Silicium is een bouwsteen van collageen en essentieel voor de ontwikkeling.');
+tf('el','Ca, Fe, P en Si komen maar in kleine fracties voor, dus ze hebben geen belangrijke functies.',false,'Ze komen in kleine fracties voor, maar hebben wel belangrijke functies.');
+multi('el','Welke stoffen zijn anorganische moleculen in organismen? Kies alle juiste antwoorden.',['Water','Koolstofdioxide','Zuurstofgas','Anorganische zouten'],['Lipiden','Proteïnen'],'Anorganisch: H₂O, CO₂, O₂, anorganische zuren en zouten. Lipiden en proteïnen zijn organisch.');
+multi('el','Welke vier groepen organische moleculen komen in cellen voor?',['Sachariden','Lipiden','Proteïnen','Nucleïnezuren'],['Anorganische zouten','Water'],'Sachariden, lipiden, proteïnen en nucleïnezuren.');
+match('el','Koppel de wetenschappelijke naam aan de gewone naam.',[['Sachariden','Suikers'],['Lipiden','Vetten'],['Proteïnen','Eiwitten'],['Nucleïnezuren','DNA en RNA']],'Sachariden = suikers, lipiden = vetten, proteïnen = eiwitten, nucleïnezuren = DNA en RNA.');
+tf('el','Zo goed als alle functies in de cel worden uitgevoerd door sachariden, lipiden, proteïnen en nucleïnezuren.',true,'Dat zijn de vier groepen organische moleculen.');
+
+/* --- Water --- */
+mc('wa','Waarom is een watermolecuul polair?','O heeft een negatieve en H een positieve deellading',['Water heeft een volledig positieve lading','Water bestaat uit twee gelijke atoomsoorten','Water bevat dubbele bindingen'],'Zuurstof is δ⁻ en waterstof is δ⁺.');
+mc('wa','Hoe heet de interactie tussen watermoleculen onderling?','Waterstofbruggen',['Peptidebindingen','Ionbindingen','Disulfidebruggen'],'Tegengestelde deelladingen trekken elkaar aan: waterstofbruggen.');
+mc('wa','Welke stoffen lossen goed op in water?','Polaire moleculen, ionen en moleculen met polaire groepen',['Apolaire moleculen','Alleen vetten','Alleen gassen'],'Water is een polair oplosmiddel. Apolaire stoffen lossen slecht op.');
+fill('wa','Hoe heet de reactie waarbij een molecule met behulp van water wordt gesplitst?',['hydrolyse'],'Hydrolyse: water is nodig om de molecule te splitsen.');
+fill('wa','Hoe heet de reactie waarbij een molecule gevormd wordt en water wordt afgesplitst?',['condensatiereactie','condensatie'],'Condensatiereactie: bij het vormen van de molecule komt water vrij.','condensatiereactie');
+tf('wa','Bij een condensatiereactie wordt water verbruikt.',false,'Bij condensatie wordt water afgesplitst. Bij hydrolyse wordt water verbruikt.');
+multi('wa','Welke functies heeft water in organismen?',['Polair oplosmiddel','Rol in chemische reacties','Transportmiddel','Warmteregulatie','Smeermiddel'],['Opslag van genetische informatie','Bouwsteen van biomembranen'],'Water: oplosmiddel, reacties, transport, warmteregulatie, smeermiddel.');
+match('wa','Koppel de functie van water aan het voorbeeld.',[['Transportmiddel','Bloedvatenstelsel en vaatbundels'],['Warmteregulatie','Transpiratie'],['Smeermiddel','Slijm (mucus) en gewrichtssmeer'],['Polair oplosmiddel','Ionen lossen op']],'Transport via bloedvaten en vaatbundels, warmteregulatie via transpiratie, smeermiddel in slijm en gewrichten.');
+mc('wa','Welke eigenschap van water helpt bij het behoud van een constante lichaamstemperatuur?','Hoge specifieke warmtecapaciteit',['Lage specifieke warmtecapaciteit','Apolariteit','Hoge dichtheid'],'Water kan veel warmte opnemen. Transpiratie helpt bij de warmteregulatie.');
+mc('wa','Hoe vindt watertransport plaats in planten?','Via vaatbundels',['Via het lymfevatenstelsel','Via het bloedvatenstelsel','Via het exoskelet'],'Mens: bloed- en lymfevatenstelsel. Planten: vaatbundels.');
+tf('wa','Water is een bestanddeel van slijm en helpt interne organen te beschermen.',true,'Als bestanddeel van mucus werkt water als smeermiddel en bescherming.');
+mc('wa','Een disacharide wordt in twee monosachariden gesplitst. Welke reactie is dit?','Hydrolyse',['Condensatiereactie','Denaturatie','Fotosynthese'],'Splitsen met water = hydrolyse.');
+
+/* --- O2 en CO2 --- */
+tf('ga','O₂ is een polaire molecule die goed oplost in water.',false,'O₂ is apolair en lost slecht op in water.');
+mc('ga','Hoe wordt O₂ naar de cellen gebracht?','Via gespecialiseerde moleculen zoals hemoglobine',['Opgelost in water als gewone ionen','Via cellulose','Via DNA'],'Omdat O₂ slecht oplost, is een transportmolecule als hemoglobine nodig.');
+fill('ga','Welk eiwit in de rode bloedcellen transporteert O₂?',['hemoglobine','haemoglobine'],'Hemoglobine.');
+mc('ga','Waar ontstaat CO₂ als bijproduct?','Bij celademhaling in de mitochondriën',['Bij fotosynthese in de celkern','Bij eiwitsynthese in het cytoplasma','Bij de opname van water'],'CO₂ is een bijproduct van de celademhaling in de mitochondriën.');
+fill('ga','In welk organel ontstaat CO₂ tijdens de celademhaling?',['mitochondrien','mitochondrion','mitochondrieen','mitochondria'],'In de mitochondriën.','mitochondriën');
+mc('ga','In welke molecule wordt het grootste deel van het CO₂ in het bloed omgezet?','Koolzuur (H₂CO₃)',['Glucose','Waterstofperoxide','Zuurstofgas'],'CO₂ + H₂O ⇌ H₂CO₃.');
+mc('ga','Koolzuur ioniseert tot welke ionen, en wat is daarvan het belang?','H⁺ en HCO₃⁻, regeling van de pH van het bloed',['H⁺ en HCO₃⁻, opslag van energie','OH⁻ en CO₃²⁻, transport van O₂','Na⁺ en Cl⁻, prikkelgeleiding'],'H₂CO₃ ⇌ H⁺ + HCO₃⁻ zorgt voor pH-regulatie van het bloed.');
+fill('ga','Voor welk proces hebben planten CO₂ nodig?',['fotosynthese'],'Planten hebben CO₂ nodig voor fotosynthese.');
+tf('ga','Cellen hebben O₂ nodig.',true,'O₂ wordt in de cel gebruikt voor de celademhaling.');
+mc('ga','Hoe heet het ion HCO₃⁻?','Waterstofcarbonaation',['Koolzuur','Carbonzuur','Hydroxylion'],'HCO₃⁻ is het waterstofcarbonaation. H₂CO₃ is koolzuur.');
+
+/* --- Sachariden --- */
+mc('sa','Uit hoeveel C-atomen bestaat een monosacharide?','5 of 6',['2 of 3','12','Meer dan 100'],'Monosachariden hebben 5 of 6 C-atomen, als keten of ring.');
+multi('sa','Welke stoffen zijn monosachariden?',['Glucose','Fructose','Galactose'],['Sucrose','Lactose','Zetmeel'],'Sucrose en lactose zijn disachariden, zetmeel is een polysacharide.');
+fill('sa','Welke monosacharide is een belangrijke energiebron in vruchten?',['fructose'],'Fructose.');
+mc('sa','Wat is de rol van glucose?','Energiebron en bouwsteen van polysachariden',['Bouwsteen van eiwitten','Opslag van erfelijke informatie','Bouwsteen van membranen'],'Glucose levert energie en is de bouwsteen van polysachariden.');
+match('sa','Koppel het disacharide aan zijn bouwstenen.',[['Sucrose','Glucose + fructose'],['Lactose','Galactose + glucose']],'Sucrose = glucose + fructose. Lactose = galactose + glucose.');
+fill('sa','Hoe heet sucrose in de volksmond (tafelsuiker)? Geef één van de namen.',['sacharose','kristalsuiker','tafelsuiker','suiker'],'Sucrose = sacharose = kristalsuiker = tafelsuiker.','sacharose (kristalsuiker)');
+mc('sa','Welk disacharide is melksuiker?','Lactose',['Sucrose','Cellulose','Glycogeen'],'Lactose zit in melkproducten.');
+mc('sa','Waaruit wordt sucrose (tafelsuiker) gewonnen?','Suikerbiet of suikerriet',['Melk','Granen','Schimmels'],'Sucrose wordt gewonnen uit suikerbiet of suikerriet.');
+mc('sa','Welke binding houdt twee monosachariden samen in een disacharide?','Covalente binding',['Waterstofbrug','Ionbinding','Peptidebinding'],'Een covalente binding, gevormd door een condensatiereactie.');
+multi('sa','Welke stoffen zijn polysachariden?',['Glycogeen','Zetmeel','Chitine','Cellulose'],['Sucrose','Lactose','Glucose'],'Glycogeen, zetmeel, chitine en cellulose zijn polysachariden.');
+match('sa','Koppel het polysacharide aan zijn functie of plaats.',[['Glycogeen','Energieopslag in lever en spieren'],['Zetmeel','Belangrijkste energiereserve van planten'],['Chitine','Celwand schimmels en exoskelet ongewervelden'],['Cellulose','Celwand planten en wieren']],'Glycogeen: dieren, lever en spieren. Zetmeel: planten. Chitine: schimmels en ongewervelden. Cellulose: planten en wieren.');
+fill('sa','Welk polysacharide wordt bij dieren opgeslagen in lever en spieren?',['glycogeen'],'Glycogeen, met een vertakte structuur.');
+tf('sa','Glycogeen is een energiebron bij schimmels.',true,'Glycogeen is energieopslag bij dieren en energiebron bij schimmels.');
+tf('sa','Glycogeen heeft een vertakte structuur.',true,'Glycogeen is vertakt.');
+mc('sa','Waaruit bestaat zetmeel?','Amylose (lineair) en amylopectine (vertakt)',['Amylose (vertakt) en amylopectine (lineair)','Alleen cellulose','Glucose en fructose'],'Amylose is lineair, amylopectine is vertakt.');
+tf('sa','Cellulose bestaat uit sterk vertakte glucoseketens.',false,'Cellulose bestaat uit lange onvertakte glucoseketens.');
+mc('sa','Waarom is cellulose zo stevig?','Er zijn H-bruggen tussen de ketens, die samen vezels vormen',['Er zijn peptidebindingen tussen de ketens','De ketens zijn sterk vertakt','Cellulose bevat dubbele bindingen'],'H-bruggen tussen de lange ketens maken vezels stevig.');
+tf('sa','Cellulose is goed verteerbaar voor de mens.',false,'Cellulose is onverteerbaar voor de mens en de meeste dieren.');
+mc('sa','Welk polysacharide vormt het exoskelet van ongewervelden?','Chitine',['Cellulose','Zetmeel','Glycogeen'],'Chitine: exoskelet van ongewervelden en celwand van schimmels.');
+tf('sa','Tafelsuiker is lactose.',false,'Tafelsuiker is sucrose. Lactose is melksuiker.');
+
+/* --- Lipiden --- */
+mc('li','Welke eigenschap hebben lipiden grotendeels?','Apolair, slecht oplosbaar in water',['Polair, goed oplosbaar in water','Geladen, goed oplosbaar','Zuur, goed oplosbaar'],'Lipiden zijn grotendeels apolair.');
+multi('li','Wat zijn de drie belangrijkste groepen lipiden?',['Triglyceriden','Fosfolipiden','Steroïden'],['Polysachariden','Nucleotiden'],'Triglyceriden, fosfolipiden en steroïden.');
+mc('li','Hoe wordt een triglyceride gevormd?','Glycerol reageert met 3 vetzuren in een condensatiereactie',['Glycerol reageert met 2 vetzuren en een fosfaatgroep','4 ringvormige moleculen binden aan elkaar','Aminozuren binden via peptidebindingen'],'Triglyceride = glycerol + 3 vetzuren (water afgesplitst).');
+fill('li','Hoeveel vetzuren zitten er in een triglyceride? (cijfer)',['3','drie'],'Drie: glycerol heeft 3 hydroxylgroepen.','3');
+mc('li','Wat is glycerol?','Een C₃-molecule met 3 hydroxylgroepen (-OH)',['Een lineair carbonzuur','Een ringvormige molecule met 4 ringen','Een aminozuur'],'Glycerol is een C₃-molecule met drie -OH-groepen.');
+mc('li','Wat is een vetzuur?','Een lineair carbonzuur (-COOH)',['Een C₃-molecule met 3 hydroxylgroepen','Een molecule met een aminogroep en restgroep','Een suiker met 6 C-atomen'],'Vetzuur = lineair carbonzuur met een -COOH-groep.');
+match('li','Koppel elke term aan de juiste eigenschap.',[['Verzadigd vetzuur','Alleen enkelvoudige bindingen'],['Onverzadigd vetzuur','Een of meer dubbele bindingen'],['Verzadigde triglyceriden','Vast bij kamertemperatuur'],['Onverzadigde triglyceriden','Vloeibaar bij kamertemperatuur']],'Verzadigd: enkelvoudige bindingen, vast. Onverzadigd: dubbele binding(en), vloeibaar.');
+mc('li','Welk gezondheidsrisico hoort bij verzadigde triglyceriden?','Risico op hart- en vaatziekten',['Lactose-intolerantie','Denaturatie van eiwitten','Tekort aan ijzer'],'Verzadigde triglyceriden verhogen het risico op hart- en vaatziekten.');
+mc('li','Waar komen onverzadigde triglyceriden vooral voor?','In planten, zaden en vruchten',['In vetlagen van dieren','In celwanden van schimmels','In het bloedplasma'],'Ze zijn vloeibaar en onderdeel van een gezond dieet.');
+multi('li','Welke functies hebben triglyceriden?',['Energieopslag','Isolatie','Waterafstoting'],['Belangrijkste bouwsteen van membranen','Opslag van genetische informatie'],'Triglyceriden: energieopslag, isolatie en waterafstoting. Membranen zijn gemaakt van fosfolipiden.');
+match('li','Koppel de functie van triglyceriden aan een voorbeeld.',[['Energieopslag','Vetcellen en zaden'],['Isolatie','Vetlagen bij dieren'],['Waterafstoting','Veren, huid en cuticula']],'Energieopslag in vetcellen en zaden, isolatie door vetlagen, waterafstoting door veren, huid en waslaag.');
+tf('li','Vetten zijn goede warmtegeleiders, daarom isoleren ze goed.',false,'Vetten zijn slechte warmtegeleiders, en daarom isoleren ze goed.');
+fill('li','Hoe heet de waslaag op een plant?',['cuticula'],'De cuticula stoot water af.');
+mc('li','Hoe is een fosfolipide opgebouwd?','Glycerol, 2 vetzuren en een fosfaatgroep',['Glycerol en 3 vetzuren','4 ringvormige moleculen','Een fosfaatgroep, ribose en een base'],'Fosfolipide = glycerol + 2 vetzuren + fosfaatgroep.');
+mc('li','Wat is de belangrijkste bouwsteen van biomembranen?','Fosfolipiden',['Triglyceriden','Glycogeen','Nucleotiden'],'Fosfolipiden vormen een dubbelmembraan.');
+match('li','Koppel het deel van het fosfolipide aan zijn eigenschap.',[['Fosfaatkop','Polair, hydrofiel, naar de waterige omgeving'],['Vetzuurstaarten','Apolair, hydrofoob, binnenin naar elkaar toe']],'Koppen zijn hydrofiel en wijzen naar water. Staarten zijn hydrofoob en wijzen naar elkaar.');
+mc('li','Waarom vormt het apolaire binnenste van het dubbelmembraan een barrière?','Het is een apolair milieu dat de vrije verplaatsing van moleculen tegenhoudt',['Het is een polair milieu waar water doorheen stroomt','Het bestaat uit eiwitketens','Het bevat enkel cholesterol'],'De vetzuurstaarten vormen een apolair milieu dat moleculen niet vrij laat passeren.');
+tf('li','Steroïden bestaan uit vetzuren.',false,'Steroïden bestaan niet uit vetzuren, maar zijn wel apolair.');
+mc('li','Waaruit zijn steroïden opgebouwd?','4 ringvormige moleculen',['Glycerol en 3 vetzuren','Een keten van aminozuren','Een keten van nucleotiden'],'Steroïden hebben een skelet van 4 ringen.');
+fill('li','Welke steroïde is een belangrijk onderdeel van het biomembraan?',['cholesterol'],'Cholesterol beïnvloedt de soepelheid en stabiliteit van het membraan.');
+multi('li','Welke stoffen zijn steroïden?',['Cholesterol','Geslachtshormonen','Bijnierschorshormonen','Vitamine D'],['Insuline','Hemoglobine'],'Insuline en hemoglobine zijn eiwitten.');
+
+/* --- Aminozuren en eiwitstructuur --- */
+mc('az','Wat is de bouwsteen (monomeer) van eiwitten?','Aminozuren',['Nucleotiden','Monosachariden','Vetzuren'],'Eiwitten zijn polymeren van aminozuren.');
+fill('az','Hoeveel verschillende aminozuren komen voor in eiwitten? (cijfer)',['20','twintig'],'Er zijn 20 verschillende aminozuren.','20');
+multi('az','Uit welke delen bestaat een aminozuur?',['Centraal C-atoom','Aminogroep (-NH₂)','Carboxygroep (-COOH)','H-atoom','Restgroep (R)'],['Fosfaatgroep','Glycerol'],'Centraal C met aminogroep, carboxygroep, H en restgroep.');
+match('az','Koppel het onderdeel van het aminozuur aan zijn formule of kenmerk.',[['Aminogroep','-NH₂'],['Carboxygroep','-COOH'],['Restgroep','Verschilt bij elk aminozuur']],'De restgroep bepaalt de eigenschappen van het aminozuur.');
+mc('az','Wat verschilt tussen de 20 aminozuren?','De restgroep (R)',['De aminogroep','De carboxygroep','Het centrale C-atoom'],'Alleen de restgroep verschilt.');
+mc('az','In welke drie groepen worden aminozuren ingedeeld op basis van hun restgroep?','Apolair, polair en geïoniseerd (ioniseerbaar)',['Zuur, base en neutraal in water','Verzadigd, onverzadigd en vertakt','Lineair, vertakt en ringvormig'],'Aminozuren met apolaire restgroep, met polaire restgroep en met ioniseerbare restgroep.');
+tf('az','Een eiwit is een sterk vertakt polymeer van aminozuren.',false,'Een eiwit is een onvertakt polymeer.');
+mc('az','Hoe heet de binding tussen twee aminozuren?','Peptidebinding',['Waterstofbrug','Ionbinding','Glycosidische binding'],'Aminogroep + carboxygroep geeft een peptidebinding.');
+mc('az','Welke reactie vormt een peptidebinding?','Condensatiereactie: er wordt H₂O afgesplitst',['Hydrolyse: er wordt H₂O verbruikt','Fotosynthese','Denaturatie'],'Bij het vormen van de peptidebinding komt water vrij.');
+fill('az','Hoe heet een molecule die uit 2 aminozuren bestaat?',['dipeptide'],'Dipeptide. Meerdere aminozuren: polypeptide.');
+mc('az','Wat is een polypeptide?','Een keten van meerdere aminozuren, synoniem voor eiwit',['Een keten van nucleotiden','Een keten van glucosemoleculen','Een molecule met 3 vetzuren'],'Polypeptide = eiwit.');
+mc('az','Waardoor heeft een functioneel eiwit een specifieke 3D-structuur?','Door interacties tussen de aminozuren',['Door de ligging in de celkern','Door het aantal watermoleculen','Door de dubbele bindingen'],'De interacties tussen aminozuren bepalen de 3D-vorm.');
+fill('az','Op hoeveel niveaus wordt de structuur van een eiwit beschreven? (cijfer)',['4','vier'],'Primair, secundair, tertiair en quaternair.','4');
+match('az','Koppel het structuurniveau aan de beschrijving.',[['Primaire structuur','Specifieke volgorde van aminozuren'],['Secundaire structuur','α-helix of β-plaat'],['Tertiaire structuur','Verdere 3D-plooiing door interacties tussen restgroepen'],['Quaternaire structuur','Meerdere polypeptideketens samen']],'Primair: AZ-volgorde. Secundair: helix of plaat. Tertiair: plooiing van één keten. Quaternair: meerdere ketens.');
+mc('az','Wat stabiliseert de secundaire structuur?','Waterstofbruggen tussen O van C=O en H van N-H in de peptidebindingen',['S-S-bindingen tussen restgroepen','Peptidebindingen tussen de aminozuren','Ionbindingen tussen subeenheden'],'H-bruggen in de ruggengraat geven α-helix en β-plaat.');
+multi('az','Welke vormen kan de secundaire structuur hebben?',['α-helix','β-plaat'],['Dubbelhelix','Quaternaire bol'],'De dubbelhelix is de structuur van DNA.');
+multi('az','Welke interacties kunnen de tertiaire structuur bepalen?',['Waterstofbruggen','Ionbindingen','Apolaire interacties','S-S-bindingen'],['Peptidebindingen','Glycosidische bindingen'],'De peptidebinding vormt de primaire structuur.');
+mc('az','Tussen welke delen van de aminozuren treden de interacties van de tertiaire structuur op?','Tussen de restgroepen',['Tussen de aminogroepen onderling','Tussen de peptidebindingen alleen','Tussen de fosfaatgroepen'],'Tertiaire structuur komt uit interacties tussen restgroepen.');
+mc('az','Wat is de quaternaire structuur?','Meerdere polypeptideketens (subeenheden) vormen samen één functioneel eiwit',['De volgorde van aminozuren','De α-helix','De plooiing van één keten'],'Een voorbeeld is hemoglobine met 4 subeenheden.');
+tf('az','Bij de quaternaire structuur associëren de subeenheden via interacties tussen restgroepen.',true,'Het zijn interacties tussen restgroepen, geen echte binding.');
+tf('az','De primaire structuur van een eiwit wordt bepaald door waterstofbruggen.',false,'De primaire structuur is de volgorde van aminozuren, gebonden via peptidebindingen.');
+mc('az','Welke aminozuurgroep heeft een eiwitketen aan de N-terminus?','Een vrije aminogroep',['Een vrije carboxygroep','Een fosfaatgroep','Een hydroxylgroep'],'N-terminus: aminogroep. C-terminus: carboxygroep (-COOH).');
+
+/* --- Eiwitten: denaturatie en functies --- */
+fill('ei','Hoe heet het proces waarbij een eiwit zijn 3D-structuur verliest?',['denaturatie','denaturering'],'Denaturatie.','denaturatie');
+multi('ei','Welke factoren kunnen een eiwit denatureren?',['Hoge temperatuur','Lage pH','Hoge zoutconcentratie'],['Aanwezigheid van water','Aanwezigheid van substraat'],'Deze factoren verbreken de interacties die de 3D-structuur bepalen.');
+tf('ei','Een gedenatureerd eiwit blijft functioneel.',false,'Structuur en functie hangen nauw samen. Gedenatureerd is niet meer functioneel.');
+mc('ei','Een ei dat gekookt wordt, wordt hard. Welk proces zie je hier?','Denaturatie van eiwitten',['Hydrolyse van glycogeen','Condensatie van vetzuren','Fotosynthese'],'De warmte breekt de interacties in het eiwit af.');
+match('ei','Koppel de functie van eiwitten aan een voorbeeld.',[['Structuur','Keratine en collageen'],['Enzymen','Biokatalysatoren'],['Transport','Hemoglobine en transmembraaneiwitten'],['Communicatie','Hormonen zoals insuline']],'Eiwitten hebben functies in structuur, katalyse, transport en communicatie.');
+fill('ei','Welk eiwit is de bouwsteen van microtubuli?',['tubuline'],'Tubuline.');
+mc('ei','Welke structuren worden opgebouwd uit keratine en collageen?','Haar, nagels, pezen en bindweefsel',['Celwand van planten','Biomembranen','Het exoskelet van insecten'],'Keratine en collageen geven structuur.');
+mc('ei','Wat is insuline?','Een hormoon, dus een signaalmolecule voor communicatie',['Een enzym dat suikers splitst','Een steroïde','Een transmembraaneiwit'],'Hormonen regelen de werking van organen en weefsels.');
+mc('ei','Wat doen transmembraaneiwitten?','Transport doorheen het celmembraan',['Opslag van energie','DNA kopiëren','Vorming van collageen'],'Ze vormen een doorgang door het celmembraan.');
+tf('ei','Eiwitten hebben maar één functie in de cel.',false,'Eiwitten hebben o.a. structuur-, enzym-, transport- en communicatiefuncties.');
+
+/* --- Enzymen --- */
+mc('en','Wat zijn enzymen?','Eiwitten die als biokatalysatoren werken',['Lipiden die energie opslaan','Nucleïnezuren die erfelijke info dragen','Anorganische zouten'],'Enzymen versnellen biochemische reacties.');
+fill('en','Hoe heet de energie die nodig is om een chemische reactie in de cel te laten starten?',['activeringsenergie','activeringenergie'],'Activeringsenergie.','activeringsenergie');
+mc('en','Wat doet een enzym met de activeringsenergie?','Het verlaagt de activeringsenergie',['Het verhoogt de activeringsenergie','Het verandert de activeringsenergie niet','Het verbruikt de activeringsenergie'],'Daardoor verloopt de reactie sneller.');
+tf('en','Een enzym wordt tijdens de reactie verbruikt.',false,'Het enzym komt onveranderd uit de reactie.');
+fill('en','Hoe heet de specifieke bindingsplaats van een enzym?',['actief centrum','actiefcentrum'],'Het actief centrum, in de 3D-structuur van het enzym.','actief centrum');
+fill('en','Hoe heet de molecule waarop een enzym inwerkt?',['substraat'],'Het substraat.');
+mc('en','Wat ontstaat wanneer het substraat op het actief centrum bindt?','Een enzym-substraatcomplex',['Een gedenatureerd eiwit','Een disacharide','Een peptidebinding'],'Enzym-substraatcomplex.');
+mc('en','Hoe vergroot een enzym de kans op reactie van het substraat?','Door de moleculen in een bepaalde positie te houden',['Door het substraat te verwarmen','Door het substraat te verbruiken','Door water toe te voegen'],'Het actief centrum plaatst moleculen in de juiste positie.');
+mc('en','Waarom werkt een enzym specifiek op een bepaald substraat?','Het actief centrum heeft een specifieke 3D-structuur',['Het enzym is apolair','Het substraat is altijd een suiker','Het enzym is een nucleïnezuur'],'De 3D-structuur bepaalt welk substraat past.');
+mc('en','Welke twee manieren om de enzymactiviteit te regelen staan in de leerstof?','Meer enzym aanmaken, of inhibitoren gebruiken',['Water toevoegen of onttrekken','DNA kopiëren of afbreken','Condensatie of hydrolyse'],'Meer enzym geeft meer activiteit. Inhibitoren remmen.');
+mc('en','Wat doet een inhibitor?','Remt de werking van een enzym',['Versnelt de reactie','Vormt het substraat','Splitst het enzym in aminozuren'],'Inhibitoren hebben een remmende werking.');
+mc('en','Hoe remt een competitieve inhibitor een enzym?','Hij bindt op het actief centrum, in competitie met het substraat',['Hij bindt aan het DNA','Hij denatureert het substraat','Hij voegt water toe'],'Competitie om het actief centrum.');
+mc('en','Een inhibitor bindt op een andere plaats van het enzym. Wat kan het gevolg zijn?','De structuur van het actief centrum verandert',['Het enzym wordt omgezet in een koolhydraat','Het substraat wordt automatisch gesplitst','Het enzym wordt een substraat'],'Zo kan een inhibitor het actief centrum beïnvloeden zonder erop te binden.');
+match('en','Koppel de term aan de beschrijving.',[['Co-enzym','Organische molecule, bv. ATP of NADH'],['Cofactor','Ion']],'Co-enzym is organisch, cofactor is een ion.');
+tf('en','Een cofactor is een organische molecule.',false,'Een cofactor is een ion. Een co-enzym is een organische molecule.');
+match('en','Koppel het enzym aan wat het afbreekt of doet.',[['Lipase','Lipiden'],['Protease','Eiwitten'],['Lactase','Lactose'],['Lysozyme','Celwand van bacteriën']],'Naam = substraat of functie + -ase. Lysozyme is een uitzondering.');
+mc('en','Welk enzym breekt eiwitten af in de spijsvertering?','Pepsine',['Lactase','Lipase','Lysozyme'],'Pepsine breekt eiwitten af.');
+tf('en','Alle enzymnamen eindigen op -ase.',false,'Pepsine en lysozyme zijn uitzonderingen.');
+mc('en','Wat gebeurt er met een enzym bij een te hoge temperatuur?','Het denatureert en is niet meer functioneel',['Het werkt sneller en blijft intact','Het wordt een co-enzym','Het wordt omgezet in een cofactor'],'De 3D-structuur en dus het actief centrum gaat verloren.');
+mc('en','Wat gebeurt er in een cel als er onvoldoende energie (bv. warmte) is om de activeringsenergie te halen?','De reacties verlopen te traag voor de celfuncties',['De cel maakt meer water','De reacties verlopen sneller','De cel maakt meer DNA'],'Daarom zijn enzymen nodig.');
+
+/* --- Nucleïnezuren --- */
+mc('nu','Waaruit bestaan nucleïnezuren?','Polymeren van lineair gebonden nucleotiden',['Polymeren van aminozuren','Polymeren van glucose','Triglyceriden'],'Nucleïnezuren zijn polynucleotiden.');
+fill('nu','Hoe heet de bouwsteen (monomeer) van nucleïnezuren?',['nucleotide','nucleotiden'],'Het nucleotide.','nucleotide');
+multi('nu','Uit welke drie delen bestaat een nucleotide?',['Fosfaatgroep','Monosacharide','Stikstofhoudende base'],['Glycerol','Vetzuur','Aminogroep met restgroep'],'Fosfaat, suiker (ribose of desoxyribose) en N-base.');
+match('nu','Koppel het nucleïnezuur aan zijn suiker.',[['DNA','Desoxyribose'],['RNA','Ribose']],'DNA: desoxyribose. RNA: ribose.');
+mc('nu','Welke base komt enkel voor in DNA?','Thymine (T)',['Uracil (U)','Adenine (A)','Cytosine (C)'],'DNA: A, C, G, T.');
+mc('nu','Welke base komt enkel voor in RNA?','Uracil (U)',['Thymine (T)','Guanine (G)','Adenine (A)'],'RNA: A, C, G, U.');
+fill('nu','Welke base is complementair aan adenine in DNA?',['thymine','t'],'A bindt met T.','thymine (T)');
+fill('nu','Welke base is complementair aan guanine?',['cytosine','c'],'G bindt met C.','cytosine (C)');
+mc('nu','Welke bindingen houden de twee DNA-strengen bij elkaar?','Waterstofbruggen tussen de N-basen',['Peptidebindingen tussen de suikers','Covalente bindingen tussen de fosfaten','Ionbindingen tussen de ribosen'],'De N-basen wijzen naar elkaar toe en binden met H-bruggen.');
+tf('nu','DNA bestaat uit een enkele streng.',false,'DNA is een dubbele helix. RNA is meestal een enkele streng.');
+mc('nu','Wat vormt de ruggengraat van een DNA-streng?','Afwisseling van suiker en fosfaatgroep',['Afwisseling van basen','Peptidebindingen','Vetzuurstaarten'],'Suiker en fosfaat, met covalente bindingen.');
+mc('nu','Hoe zijn de twee ketens van de dubbelhelix gericht?','Antiparallel',['Parallel','Kruislings, zonder vaste richting','Cirkelvormig'],'De ketens lopen in tegengestelde richting.');
+mc('nu','Wat is het 3\'-einde van een DNA-keten?','Het uiteinde met de sacharide',['Het uiteinde met de fosfaatgroep','Het uiteinde met de base','Het uiteinde met de aminogroep'],'3\': sacharide. 5\': fosfaatgroep.');
+fill('nu','Hoe heet het uiteinde van een DNA-keten met de fosfaatgroep? (bv. 3\'-einde of 5\'-einde)',['5\'-einde','5\'','5','5-einde','5 einde'],'Het 5\'-einde heeft de fosfaatgroep.','5\'-einde');
+mc('nu','Een DNA-streng heeft de volgorde 5\'-ATGCCG-3\'. Wat is de complementaire streng, gelezen van 3\' naar 5\'?','3\'-TACGGC-5\'',['3\'-ATGCCG-5\'','3\'-TAGCCG-5\'','3\'-UACGGC-5\''],'A-T, T-A, G-C, C-G, C-G, G-C. In DNA komt geen U voor.');
+mc('nu','Waar zit de genetische informatie in DNA?','In de volgorde van de nucleotiden (basen)',['In de volgorde van de suikers','In het aantal fosfaatgroepen','In de ruggengraat'],'De opeenvolging van de basen is de code.');
+mc('nu','Wat gebeurt er met de informatie van DNA tijdens de eiwitsynthese?','Ze wordt omgezet naar een volgorde van aminozuren',['Ze wordt omgezet naar een volgorde van vetzuren','Ze wordt omgezet naar glucose','Ze wordt gedenatureerd'],'De basenvolgorde bepaalt de aminozuurvolgorde.');
+mc('nu','Welke uitspraak over RNA klopt?','Enkele streng, met specifieke functies in de eiwitsynthese',['Dubbele helix met thymine','Enkele streng met desoxyribose','Polymeer van aminozuren'],'RNA heeft ribose, uracil en een enkele streng.');
+tf('nu','RNA bevat de base thymine.',false,'RNA bevat uracil, DNA bevat thymine.');
+mc('nu','Uit hoeveel nucleotiden kan een polynucleotide bestaan?','Van 5 tot miljoenen',['Altijd precies 2','Hoogstens 20','Altijd 4'],'Dat bereik staat in de leerstof.');
+tf('nu','In een DNA-streng zijn fosfaatgroep en sacharide covalent gebonden.',true,'Dat vormt de suiker-fosfaat ruggengraat.');
+
+/* --- Overkoepelend --- */
+match('mx','Koppel de biomolecule aan haar bouwsteen.',[['Sachariden (polysachariden)','Monosachariden'],['Proteïnen','Aminozuren'],['Nucleïnezuren','Nucleotiden'],['Triglyceriden','Glycerol en vetzuren']],'Elke biomolecule heeft eigen bouwstenen.');
+mc('mx','Welke reactie vormt een triglyceride, een disacharide en een dipeptide?','Condensatiereactie',['Hydrolyse','Denaturatie','Fotosynthese'],'In alle drie gevallen wordt water afgesplitst.');
+tf('mx','Hydrolyse en condensatie zijn tegengestelde reacties.',true,'Hydrolyse splitst met water, condensatie vormt en splitst water af.');
+match('mx','Koppel de binding of interactie aan waar ze voorkomt.',[['Peptidebinding','Tussen twee aminozuren'],['Waterstofbrug','Tussen watermoleculen'],['S-S-binding','Tertiaire eiwitstructuur'],['Basenparing met H-bruggen','Tussen DNA-strengen']],'Verschillende bindingen in verschillende moleculen.');
+multi('mx','Welke biomoleculen zijn polymeren (ketens van bouwstenen)?',['Polysachariden','Eiwitten','Nucleïnezuren'],['Triglyceriden','Steroïden','Water'],'Triglyceriden en steroïden zijn lipiden, geen polymeren van herhaalde bouwstenen.');
+multi('mx','Welke moleculen bevatten een fosfaatgroep?',['Fosfolipiden','Nucleotiden'],['Triglyceriden','Aminozuren'],'Fosfolipiden en nucleotiden bevatten een fosfaatgroep.');
+multi('mx','Welke moleculen zijn vertakt?',['Glycogeen','Amylopectine'],['Cellulose','Amylose'],'Cellulose en amylose zijn lineair.');
+match('mx','Koppel de energiereserve aan het organisme of de plaats.',[['Glycogeen','Dieren (lever en spieren)'],['Zetmeel','Planten'],['Triglyceriden','Vetcellen en zaden']],'Elk heeft een eigen opslagvorm.');
+mc('mx','Welke molecule vormt het dubbelmembraan van de cel?','Fosfolipiden',['Eiwitketens','DNA','Zetmeel'],'Fosfolipiden met hydrofiele kop en hydrofobe staarten.');
+mc('mx','Welke molecule is nodig om hemoglobine te laten functioneren bij het O₂-transport?','IJzer (Fe)',['Calcium (Ca)','Silicium (Si)','Fosfor (P)'],'Fe in de heemgroep van hemoglobine.');
+
+const WHY={"el-1": ["Ca en P komen maar in kleine fracties voor. De hoofdbestanddelen zijn O, C, H en N.", "Fe en Si komen maar in kleine fracties voor, en H en N ontbreken hier.", "P en Ca zijn kleine fracties en O en C ontbreken hier."], "el-5": ["O₂-transport in het bloed hoort bij ijzer (hemoglobine).", "Collageen heeft silicium als bouwsteen, niet calcium."], "el-6": ["Calcium zit in beenderen, de celwand van planten en prikkelgeleiding.", "IJzer zit in hemoglobine.", "Fosfor zit in biomoleculen zoals nucleïnezuren."], "el-8": ["Lipiden zijn organische moleculen.", "Proteïnen zijn organische moleculen."], "el-9": ["Anorganische zouten zijn anorganisch, geen groep organische moleculen.", "Water is een anorganische molecule."], "wa-1": ["Een watermolecuul heeft deelladingen (δ⁻ en δ⁺), geen volledige positieve lading.", "Water bestaat uit twee soorten atomen (H en O). Polariteit komt uit het ladingsverschil.", "Water heeft enkelvoudige bindingen. Dubbele bindingen hebben hier niets mee te maken."], "wa-2": ["Peptidebindingen zitten tussen aminozuren in eiwitten.", "Ionbindingen vormen tussen volledig geladen ionen, niet tussen watermoleculen.", "Disulfidebruggen (S-S) komen voor in eiwitten."], "wa-3": ["Apolaire moleculen lossen slecht op in water.", "Vetten lossen juist slecht op. Het gaat om polaire moleculen, ionen en polaire groepen.", "Gassen zoals O₂ zijn apolair en lossen slecht op."], "wa-7": ["Genetische informatie zit in DNA, niet in water.", "Biomembranen bestaan uit fosfolipiden, niet uit water."], "wa-9": ["Water heeft juist een hoge specifieke warmtecapaciteit.", "Water is polair, niet apolair.", "Het gaat om de warmtecapaciteit, niet om de dichtheid."], "wa-10": ["Het lymfevatenstelsel komt bij de mens voor, niet bij planten.", "Het bloedvatenstelsel komt bij de mens voor, niet bij planten.", "Een exoskelet is een uitwendig skelet van ongewervelden en vervoert geen water."], "wa-12": ["Condensatie vormt een molecule en splitst water af. Hier wordt gesplitst.", "Denaturatie is het verlies van de 3D-structuur van een eiwit.", "Fotosynthese is geen splitsing van een disacharide."], "ga-2": ["O₂ is apolair en lost slecht op. Het is geen ion en heeft dus een transporteiwit nodig.", "Cellulose is een polysacharide in celwanden en transporteert geen O₂.", "DNA draagt genetische informatie en transporteert geen O₂."], "ga-4": ["Fotosynthese gebruikt CO₂, het maakt het niet. En ze gebeurt niet in de celkern.", "CO₂ ontstaat bij de celademhaling, niet bij eiwitsynthese.", "De opname van water levert geen CO₂."], "ga-6": ["Glucose is een suiker.", "Waterstofperoxide komt hier niet voor.", "Zuurstofgas is O₂, een ander gas."], "ga-7": ["De ionen kloppen, maar het belang is de pH-regeling, niet energieopslag.", "De ionen van koolzuur zijn H⁺ en HCO₃⁻, niet OH⁻ en CO₃²⁻.", "Na⁺ en Cl⁻ zijn de ionen van keukenzout."], "ga-10": ["Koolzuur is H₂CO₃. Het ion HCO₃⁻ is iets anders.", "Carbonzuur is geen naam voor dit ion.", "Het hydroxylion is OH⁻."], "sa-1": ["Dat zijn er te weinig.", "Dat zijn er te veel.", "Dat zijn er veel te veel voor een monosacharide."], "sa-2": ["Sucrose is een disacharide (glucose + fructose).", "Lactose is een disacharide (galactose + glucose).", "Zetmeel is een polysacharide."], "sa-4": ["Eiwitten worden gebouwd uit aminozuren.", "Erfelijke informatie zit in nucleïnezuren.", "Membranen bestaan uit fosfolipiden."], "sa-7": ["Sucrose is tafelsuiker.", "Cellulose is een polysacharide in celwanden van planten.", "Glycogeen is een polysacharide voor energieopslag."], "sa-8": ["Melk bevat lactose, geen sucrose.", "Granen bevatten vooral zetmeel.", "Schimmels leveren geen sucrose."], "sa-9": ["Een waterstofbrug is een zwakke interactie, geen binding binnen een disacharide.", "Ionbindingen komen niet voor tussen monosachariden.", "Peptidebindingen zitten tussen aminozuren."], "sa-10": ["Sucrose is een disacharide.", "Lactose is een disacharide.", "Glucose is een monosacharide."], "sa-15": ["Het is omgekeerd: amylose is lineair en amylopectine is vertakt.", "Cellulose is een ander polysacharide en geen deel van zetmeel.", "Glucose en fructose samen vormen sucrose."], "sa-17": ["Peptidebindingen zitten in eiwitten, niet in cellulose.", "Cellulose is juist onvertakt.", "Dubbele bindingen horen bij onverzadigde vetzuren."], "sa-19": ["Cellulose vormt de celwand van planten en wieren.", "Zetmeel is energieopslag bij planten.", "Glycogeen is energieopslag bij dieren."], "li-1": ["Lipiden zijn grotendeels apolair en dus slecht oplosbaar.", "Lipiden zijn niet geladen, maar apolair.", "Lipiden zijn apolair en lossen daardoor slecht op."], "li-2": ["Polysachariden zijn sachariden.", "Nucleotiden zijn bouwstenen van nucleïnezuren."], "li-3": ["Dat is de opbouw van een fosfolipide.", "Dat is de opbouw van een steroïde.", "Peptidebindingen horen bij eiwitten."], "li-5": ["Dat is een vetzuur.", "Dat beschrijft een steroïde.", "Een aminozuur heeft een aminogroep en een restgroep."], "li-6": ["Dat is glycerol.", "Dat is een aminozuur.", "Dat is een monosacharide."], "li-8": ["Lactose-intolerantie heeft met melksuiker te maken.", "Denaturatie hoort bij eiwitten.", "Een ijzertekort heeft met hemoglobine te maken."], "li-9": ["Dierlijke vetten zijn meestal verzadigd en vast.", "Celwanden van schimmels bestaan uit chitine.", "Onverzadigde triglyceriden komen vooral voor in planten, zaden en vruchten."], "li-10": ["Dat doen fosfolipiden.", "Genetische informatie zit in nucleïnezuren."], "li-14": ["Dat is een triglyceride: 3 vetzuren en geen fosfaatgroep.", "Dat is een steroïde.", "Dat is een nucleotide."], "li-15": ["Triglyceriden dienen voor energieopslag, isolatie en waterafstoting.", "Glycogeen is een polysacharide.", "Nucleotiden vormen DNA en RNA."], "li-17": ["Het binnenste is apolair, niet polair.", "Het dubbelmembraan bestaat uit fosfolipiden, niet uit eiwitketens.", "Cholesterol zit erin, maar het apolaire binnenste komt van de vetzuurstaarten."], "li-19": ["Dat is de opbouw van een triglyceride.", "Dat is een eiwit.", "Dat is een nucleïnezuur."], "li-21": ["Insuline is een eiwit (hormoon).", "Hemoglobine is een eiwit."], "az-1": ["Nucleotiden zijn bouwstenen van nucleïnezuren.", "Monosachariden zijn bouwstenen van sachariden.", "Vetzuren zijn een onderdeel van triglyceriden."], "az-3": ["Een fosfaatgroep zit in nucleotiden en fosfolipiden.", "Glycerol zit in triglyceriden en fosfolipiden."], "az-5": ["De aminogroep is bij alle aminozuren gelijk.", "De carboxygroep is bij alle aminozuren gelijk.", "Het centrale C-atoom is bij alle aminozuren gelijk."], "az-6": ["Dat is geen indeling uit de leerstof.", "Verzadigd en onverzadigd gaat over vetzuren.", "Lineair en vertakt gaat over polysachariden."], "az-8": ["Een waterstofbrug is een zwakke interactie, geen binding tussen aminozuren.", "Ionbindingen horen bij de tertiaire structuur.", "Een glycosidische binding bindt sachariden."], "az-9": ["Hydrolyse splitst. Hier wordt een binding gevormd.", "Fotosynthese vormt geen peptidebinding.", "Denaturatie verbreekt een 3D-structuur."], "az-11": ["Dat is een polynucleotide.", "Dat is een polysacharide.", "Dat is een triglyceride."], "az-12": ["De ligging in de celkern bepaalt de vorm niet.", "Het aantal watermoleculen bepaalt de vorm niet.", "Dubbele bindingen horen bij onverzadigde vetzuren."], "az-15": ["S-S-bindingen horen bij de tertiaire structuur.", "Peptidebindingen horen bij de primaire structuur.", "Interacties tussen subeenheden horen bij de quaternaire structuur."], "az-16": ["De dubbelhelix is de structuur van DNA.", "Quaternair is een ander structuurniveau en geen vorm van de secundaire structuur."], "az-17": ["Peptidebindingen horen bij de primaire structuur.", "Glycosidische bindingen binden sachariden."], "az-18": ["De aminogroepen zitten in de ruggengraat.", "De peptidebindingen vormen de ruggengraat (secundaire structuur).", "Aminozuren hebben geen fosfaatgroepen."], "az-19": ["Dat is de primaire structuur.", "Dat is een vorm van de secundaire structuur.", "Dat is de tertiaire structuur."], "az-22": ["Een vrije carboxygroep zit aan de C-terminus.", "Aminozuren hebben geen fosfaatgroep.", "Een hydroxylgroep is geen uiteinde van de keten."], "ei-2": ["Water denatureert een eiwit niet.", "Substraat is de molecule waarop een enzym werkt, geen denaturatiefactor."], "ei-4": ["Glycogeen speelt hier geen rol.", "Condensatie vormt moleculen en maakt geen ei hard.", "Fotosynthese is een proces bij planten."], "ei-7": ["De celwand van planten bestaat uit cellulose.", "Biomembranen bestaan uit fosfolipiden.", "Het exoskelet bestaat uit chitine."], "ei-8": ["Enzymen splitsen stoffen. Insuline is een hormoon.", "Steroïden zijn lipiden, insuline is een eiwit.", "Transport door het membraan is een andere functie."], "ei-9": ["Energieopslag doen lipiden en sachariden.", "Dat is geen functie van transmembraaneiwitten.", "Dat is geen functie van transmembraaneiwitten."], "en-1": ["Lipiden slaan energie op. Enzymen zijn eiwitten.", "Nucleïnezuren dragen erfelijke informatie.", "Anorganische zouten zijn geen enzymen."], "en-3": ["Verhogen zou de reactie trager maken.", "Een enzym verandert de activeringsenergie wel, namelijk door ze te verlagen.", "De activeringsenergie wordt niet verbruikt maar verlaagd."], "en-7": ["Een gedenatureerd eiwit heeft zijn 3D-structuur verloren.", "Een disacharide ontstaat uit twee monosachariden.", "Een peptidebinding bindt aminozuren."], "en-8": ["Een enzym verwarmt het substraat niet.", "Het substraat wordt omgezet en het enzym wordt niet verbruikt.", "Water toevoegen is geen taak van het actief centrum."], "en-9": ["Apolariteit verklaart de specificiteit niet.", "Substraten zijn niet altijd suikers.", "Enzymen zijn eiwitten, geen nucleïnezuren."], "en-10": ["Water speelt geen rol bij die regulatie.", "DNA kopiëren is geen manier om enzymen te regelen.", "Condensatie en hydrolyse zijn reactietypes."], "en-11": ["Dat doet een enzym zelf, geen inhibitor.", "Een inhibitor vormt geen substraat.", "Een inhibitor splitst het enzym niet."], "en-12": ["Een inhibitor bindt aan het enzym, niet aan het DNA.", "Het enzym wordt geremd, het substraat wordt niet gedenatureerd.", "Water toevoegen remt het enzym niet."], "en-13": ["Het enzym blijft een eiwit.", "Het substraat wordt juist minder omgezet.", "Het enzym wordt geen substraat."], "en-17": ["Lactase breekt lactose af.", "Lipase breekt lipiden af.", "Lysozyme breekt de celwand van bacteriën af."], "en-19": ["Een te hoge temperatuur laat het eiwit denatureren.", "Een enzym wordt geen co-enzym.", "Een enzym wordt geen cofactor, dat is een ion."], "en-20": ["Water maken heeft er niets mee te maken.", "Dan verlopen reacties juist trager.", "DNA maken heeft er niets mee te maken."], "nu-1": ["Aminozuren vormen eiwitten.", "Glucose vormt polysachariden.", "Triglyceriden zijn lipiden."], "nu-3": ["Glycerol zit in triglyceriden.", "Vetzuren zitten in triglyceriden.", "Aminogroep met restgroep hoort bij aminozuren."], "nu-5": ["Uracil zit in RNA.", "Adenine zit in DNA én RNA.", "Cytosine zit in DNA én RNA."], "nu-6": ["Thymine zit in DNA.", "Guanine zit in DNA én RNA.", "Adenine zit in DNA én RNA."], "nu-9": ["Peptidebindingen zitten tussen aminozuren.", "Fosfaatgroepen vormen de ruggengraat binnen één streng.", "Het zijn waterstofbruggen tussen de N-basen."], "nu-11": ["De basen wijzen naar binnen en vormen geen ruggengraat.", "Peptidebindingen horen bij eiwitten.", "Vetzuurstaarten horen bij fosfolipiden."], "nu-12": ["De ketens lopen in tegengestelde richting.", "De richting is vast en tegengesteld.", "De ketens vormen een dubbelhelix, geen cirkel."], "nu-13": ["Dat is het 5'-einde.", "Het 3'-einde heeft de sacharide, niet de base.", "Een aminogroep zit niet in nucleotiden."], "nu-15": ["Dat is dezelfde streng, niet de complementaire.", "De derde en vierde base kloppen niet: G bindt met C en C met G.", "In DNA komt geen U voor. Dat zit in RNA."], "nu-16": ["De suikers zijn bij alle nucleotiden gelijk.", "Het aantal fosfaatgroepen bepaalt de code niet.", "De ruggengraat is overal hetzelfde."], "nu-17": ["De informatie bepaalt aminozuren, geen vetzuren.", "Glucose heeft hier niets mee te maken.", "Denaturatie hoort bij eiwitten."], "nu-18": ["Dubbele helix en thymine zijn kenmerken van DNA.", "Desoxyribose zit in DNA. RNA heeft ribose.", "Een polymeer van aminozuren is een eiwit."], "nu-20": ["Een polynucleotide is langer dan 2 nucleotiden.", "Het kunnen er veel meer zijn.", "Het aantal nucleotiden is veel groter dan het aantal basen (4)."], "mx-2": ["Hydrolyse splitst moleculen.", "Denaturatie hoort bij eiwitten.", "Fotosynthese is een proces bij planten."], "mx-5": ["Triglyceriden bestaan uit glycerol en 3 vetzuren, geen lange keten.", "Steroïden zijn ringmoleculen.", "Water is een klein anorganisch molecule."], "mx-6": ["Triglyceriden hebben geen fosfaatgroep.", "Aminozuren hebben geen fosfaatgroep."], "mx-7": ["Cellulose is onvertakt.", "Amylose is lineair."], "mx-9": ["Eiwitten zitten in het membraan, maar de basis is fosfolipide.", "DNA zit niet in het membraan.", "Zetmeel is energieopslag bij planten."], "mx-10": ["Calcium zit in beenderen.", "Silicium zit in collageen.", "Fosfor zit in nucleïnezuren."]};
+
+/* ============ LOGICA ============ */
+const LS='bio5-t1h2-quiz-v1';
+const ROUND=12;
+let P={};
+try{P=JSON.parse(localStorage.getItem(LS)||'{}')||{}}catch(e){P={}}
+function save(){try{localStorage.setItem(LS,JSON.stringify(P))}catch(e){}}
+const TB={};TOPICS.forEach(t=>TB[t.id]=t);
+const QB={};const cnt={};
+Qs.forEach(q=>{cnt[q.t]=(cnt[q.t]||0)+1;q.id=q.t+'-'+cnt[q.t];QB[q.id]=q;});
+const app=document.getElementById('app');
+const TYPE={mc:'Meerkeuze',tf:'Juist of onjuist',multi:'Meerdere antwoorden juist',fill:'Invullen',match:'Koppelen'};
+
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function h(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html!==undefined)e.innerHTML=html;return e}
+const SUB={'₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9','⁻':'','⁺':''};
+function norm(s){return String(s).toLowerCase().replace(/[₀-₉⁻⁺]/g,c=>SUB[c]).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9αβ]/g,'')}
+function lev(a,b){const m=a.length,n=b.length;if(!m)return n;if(!n)return m;let p=[];for(let j=0;j<=n;j++)p[j]=j;for(let i=1;i<=m;i++){let c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c}return p[n]}
+function stat(ids){let m=0;ids.forEach(id=>{if(P[id]&&P[id].mastered)m++});return {m,n:ids.length}}
+const idsOf=t=>Qs.filter(q=>!t||q.t===t).map(q=>q.id);
+function weakIds(){return Qs.filter(q=>P[q.id]&&P[q.id].wrong>0&&!P[q.id].mastered).map(q=>q.id)}
+
+function correctHTML(q){
+  if(q.type==='mc')return esc(q.opts[0]);
+  if(q.type==='tf')return q.val?'Juist':'Onjuist';
+  if(q.type==='fill')return esc(q.show);
+  if(q.type==='multi')return '<ul>'+q.good.map(g=>'<li>'+esc(g)+'</li>').join('')+'</ul>';
+  return '<ul>'+q.pairs.map(p=>'<li>'+esc(p[0])+' → '+esc(p[1])+'</li>').join('')+'</ul>';
+}
+
+/* ---- widgets ---- */
+function wChoice(q,ctx){
+  const opts=q.type==='tf'?[{text:'Juist',ok:q.val===true},{text:'Onjuist',ok:q.val===false}]:shuffle(q.opts.map((t,i)=>({text:t,ok:i===0,i})));
+  const root=h('div','opts');let sel=null,locked=false;const btns=[];
+  opts.forEach((o,i)=>{
+    const b=h('button','opt','<span class="key">'+(i+1)+'</span><span class="txt">'+esc(o.text)+'</span>');b.type='button';
+    b.onclick=()=>{if(locked)return;sel=o;btns.forEach(x=>x.classList.remove('sel'));b.classList.add('sel');if(!ctx.exam)ctx.submit(api.getRes());else ctx.changed()};
+    btns.push(b);root.appendChild(b)});
+  const api={root,confirm:ctx.exam,ready:()=>sel!==null,
+    getRes:()=>({ok:sel.ok,user:sel.text,why:sel.ok?[]:[q.type==='tf'?'Je koos "'+sel.text+'", maar de stelling is '+(q.val?'juist':'onjuist')+'.':((WHY[q.id]||[])[sel.i-1]||'Dit antwoord klopt niet.')]}),
+    reveal(res){locked=true;btns.forEach((b,i)=>{b.disabled=true;b.classList.remove('sel');if(opts[i].ok)b.classList.add('good');else if(opts[i]===sel)b.classList.add('bad')})},
+    key(n){if(btns[n-1])btns[n-1].click()},focus(){}};
+  return api;
+}
+function wMulti(q,ctx){
+  const opts=shuffle([...q.good.map(t=>({text:t,ok:true})),...q.bad.map((t,bi)=>({text:t,ok:false,bi}))]);
+  const root=h('div','opts');const hint=h('div','hintline','Er zijn '+q.good.length+' juiste antwoorden.');root.appendChild(hint);
+  let locked=false;const btns=[];
+  opts.forEach((o,i)=>{const b=h('button','opt','<span class="key">'+(i+1)+'</span><span class="txt">'+esc(o.text)+'</span>');b.type='button';o.on=false;
+    b.setAttribute('aria-pressed','false');
+    b.onclick=()=>{if(locked)return;o.on=!o.on;b.classList.toggle('sel',o.on);b.setAttribute('aria-pressed',o.on);ctx.changed()};
+    btns.push(b);root.appendChild(b)});
+  return {root,confirm:true,ready:()=>opts.some(o=>o.on),
+    getRes:()=>({ok:opts.every(o=>o.on===o.ok),user:opts.filter(o=>o.on).map(o=>o.text).join(', ')||'(niets)',why:[...opts.filter(o=>o.on&&!o.ok).map(o=>'Je koos "'+o.text+'": '+((WHY[q.id]||[])[o.bi]||'dit hoort er niet bij.')),...opts.filter(o=>!o.on&&o.ok).map(o=>'Je miste "'+o.text+'", dat hoort er wel bij.')]}),
+    reveal(){locked=true;btns.forEach((b,i)=>{b.disabled=true;b.classList.remove('sel');const o=opts[i];if(o.ok&&o.on)b.classList.add('good');else if(o.ok&&!o.on)b.classList.add('missed');else if(!o.ok&&o.on)b.classList.add('bad')})},
+    key(n){if(btns[n-1])btns[n-1].click()},focus(){}};
+}
+function wFill(q,ctx){
+  const root=h('div','fillrow');const inp=h('input');inp.type='text';inp.id='fill-in';inp.autocomplete='off';inp.autocapitalize='off';inp.spellcheck=false;inp.placeholder='Typ je antwoord';
+  inp.setAttribute('aria-label','Antwoord');root.appendChild(inp);
+  inp.addEventListener('input',()=>ctx.changed());
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();ctx.confirmNow()}});
+  return {root,confirm:true,ready:()=>inp.value.trim()!=='',
+    getRes(){const u=norm(inp.value);let ok=false,note='';
+      const acc=q.acc.map(norm);
+      if(acc.includes(u))ok=true;
+      else if(u.length>=6&&acc.some(a=>a.length>=6&&lev(u,a)<=1)){ok=true;note='Bijna perfect geschreven. Juiste spelling: '+q.show+'.'}
+      return {ok,user:inp.value.trim(),note,why:ok?[]:['Je typte "'+inp.value.trim()+'". Dat is niet het gevraagde begrip, of het is te ver van de juiste spelling verwijderd.']}},
+    reveal(res){inp.disabled=true;inp.classList.add(res.ok?'good':'bad')},
+    key(){},focus(){inp.focus()}};
+}
+function wMatch(q,ctx){
+  const rights=shuffle(q.pairs.map(p=>p[1]));
+  const root=h('div','matchrows');const sels=[];
+  q.pairs.forEach((p,i)=>{
+    const row=h('div','mrow');const l=h('div','l',esc(p[0]));
+    const s=h('select');s.id='m-'+i;s.setAttribute('aria-label',p[0]);
+    s.innerHTML='<option value="">Kies...</option>'+rights.map(r=>'<option value="'+esc(r)+'">'+esc(r)+'</option>').join('');
+    s.onchange=()=>ctx.changed();sels.push(s);row.appendChild(l);row.appendChild(s);root.appendChild(row)});
+  return {root,confirm:true,ready:()=>sels.every(s=>s.value!==''),
+    getRes:()=>({ok:sels.every((s,i)=>s.value===q.pairs[i][1]),user:q.pairs.map((p,i)=>p[0]+' → '+sels[i].value).join('; '),why:q.pairs.map((p,i)=>sels[i].value!==p[1]?p[0]+' hoort bij "'+p[1]+'", niet bij "'+sels[i].value+'".':null).filter(Boolean)}),
+    reveal(){sels.forEach((s,i)=>{s.disabled=true;const good=s.value===q.pairs[i][1];s.classList.add(good?'good':'bad');if(!good){const f=h('div','fix','Juist: '+esc(q.pairs[i][1]));s.parentNode.appendChild(f)}})},
+    key(){},focus(){}};
+}
+function makeWidget(q,ctx){return q.type==='fill'?wFill(q,ctx):q.type==='match'?wMatch(q,ctx):q.type==='multi'?wMulti(q,ctx):wChoice(q,ctx)}
+
+/* ---- sessie ---- */
+let S=null,CUR=null;
+function startLearn(ids,label){
+  const rank=id=>{const p=P[id]||{};return p.mastered?3:(p.wrong>0?0:(p.streak>0?1:2))};
+  let pool=shuffle(ids);
+  const open=pool.filter(id=>!(P[id]&&P[id].mastered));
+  let pick;
+  if(open.length){pick=open.sort((a,b)=>rank(a)-rank(b)).slice(0,ROUND)}
+  else pick=pool.slice(0,ROUND);
+  const items=shuffle(pick).map(id=>{const p=P[id]||{};return {id,need:p.mastered?1:Math.max(1,2-(p.streak||0))}});
+  S={mode:'learn',label,scope:ids,queue:items,total:items.length,done:0,first:{},log:[]};
+  showQ();
+}
+function startExam(ids,n,label){
+  const pick=shuffle(ids).slice(0,n);
+  S={mode:'exam',label,scope:ids,queue:pick.map(id=>({id,need:1})),total:pick.length,done:0,first:{},log:[]};
+  showQ();
+}
+function showQ(){
+  if(!S.queue.length){return finish()}
+  const item=S.queue[0],q=QB[item.id];window.scrollTo(0,0);
+  app.innerHTML='';
+  const exam=S.mode==='exam';
+  const top=h('div','topbar');
+  const stop=h('button','btn small','Stoppen');stop.type='button';stop.onclick=()=>{S.mode==='exam'&&S.log.length?finish(true):home()};
+  const bar=h('div','bar','<i style="width:'+Math.round(S.done/S.total*100)+'%"></i>');
+  const n=h('div','n',(exam?(S.done+1)+' / '+S.total:S.done+' / '+S.total+' klaar'));
+  top.append(stop,bar,n);
+  const card=h('div','panel qcard');
+  const meta=h('div','meta','<span class="chip a">'+esc(TB[q.t].title)+'</span><span class="chip">'+TYPE[q.type]+'</span>'+(exam?'<span class="chip">Toets</span>':''));
+  const qt=h('h2','qtext',esc(q.q));
+  const fbBox=h('div');
+  const actions=h('div','actions-row');
+  let locked=false;
+  const ctx={exam,
+    changed:()=>{if(conf)conf.disabled=!w.ready()},
+    submit:res=>{if(locked)return;locked=true;handle(res)},
+    confirmNow:()=>{if(conf&&!conf.disabled)conf.click()}};
+  const w=makeWidget(q,ctx);
+  let conf=null;
+  if(w.confirm){conf=h('button','btn primary',exam?'Bevestig':'Controleer');conf.type='button';conf.disabled=true;
+    conf.onclick=()=>{if(locked||!w.ready())return;locked=true;handle(w.getRes())};actions.appendChild(conf)}
+  card.append(meta,qt,w.root,fbBox,actions);
+  app.append(top,card);
+  CUR={w,q,item};
+  if(w.focus)w.focus();
+  function handle(res){
+    if(conf)conf.disabled=true;
+    const p=P[item.id]||(P[item.id]={streak:0,mastered:false,wrong:0,seen:0});
+    p.seen++;if(S.first[item.id]===undefined)S.first[item.id]=res.ok;
+    S.log.push({id:item.id,ok:res.ok,user:res.user,why:res.why||[]});
+    if(res.ok){p.streak++;if(p.streak>=2)p.mastered=true;item.need--}
+    else{p.streak=0;p.mastered=false;p.wrong++;item.need=2}
+    save();
+    if(exam){S.queue.shift();S.done++;showQ();return}
+    w.reveal(res);
+    const fb=h('div','fb '+(res.ok?'good':'bad'));
+    fb.innerHTML='<div class="h">'+(res.ok?'Juist.':'Niet juist.')+'</div>'+
+      (res.ok&&!res.note?'':'<div class="ans"><b>Juiste antwoord:</b> '+correctHTML(q)+'</div>')+
+      (!res.ok&&res.why&&res.why.length?'<div class="why"><b>Waarom je fout zat:</b><ul>'+res.why.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>':'')+
+      (res.note?'<div>'+esc(res.note)+'</div>':'')+
+      '<div class="ex">'+(res.ok?'':'<b>Uitleg:</b> ')+esc(q.ex)+'</div>'+
+      (res.ok&&item.need>0?'<div class="muted">Nog één keer goed (later in deze ronde) om deze vraag te beheersen.</div>':'')+
+      (!res.ok?'<div class="muted">Deze vraag komt zo terug.</div>':'')+
+      (res.ok&&item.need<=0?'<div class="muted">Beheerst.</div>':'');
+    fbBox.appendChild(fb);
+    const nx=h('button','btn primary','Volgende');nx.type='button';
+    nx.onclick=()=>{S.queue.shift();
+      if(res.ok&&item.need<=0)S.done++;
+      else{const pos=Math.min(S.queue.length,res.ok?4+Math.floor(Math.random()*3):2+Math.floor(Math.random()*2));S.queue.splice(pos,0,item)}
+      showQ()};
+    actions.appendChild(nx);nx.focus();
+  }
+}
+document.addEventListener('keydown',e=>{
+  if(!S||!CUR||e.ctrlKey||e.metaKey||e.altKey)return;
+  const t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='SELECT'))return;
+  if(/^[1-9]$/.test(e.key)&&CUR.w.key)CUR.w.key(+e.key);
+});
+
+function finish(early){
+  CUR=null;window.scrollTo(0,0);app.innerHTML='';
+  const exam=S.mode==='exam';
+  const all=idsOf();const st=stat(all);
+  if(exam){
+    const log=S.log;const ok=log.filter(l=>l.ok).length,n=log.length;
+    const pct=n?Math.round(ok/n*100):0;
+    const head=h('div','panel hero');
+    head.innerHTML='<div class="eyebrow">Toetsresultaat</div><div class="score"><div class="big">'+ok+' <small>/ '+n+'</small></div><div class="big">'+pct+'<small>%</small></div><div class="big">'+(n?(ok/n*20).toFixed(1).replace('.',','):'0')+'<small> / 20</small></div></div><p>'+(pct>=90?'Sterk. Zorg dat de fouten hieronder de volgende keer wel zitten.':pct>=70?'Goed op weg. Oefen de gemiste vragen en doe de toets opnieuw.':'Er is nog werk. Oefen de gemiste vragen in de oefenmodus en bekijk de theorie van de onderwerpen waar je fouten maakte.')+'</p>';
+    const acts=h('div','actions-row');
+    const wrong=log.filter(l=>!l.ok).map(l=>l.id);
+    if(wrong.length){const b=h('button','btn primary','Fouten oefenen ('+wrong.length+')');b.onclick=()=>startLearn(wrong,'Fouten uit toets');acts.appendChild(b)}
+    const again=h('button','btn','Nieuwe toets');again.onclick=()=>startExam(S.scope,S.total,S.label);
+    const bk=h('button','btn','Overzicht');bk.onclick=home;
+    acts.append(again,bk);head.appendChild(acts);
+    app.appendChild(head);
+    app.appendChild(h('h3',null,'Antwoorden'));
+    const rev=h('div','rev');
+    log.slice().sort((a,b)=>a.ok-b.ok).forEach(l=>rev.appendChild(reviewItem(l)));
+    app.appendChild(rev);
+  }else{
+    const total=S.total;const first=Object.values(S.first).filter(Boolean).length;
+    const head=h('div','panel hero');
+    head.innerHTML='<div class="eyebrow">Ronde klaar</div><div class="score"><div class="big">'+first+' <small>/ '+total+' meteen goed</small></div><div class="big">'+st.m+' <small>/ '+st.n+' beheerst</small></div></div><div class="bar"><i style="width:'+Math.round(st.m/st.n*100)+'%"></i></div>';
+    const acts=h('div','actions-row');
+    const nextOpen=S.scope.filter(id=>!(P[id]&&P[id].mastered)).length;
+    const nb=h('button','btn primary',nextOpen?'Volgende ronde ('+nextOpen+' open)':'Alles hier beheerst. Herhaal');
+    nb.onclick=()=>startLearn(S.scope,S.label);
+    const bk=h('button','btn','Overzicht');bk.onclick=home;
+    acts.append(nb,bk);head.appendChild(acts);app.appendChild(head);
+    const missed=[...new Set(S.log.filter(l=>!l.ok).map(l=>l.id))];
+    if(missed.length){
+      app.appendChild(h('h3',null,'Hier ging het fout'));
+      const rev=h('div','rev');
+      missed.forEach(id=>rev.appendChild(reviewItem({id,ok:false,user:null})));
+      app.appendChild(rev);
+    }
+  }
+}
+function reviewItem(l){
+  const q=QB[l.id];const d=h('details','r '+(l.ok?'ok':'no'));
+  if(!l.ok)d.open=true;
+  d.innerHTML='<summary><span class="mark">'+(l.ok?'✓':'✗')+'</span><span>'+esc(q.q)+'</span></summary><div class="body">'+
+    (l.user!==null&&!l.ok?'<div><b>Jouw antwoord:</b> '+esc(l.user)+'</div>':'')+
+    '<div><b>Juist:</b> '+correctHTML(q)+'</div>'+(!l.ok&&l.why&&l.why.length?'<div class="why"><b>Waarom fout:</b><ul>'+l.why.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>':'')+'<div class="muted">'+esc(q.ex)+'</div></div>';
+  return d;
+}
+
+/* ---- schermen ---- */
+function theory(tid){
+  window.scrollTo(0,0);app.innerHTML='';CUR=null;
+  const t=TB[tid];
+  const top=h('div','topbar');const back=h('button','btn small','Overzicht');back.onclick=home;top.appendChild(back);
+  const p=h('div','panel theory');
+  p.innerHTML='<div class="eyebrow">'+esc(t.tag)+'</div><h2>'+esc(t.title)+'</h2><ul>'+t.sum.map(s=>'<li>'+s+'</li>').join('')+'</ul>';
+  const acts=h('div','actions-row');
+  const go=h('button','btn primary','Oefen dit onderwerp ('+cnt[tid]+' vragen)');go.onclick=()=>startLearn(idsOf(tid),t.title);
+  acts.appendChild(go);p.appendChild(acts);
+  app.append(top,p);
+}
+function home(){
+  S=null;CUR=null;window.scrollTo(0,0);app.innerHTML='';
+  const all=idsOf();const st=stat(all);const pct=Math.round(st.m/st.n*100);
+  const back=h('a','back','← Alle vakken');back.href='../#biologie';app.appendChild(back);
+  const hero=h('div','panel hero');
+  hero.innerHTML='<div class="eyebrow">BIO5 · Thema 1 · Hoofdstuk 2</div><h1>Chemische samenstelling van het leven</h1><p>'+all.length+' vragen over alle slides, van elementen tot DNA. Een vraag telt als beheerst na twee keer na elkaar juist. Een fout zet hem terug op nul en hij komt in dezelfde ronde terug.</p>';
+  app.appendChild(hero);
+
+  const m=h('div','panel mastery');
+  m.innerHTML='<div class="mastery-top"><div class="big">'+st.m+' <small>/ '+st.n+' beheerst</small></div><div class="muted">'+pct+'% van de leerstof</div></div><div class="bar"><i style="width:'+pct+'%"></i></div>';
+  const acts=h('div','row');
+  const a1=h('button','btn primary',st.m===st.n?'Alles herhalen':'Alles oefenen');a1.onclick=()=>startLearn(all,'Alle onderwerpen');
+  const wk=weakIds();
+  const a2=h('button','btn','Zwakke punten ('+wk.length+')');a2.disabled=!wk.length;a2.onclick=()=>startLearn(wk,'Zwakke punten');
+  const a3=h('button','btn small','Voortgang wissen');let armed=false,tm;
+  a3.onclick=()=>{if(!armed){armed=true;a3.textContent='Zeker weten? Klik nogmaals';tm=setTimeout(()=>{armed=false;a3.textContent='Voortgang wissen'},4000)}else{clearTimeout(tm);P={};save();home()}};
+  acts.append(a1,a2,a3);m.appendChild(acts);app.appendChild(m);
+
+  const ex=h('div','panel');
+  ex.innerHTML='<h3>Toets</h3><p class="muted" style="margin:4px 0 14px">Zonder uitleg tijdens het maken. Resultaat en uitleg achteraf.</p>';
+  const grid=h('div','exam');
+  const f1=h('div','field','<label for="ex-scope">Onderwerp</label>');
+  const s1=h('select');s1.id='ex-scope';s1.innerHTML='<option value="">Alles</option>'+TOPICS.map(t=>'<option value="'+t.id+'">'+esc(t.title)+'</option>').join('');f1.appendChild(s1);
+  const f2=h('div','field','<label for="ex-n">Aantal vragen</label>');
+  const s2=h('select');s2.id='ex-n';s2.innerHTML='<option value="10">10</option><option value="20" selected>20</option><option value="40">40</option><option value="999">Alle</option>';f2.appendChild(s2);
+  const go=h('button','btn primary','Start toets');go.onclick=()=>{const ids=idsOf(s1.value);startExam(ids,Math.min(+s2.value,ids.length),s1.value?TB[s1.value].title:'Alle onderwerpen')};
+  grid.append(f1,f2,go);ex.appendChild(grid);app.appendChild(ex);
+
+  app.appendChild(h('h3',null,'Per onderwerp'));
+  const tg=h('div','topics');
+  TOPICS.forEach(t=>{
+    const ids=idsOf(t.id);const s=stat(ids);
+    const c=h('div','panel topic'+(s.m===s.n?' done':''));
+    c.innerHTML='<div><div class="tag">'+esc(t.tag)+'</div><h3>'+esc(t.title)+'</h3></div><div><div class="count"><span>'+s.m+' / '+s.n+' beheerst</span><span>'+Math.round(s.m/s.n*100)+'%</span></div><div class="bar thin"><i style="width:'+Math.round(s.m/s.n*100)+'%"></i></div></div>';
+    const ac=h('div','actions');
+    const b1=h('button','btn small','Theorie');b1.onclick=()=>theory(t.id);
+    const b2=h('button','btn small primary',s.m===s.n?'Herhalen':'Oefenen');b2.onclick=()=>startLearn(ids,t.title);
+    ac.append(b1,b2);c.appendChild(ac);tg.appendChild(c);
+  });
+  app.appendChild(tg);
+}
+home();
+</script>
+</body>
+</html>
