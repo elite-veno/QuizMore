@@ -1,0 +1,1603 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Elektrostatica Studielab · QuizMore</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap">
+<style>
+/* Studiegids: vaste zijbalk met de lessenreeks, rechts het werkblad met uitleg, simulatie en controlevragen.
+   Ladingen houden de kleuren van het handboek: rood = positief, blauw = negatief. Groen = resultante. */
+:root{
+  --bg:#F1F4F9; --surface:#FFFFFF; --sunk:#E7ECF4; --ink:#12203A; --ink2:#4B5A78; --line:#D3DBE8;
+  --accent:#5B34B8; --accent-ink:#FFFFFF; --accent-soft:#ECE6FA;
+  --pos:#D63A2A; --neg:#2459D6; --res:#0C8A5C; --warn:#9A5B00; --bad:#C0283C; --good:#0C8A5C;
+  --pos-soft:#FBE4E0; --neg-soft:#E0E9FB; --res-soft:#DDF3EA; --warn-soft:#FBEFD6; --bad-soft:#FBE1E5;
+  --shadow:0 1px 2px rgba(18,32,58,.06),0 8px 24px rgba(18,32,58,.06);
+  --font:'Schibsted Grotesk',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0D1322; --surface:#151D33; --sunk:#1B2540; --ink:#E7ECF8; --ink2:#9DAAC8; --line:#2A3558;
+  --accent:#B39DFF; --accent-ink:#140B33; --accent-soft:#2A2250;
+  --pos:#FF6B58; --neg:#6E9DFF; --res:#3DDC9F; --warn:#F0B35A; --bad:#FF7A8C; --good:#3DDC9F;
+  --pos-soft:#3A1E24; --neg-soft:#1D2B52; --res-soft:#12362B; --warn-soft:#3A2D14; --bad-soft:#3F1C26;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.3); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D1322; --surface:#151D33; --sunk:#1B2540; --ink:#E7ECF8; --ink2:#9DAAC8; --line:#2A3558;
+  --accent:#B39DFF; --accent-ink:#140B33; --accent-soft:#2A2250;
+  --pos:#FF6B58; --neg:#6E9DFF; --res:#3DDC9F; --warn:#F0B35A; --bad:#FF7A8C; --good:#3DDC9F;
+  --pos-soft:#3A1E24; --neg-soft:#1D2B52; --res-soft:#12362B; --warn-soft:#3A2D14; --bad-soft:#3F1C26;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.3); color-scheme:dark}
+
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{margin:0;font-family:var(--font);font-size:16px;line-height:1.6;background:var(--bg);color:var(--ink);-webkit-text-size-adjust:100%}
+sup,sub{line-height:0}
+button,input,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:6px}
+
+.app{display:grid;grid-template-columns:288px minmax(0,1fr);min-height:100vh}
+.side{position:sticky;top:env(safe-area-inset-top,0px);align-self:start;max-height:100vh;overflow-y:auto;
+  background:var(--surface);border-right:1px solid var(--line);padding:20px 14px 28px;display:flex;flex-direction:column;gap:18px}
+.brand{display:flex;flex-direction:column;gap:2px;padding:0 8px}
+.brand b{font-size:1.15rem;font-weight:800;letter-spacing:-.01em}
+.brand span{font-size:.8rem;color:var(--ink2)}
+.prog{padding:0 8px}
+.prog .bar{height:8px;border-radius:99px;background:var(--sunk);overflow:hidden}
+.prog .bar i{display:block;height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .4s}
+.prog small{display:block;margin-top:6px;color:var(--ink2);font-size:.78rem}
+.navgroup{display:flex;flex-direction:column;gap:2px}
+.navgroup h4{margin:0 8px 6px;font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:var(--ink2);font-weight:700}
+.navbtn{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:9px;cursor:pointer;color:var(--ink);font-size:.93rem;line-height:1.3}
+.navbtn:hover{background:var(--sunk)}
+.navbtn[aria-current="page"]{background:var(--accent-soft);color:var(--accent);font-weight:700}
+.navbtn .no{font-family:var(--mono);font-size:.75rem;color:var(--ink2);min-width:2.1em}
+.navbtn[aria-current="page"] .no{color:var(--accent)}
+.navbtn .tick{margin-left:auto;width:16px;height:16px;border-radius:50%;border:2px solid var(--line);flex:none}
+.navbtn.done .tick{background:var(--good);border-color:var(--good);position:relative}
+.navbtn.done .tick::after{content:"";position:absolute;left:4px;top:1px;width:4px;height:8px;border:solid var(--surface);border-width:0 2px 2px 0;transform:rotate(45deg)}
+.exgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;padding:0 8px}
+.exgrid button{border:1.5px solid var(--line);background:var(--surface);border-radius:8px;padding:6px 0;font-family:var(--mono);font-size:.82rem;cursor:pointer}
+.exgrid button:hover{border-color:var(--accent)}
+.exgrid button[aria-current="page"]{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:700}
+.exgrid button.done{background:var(--good);border-color:var(--good);color:var(--surface)}
+
+.top{display:none}
+.scrim{display:none}
+.main{min-width:0;padding-block:32px 72px;padding-inline:clamp(16px,4vw,48px)}
+.page{max-width:900px;margin-inline:auto;display:flex;flex-direction:column;gap:28px}
+.page > *{min-width:0}
+
+h1{font-size:clamp(1.9rem,4.4vw,2.7rem);line-height:1.1;margin:0;font-weight:800;letter-spacing:-.025em;text-wrap:balance}
+h2{font-size:1.4rem;line-height:1.25;margin:0;font-weight:700;letter-spacing:-.01em;text-wrap:balance}
+h3{font-size:1.05rem;margin:0;font-weight:700}
+p{margin:0;max-width:68ch}
+.kicker{font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700;color:var(--accent);margin-bottom:8px}
+.lead{font-size:1.12rem;color:var(--ink2);max-width:62ch}
+.sec{display:flex;flex-direction:column;gap:14px}
+.pos{color:var(--pos);font-weight:700}.neg{color:var(--neg);font-weight:700}.res{color:var(--res);font-weight:700}
+ul.clean{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:6px;max-width:68ch}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+.focus{background:var(--res-soft);border:1px solid color-mix(in srgb,var(--res) 35%,transparent);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.focus>.tag,.note>.tag{align-self:flex-start;font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;background:var(--res);color:var(--surface);padding:2px 9px;border-radius:99px}
+.note{background:var(--accent-soft);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.note>.tag{background:var(--accent);color:var(--accent-ink)}
+.warnbox{background:var(--warn-soft);border-radius:12px;padding:14px 18px;color:var(--ink);display:flex;flex-direction:column;gap:6px}
+.warnbox>.tag{align-self:flex-start;font-size:.7rem;font-weight:800;letter-spacing:.1em;text-transform:uppercase;background:var(--warn);color:var(--surface);padding:2px 9px;border-radius:99px}
+
+.formula{font-family:var(--mono);font-size:1.05rem;text-align:center;line-height:2.1;padding:6px 0;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;text-align:center;line-height:1.25}
+.frac>span:first-child{padding:0 .3em .1em;border-bottom:1.5px solid currentColor}
+.frac>span:last-child{padding:.1em .3em 0}
+.legend{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:.92rem;align-items:baseline}
+.legend dt{font-family:var(--mono);font-weight:600}.legend dd{margin:0;color:var(--ink2)}
+
+.sim{background:var(--surface);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+.sim>header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.sim>header b{font-size:.95rem}
+.sim>header span{font-size:.82rem;color:var(--ink2)}
+.stage{position:relative;width:100%;background:var(--sunk)}
+.stage canvas{display:block;touch-action:none;max-width:100%}
+.controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px 22px;padding:14px 16px;border-top:1px solid var(--line)}
+.ctl{display:flex;flex-direction:column;gap:4px;min-width:0}
+.ctl label,.ctl .lab{font-size:.82rem;font-weight:600;color:var(--ink2);display:flex;justify-content:space-between;gap:8px}
+.ctl output{font-family:var(--mono);color:var(--ink);font-weight:600}
+input[type=range]{width:100%;accent-color:var(--accent);height:28px;margin:0}
+.btnrow{display:flex;flex-wrap:wrap;gap:8px}
+.btn{border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 14px;cursor:pointer;font-weight:600;font-size:.9rem;min-height:40px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.btn.p{border-color:var(--pos);color:var(--pos)}.btn.p.on{background:var(--pos-soft)}
+.btn.n{border-color:var(--neg);color:var(--neg)}.btn.n.on{background:var(--neg-soft)}
+.btn[disabled]{opacity:.45;cursor:not-allowed}
+select,input[type=text]{border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:8px 10px;min-height:40px;width:100%;min-width:0}
+.readout{padding:12px 16px;border-top:1px solid var(--line);font-size:.95rem}
+.readout>div+div{margin-top:6px}
+.readout .big{font-family:var(--mono);font-size:1.15rem;font-weight:600}
+.badge{display:inline-block;padding:2px 10px;border-radius:99px;font-size:.8rem;font-weight:700}
+.badge.pos{background:var(--pos-soft);color:var(--pos)}.badge.neg{background:var(--neg-soft);color:var(--neg)}.badge.res{background:var(--res-soft);color:var(--res)}
+.badge.zero{background:var(--sunk);color:var(--ink2)}
+.tablewrap{overflow-x:auto;max-width:100%}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--ink2)}
+td.mono{white-space:nowrap}
+
+.checks{display:flex;flex-direction:column;gap:18px;border-top:2px solid var(--ink);padding-top:16px}
+.checks>h2{font-size:1.1rem}
+.q{display:flex;flex-direction:column;gap:10px}
+.q p.qt{font-weight:600}
+.opts{display:flex;flex-direction:column;gap:8px;max-width:640px}
+.opt{display:flex;gap:10px;align-items:flex-start;text-align:left;border:1.5px solid var(--line);background:var(--surface);border-radius:10px;padding:10px 14px;cursor:pointer;line-height:1.4}
+.opt:hover:not([disabled]){border-color:var(--accent)}
+.opt .k{font-family:var(--mono);font-size:.78rem;color:var(--ink2);padding-top:2px}
+.opt.ok{border-color:var(--good);background:var(--res-soft)}
+.opt.no{border-color:var(--bad);background:var(--bad-soft)}
+.why{font-size:.93rem;padding:10px 14px;border-radius:10px;background:var(--sunk);max-width:640px}
+.why b.ok{color:var(--good)}.why b.no{color:var(--bad)}
+.pager{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:18px}
+
+.tribo{display:grid;grid-template-columns:minmax(150px,200px) minmax(0,1fr);gap:18px;padding:16px}
+.ladder{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface)}
+.ladder .cap{font-size:.72rem;padding:6px 10px;color:var(--ink2);background:var(--sunk);text-align:center;font-weight:600}
+.ladder button{border:0;border-top:1px solid var(--line);background:var(--surface);padding:6px 10px;text-align:left;cursor:pointer;font-size:.88rem;display:flex;justify-content:space-between;gap:8px}
+.ladder button:hover{background:var(--sunk)}
+.ladder button .ab{font-family:var(--mono);font-weight:700;color:var(--accent)}
+.ladder button.selA,.ladder button.selB{background:var(--accent-soft);font-weight:700}
+.rubarea{display:flex;flex-direction:column;gap:14px;min-width:0}
+.blocks{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.blk{border:1.5px solid var(--line);border-radius:14px;padding:14px;min-height:120px;position:relative;background:var(--surface);display:flex;flex-direction:column;gap:8px}
+.blk b{font-size:1rem}
+.blk .sym{display:flex;flex-wrap:wrap;gap:4px;min-height:26px}
+.sym i{font-style:normal;font-family:var(--mono);font-weight:800;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:.95rem;animation:pop .35s}
+.sym i.p{background:var(--pos-soft);color:var(--pos)}.sym i.n{background:var(--neg-soft);color:var(--neg)}
+@keyframes pop{from{transform:scale(.2);opacity:0}to{transform:scale(1);opacity:1}}
+
+.exhead{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.lvl{font-size:.75rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:99px;background:var(--sunk);color:var(--ink2)}
+.lvl.m{background:var(--warn-soft);color:var(--warn)}.lvl.h{background:var(--bad-soft);color:var(--bad)}.lvl.b{background:var(--res-soft);color:var(--res)}
+.problem{font-size:1.05rem;max-width:68ch;padding:16px 18px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+.answers{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.ans{display:flex;flex-direction:column;gap:6px}
+.ans .lab{font-size:.85rem;font-weight:600;color:var(--ink2)}
+.ans .row{display:flex;gap:8px;align-items:center}
+.ans .unit{font-family:var(--mono);color:var(--ink2);white-space:nowrap}
+.ans .fb{font-size:.85rem;min-height:1.2em}
+.ans.ok input,.ans.ok select{border-color:var(--good)}.ans.ok .fb{color:var(--good)}
+.ans.no input,.ans.no select{border-color:var(--bad)}.ans.no .fb{color:var(--bad)}
+.step{border-left:3px solid var(--accent);padding:4px 0 4px 16px;display:flex;flex-direction:column;gap:6px;animation:pop .3s}
+.step h3{font-size:.98rem}
+.step .calc{font-family:var(--mono);font-size:.92rem;background:var(--sunk);padding:8px 12px;border-radius:8px;overflow-x:auto;max-width:100%;font-variant-numeric:tabular-nums}
+.step p{font-size:.95rem}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px;text-align:left;cursor:pointer;color:inherit}
+.card:hover{border-color:var(--accent);box-shadow:var(--shadow)}
+.card .n{font-family:var(--mono);font-size:.8rem;color:var(--ink2)}
+.card b{font-size:1rem;line-height:1.3}
+.card small{color:var(--ink2);font-size:.85rem}
+.card.done{border-color:var(--good)}
+.score{font-size:2.4rem;font-weight:800;font-family:var(--mono)}
+.qprog{height:6px;border-radius:99px;background:var(--sunk);overflow:hidden}.qprog i{display:block;height:100%;background:var(--accent);transition:width .3s}
+
+@media (max-width:860px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .side{position:fixed;z-index:30;left:0;top:0;bottom:0;width:min(86vw,320px);max-height:none;transform:translateX(-102%);transition:transform .25s;
+    padding-top:calc(20px + env(safe-area-inset-top,0px));box-shadow:var(--shadow)}
+  body.menu .side{transform:none}
+  .scrim{display:none}
+  body.menu .scrim{display:block;position:fixed;inset:0;background:rgba(10,15,30,.5);z-index:20}
+  .top{display:flex;align-items:center;gap:12px;position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--surface);border-bottom:1px solid var(--line);padding:10px 16px}
+  .top b{font-weight:800}
+  .main{padding-block:22px 64px}
+  .tribo{grid-template-columns:minmax(0,1fr)}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.backlink{font-size:.85rem;font-weight:600;color:var(--accent);text-decoration:none;padding:0 8px}
+.backlink:hover{text-decoration:underline}
+.top .backlink{margin-left:auto;padding:0}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side" id="side" aria-label="Lessen">
+    <a class="backlink" href="../#fysica">← Alle vakken</a>
+    <div class="brand"><b>Elektrostatica Studielab</b><span>Hoofdstuk 1 Ladingen en hoofdstuk 2 Krachten</span></div>
+    <div class="prog"><div class="bar"><i id="progbar"></i></div><small id="progtxt"></small></div>
+    <nav id="nav" style="display:flex;flex-direction:column;gap:18px"></nav>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+  <div style="min-width:0">
+    <div class="top"><button class="btn" id="menubtn" aria-label="Open menu">Menu</button><b id="topttl">Studielab</b><a class="backlink" href="../#fysica">← Vakken</a></div>
+    <main class="main"><div class="page" id="view"></div></main>
+  </div>
+</div>
+<script>
+/* ===== Kern ===== */
+const K = 8.99e9;
+const E_CH = 1.6e-19;
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+const view = () => $('#view');
+
+/* getallen in Nederlandse notatie */
+function dec(v) { return String(v).replace('.', ',').replace('-', '−'); }
+function sci(x, sig = 3) {
+  if (x === 0) return '0';
+  let e = Math.floor(Math.log10(Math.abs(x)));
+  let m = +(x / Math.pow(10, e)).toPrecision(sig);
+  if (Math.abs(m) >= 10) { m = +(m / 10).toPrecision(sig); e += 1; }
+  return dec(m) + '·10<sup>' + String(e).replace('-', '−') + '</sup>';
+}
+function fmt(x, sig = 3) {
+  if (x === 0) return '0';
+  const a = Math.abs(x);
+  if (a < 1e-2 || a >= 1e5) return sci(x, sig);
+  return dec(+x.toPrecision(sig));
+}
+function plain(x, sig = 3) { return fmt(x, sig).replace(/<[^>]+>/g, ''); }
+function deg(x, d = 1) { return dec((+x).toFixed(d)) + '°'; }
+function sgn(x, sig = 2) { return (x > 0 ? '+' : '') + dec(+x.toPrecision(sig)); }
+const SUB = ['₀', '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉'];
+const sub = n => String(n).split('').map(c => SUB[+c]).join('');
+function frac(n, d) { return '<span class="frac"><span>' + n + '</span><span>' + d + '</span></span>'; }
+function parseNum(s) {
+  if (s == null) return NaN;
+  s = String(s).trim().replace(/\s+/g, '').replace(/−/g, '-').replace(',', '.');
+  let m = s.match(/^(-?[\d.]+)(?:[*x·×]10\^?\(?(-?\d+)\)?)$/i);
+  if (m) return parseFloat(m[1]) * Math.pow(10, parseInt(m[2], 10));
+  m = s.match(/^(-?[\d.]+)e(-?\d+)$/i);
+  if (m) return parseFloat(m[1]) * Math.pow(10, parseInt(m[2], 10));
+  return /^-?[\d.]+$/.test(s) ? parseFloat(s) : NaN;
+}
+
+/* opslag (veilig) */
+const store = {
+  mem: {},
+  get(k) { try { const v = localStorage.getItem('estat-' + k); return v ? JSON.parse(v) : (this.mem[k] || null); } catch (e) { return this.mem[k] || null; } },
+  set(k, v) { this.mem[k] = v; try { localStorage.setItem('estat-' + k, JSON.stringify(v)); } catch (e) { } }
+};
+let progress = store.get('progress') || {};
+function markDone(id) {
+  if (progress[id]) return;
+  progress[id] = 1; store.set('progress', progress); updateNav();
+}
+
+/* thema-kleuren voor canvas */
+const redraws = new Set();
+function colors() {
+  const s = getComputedStyle(document.documentElement);
+  const g = n => s.getPropertyValue(n).trim();
+  return { pos: g('--pos'), neg: g('--neg'), res: g('--res'), ink: g('--ink'), ink2: g('--ink2'), line: g('--line'), sunk: g('--sunk'),
+    surface: g('--surface'), accent: g('--accent'), warn: g('--warn'), bad: g('--bad'), posSoft: g('--pos-soft'), negSoft: g('--neg-soft'), font: g('--font'), mono: g('--mono') };
+}
+try { matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => redraws.forEach(f => f())); } catch (e) { }
+new MutationObserver(() => redraws.forEach(f => f())).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+let cleanups = [];
+const onCleanup = fn => cleanups.push(fn);
+function runCleanups() { cleanups.forEach(f => { try { f(); } catch (e) { } }); cleanups = []; }
+
+function setupCanvas(wrap, o) {
+  const cv = document.createElement('canvas');
+  wrap.appendChild(cv);
+  const api = { cv, w: 0, h: 0, dpr: 1, ctx: cv.getContext('2d') };
+  function redraw() {
+    const c = api.ctx;
+    c.setTransform(api.dpr, 0, 0, api.dpr, 0, 0);
+    c.clearRect(0, 0, api.w, api.h);
+    o.draw(c, api.w, api.h, colors(), api);
+  }
+  function resize() {
+    const w = Math.max(200, wrap.clientWidth);
+    const h = Math.max(o.minH || 200, Math.round(w * (o.aspect || .5)));
+    api.dpr = Math.min(window.devicePixelRatio || 1, 2);
+    cv.width = Math.round(w * api.dpr); cv.height = Math.round(h * api.dpr);
+    cv.style.width = w + 'px'; cv.style.height = h + 'px';
+    api.w = w; api.h = h; redraw();
+  }
+  api.redraw = redraw;
+  const ro = new ResizeObserver(() => { if (Math.abs(wrap.clientWidth - api.w) > 1) resize(); });
+  ro.observe(wrap);
+  redraws.add(redraw);
+  onCleanup(() => { ro.disconnect(); redraws.delete(redraw); });
+  resize();
+  return api;
+}
+function pointer(cv, e) {
+  const r = cv.getBoundingClientRect();
+  return { x: e.clientX - r.left, y: e.clientY - r.top };
+}
+function animate(fn) {
+  let id = 0, last = performance.now(), on = true;
+  const loop = t => { if (!on) return; const dt = Math.min(.05, (t - last) / 1000); last = t; fn(dt, t / 1000); id = requestAnimationFrame(loop); };
+  id = requestAnimationFrame(loop);
+  onCleanup(() => { on = false; cancelAnimationFrame(id); });
+}
+
+/* tekenhulp */
+function arrow(c, x0, y0, x1, y1, col, lw = 3, head = 10) {
+  const dx = x1 - x0, dy = y1 - y0, L = Math.hypot(dx, dy);
+  if (L < 2) return;
+  const ux = dx / L, uy = dy / L, hh = Math.min(head, L * .6);
+  c.strokeStyle = col; c.fillStyle = col; c.lineWidth = lw; c.lineCap = 'round';
+  c.beginPath(); c.moveTo(x0, y0); c.lineTo(x1 - ux * hh * .7, y1 - uy * hh * .7); c.stroke();
+  c.beginPath(); c.moveTo(x1, y1);
+  c.lineTo(x1 - ux * hh + uy * hh * .5, y1 - uy * hh - ux * hh * .5);
+  c.lineTo(x1 - ux * hh - uy * hh * .5, y1 - uy * hh + ux * hh * .5);
+  c.closePath(); c.fill();
+}
+function charge(c, x, y, r, q, C, label) {
+  const col = q > 0 ? C.pos : q < 0 ? C.neg : C.ink2;
+  c.beginPath(); c.arc(x, y, r, 0, 7); c.fillStyle = col; c.fill();
+  c.strokeStyle = C.surface; c.lineWidth = 2; c.stroke();
+  c.fillStyle = '#fff'; c.font = '800 ' + Math.round(r * 1.2) + 'px ' + C.mono; c.textAlign = 'center'; c.textBaseline = 'middle';
+  c.fillText(q > 0 ? '+' : q < 0 ? '−' : '0', x, y + 1);
+  if (label) { c.fillStyle = C.ink; c.font = '600 13px ' + C.font; c.fillText(label, x, y - r - 11); }
+}
+function txt(c, s, x, y, col, size = 13, align = 'center', weight = 600, mono = false) {
+  c.fillStyle = col; c.font = weight + ' ' + size + 'px ' + (mono ? colors().mono : colors().font);
+  c.textAlign = align; c.textBaseline = 'middle'; c.fillText(s, x, y);
+}
+
+/* controlevragen */
+function checksHTML(id, list, title = 'Controleer jezelf') {
+  return '<section class="checks" data-checks="' + id + '"><h2>' + title + '</h2>' + list.map((q, i) =>
+    '<div class="q" data-i="' + i + '"><p class="qt">' + q.q + '</p><div class="opts">' + q.o.map((o, j) =>
+      '<button class="opt" data-j="' + j + '"><span class="k">' + 'ABCD'[j] + '</span><span>' + o + '</span></button>').join('') +
+    '</div><div class="why" hidden></div></div>').join('') + '</section>';
+}
+function bindChecks(root, id, list) {
+  const sec = $('[data-checks="' + id + '"]', root);
+  if (!sec) return;
+  const ok = new Set();
+  $$('.q', sec).forEach(qe => {
+    const i = +qe.dataset.i, q = list[i], why = $('.why', qe);
+    $$('.opt', qe).forEach(b => b.addEventListener('click', () => {
+      if (qe.classList.contains('solved')) return;
+      const j = +b.dataset.j;
+      if (j === q.a) {
+        b.classList.add('ok'); qe.classList.add('solved'); ok.add(i);
+        $$('.opt', qe).forEach(x => x.disabled = true);
+        why.hidden = false; why.innerHTML = '<b class="ok">Juist.</b> ' + q.w;
+        if (ok.size === list.length) markDone(id);
+      } else {
+        b.classList.add('no'); b.disabled = true;
+        why.hidden = false; why.innerHTML = '<b class="no">Nog niet.</b> ' + (q.hint || 'Denk nog eens na en probeer opnieuw.');
+      }
+    }));
+  });
+}
+
+/* pagina-register */
+const PAGES = [];
+function addPage(p) { PAGES.push(p); }
+/* ===== Hoofdstuk 1, deel A ===== */
+function head(kicker, title, lead) {
+  return '<header><div class="kicker">' + kicker + '</div><h1>' + title + '</h1>' + (lead ? '<p class="lead" style="margin-top:12px">' + lead + '</p>' : '') + '</header>';
+}
+const H1 = 'Hoofdstuk 1 · Ladingen', H2 = 'Hoofdstuk 2 · Krachten tussen ladingen';
+
+/* ---------- 1.1 Lading in materie ---------- */
+addPage({ id: 'l11', group: 'h1', no: '1.1', title: 'Lading in materie', render(root) {
+  const checks = [
+    { q: 'Een atoom heeft 11 protonen en 10 elektronen. Wat is het?', o: ['Een neutraal atoom', 'Een positief ion', 'Een negatief ion'], a: 1,
+      w: 'Er is 1 elektron te weinig, dus het atoom is positief geladen (+e).', hint: 'Tel: protonen zijn positief, elektronen negatief. Welke zijn er meer?' },
+    { q: 'Een voorwerp heeft 2,0·10<sup>13</sup> elektronen te veel. Wat is zijn lading?', o: ['+3,2·10<sup>−6</sup> C', '−3,2·10<sup>−6</sup> C', '−3,2·10<sup>6</sup> C'], a: 1,
+      w: 'Q = −N·e = −2,0·10<sup>13</sup> · 1,6·10<sup>−19</sup> C = −3,2·10<sup>−6</sup> C. Elektronen te veel geeft een negatieve lading.', hint: 'Q = N · e, en elektronen zijn negatief.' },
+    { q: 'Welke deeltjes verplaatsen zich als je een voorwerp laadt?', o: ['Protonen', 'Elektronen', 'Neutronen'], a: 1,
+      w: 'Protonen en neutronen zitten vast in de kern. Alleen elektronen kunnen van het ene voorwerp naar het andere gaan.' }
+  ];
+  root.innerHTML = head(H1, 'Lading in materie', 'Alles begint bij het atoom. Wie weet waar de lading zit, begrijpt de rest van het hoofdstuk.') + `
+  <section class="sec">
+    <h2>Drie deeltjes, twee soorten lading</h2>
+    <ul class="clean">
+      <li><b class="pos">Proton</b> in de kern: lading +e.</li>
+      <li><b class="neg">Elektron</b> rond de kern: lading −e.</li>
+      <li><b>Neutron</b> in de kern: geen lading.</li>
+    </ul>
+    <div class="focus"><span class="tag">Focus</span>
+      <p><b>Neutraal</b> = evenveel elektronen als protonen.<br><b class="neg">Negatief</b> = meer elektronen dan protonen.<br><b class="pos">Positief</b> = minder elektronen dan protonen.</p>
+      <p>De eenheid van lading is de <b>coulomb (C)</b>. De <b>elementaire lading</b> is de lading van één proton of elektron: <span class="mono">e = 1,6·10<sup>−19</sup> C</span>.</p>
+    </div>
+    <p>De protonen zitten vast. Alleen elektronen kunnen verhuizen. Een voorwerp laden betekent dus elektronen toevoegen (negatief) of elektronen wegnemen (positief). Ladingen worden nooit gemaakt of vernietigd, ze verhuizen alleen.</p>
+  </section>
+
+  <div class="sim"><header><b>Bouw een ion</b><span>Voeg elektronen toe of haal ze weg</span></header>
+    <div class="stage" id="atomstage"></div>
+    <div class="controls">
+      <div class="ctl"><label for="elem">Atoom (aantal protonen)</label>
+        <select id="elem"><option value="3">Lithium (3 protonen)</option><option value="6" selected>Koolstof (6 protonen)</option><option value="8">Zuurstof (8 protonen)</option><option value="10">Neon (10 protonen)</option></select></div>
+      <div class="ctl"><span class="lab">Elektronen</span><div class="btnrow"><button class="btn n" id="eminus">− elektron</button><button class="btn n" id="eplus">+ elektron</button><button class="btn" id="ereset">Neutraal</button></div></div>
+    </div>
+    <div class="readout" id="atomread"></div>
+  </div>
+  <div class="note"><span class="tag">Woordenschat</span><p><b>Ionisatie</b> = een atoom neemt een elektron op of geeft er een af. Het atoom wordt dan een <b>ion</b>.</p></div>
+
+  <section class="sec">
+    <h2>Van elektronen naar coulomb</h2>
+    <div class="formula">Q = N · e</div>
+    <p>Heeft een voorwerp N elektronen te veel, dan is Q = −N·e. Heeft het er N te weinig, dan is Q = +N·e. Reken het hieronder uit. Je mag schrijven als 3,0e12 of 3,0·10^12.</p>
+  </section>
+  <div class="sim"><header><b>Rekenhulp</b><span>aantal elektronen ↔ lading</span></header>
+    <div class="controls">
+      <div class="ctl"><label for="cN">Aantal elektronen</label><input type="text" id="cN" value="3,0e12" inputmode="decimal"></div>
+      <div class="ctl"><label for="cT">Dat zijn er</label><select id="cT"><option value="-1">te veel (negatief)</option><option value="1">te weinig (positief)</option></select></div>
+      <div class="ctl"><span class="lab">Lading</span><div class="big mono" id="cQ" style="font-size:1.2rem"></div></div>
+    </div>
+    <div class="controls">
+      <div class="ctl"><label for="cQin">Lading in coulomb</label><input type="text" id="cQin" value="-4,8e-7" inputmode="decimal"></div>
+      <div class="ctl"><span class="lab">Aantal elektronen</span><div class="big mono" id="cNout" style="font-size:1.1rem"></div></div>
+    </div>
+  </div>` + checksHTML('l11', checks);
+
+  /* atoom */
+  let p = 6, ne = 6;
+  const stage = $('#atomstage');
+  const cv = setupCanvas(stage, { aspect: .5, minH: 250, draw(c, w, h, C) {
+    const cx = w / 2, cy = h / 2, R1 = Math.min(h * .27, 70), R2 = R1 * 1.75, R3 = R1 * 2.4 > h / 2 - 8 ? h / 2 - 8 : R1 * 2.4;
+    [R1, R2].forEach(r => { c.beginPath(); c.arc(cx, cy, r, 0, 7); c.strokeStyle = C.line; c.lineWidth = 1.5; c.stroke(); });
+    c.beginPath(); c.arc(cx, cy, R1 * .55, 0, 7); c.fillStyle = C.posSoft; c.fill(); c.strokeStyle = C.pos; c.lineWidth = 2; c.stroke();
+    txt(c, p + ' p', cx, cy - 6, C.pos, 15, 'center', 800, true); txt(c, p + ' n', cx, cy + 10, C.ink2, 12, 'center', 600, true);
+    const shells = [[2, R1], [8, R2], [18, R3]];
+    let left = ne;
+    const t = performance.now() / 1000;
+    shells.forEach(([cap, r], si) => {
+      const n = Math.min(cap, left); left -= n;
+      for (let i = 0; i < n; i++) {
+        const a = (i / n) * Math.PI * 2 + t * (0.9 - si * .25);
+        const x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r;
+        c.beginPath(); c.arc(x, y, 8, 0, 7); c.fillStyle = C.neg; c.fill();
+        txt(c, '−', x, y + .5, '#fff', 13, 'center', 800, true);
+      }
+    });
+  } });
+  animate(() => cv.redraw());
+  const read = $('#atomread');
+  function upd() {
+    const net = p - ne;
+    let st = net === 0 ? '<span class="badge zero">neutraal</span> evenveel protonen als elektronen' : net > 0 ? '<span class="badge pos">positief ion</span> ' + net + ' elektron' + (net > 1 ? 'en' : '') + ' te weinig' : '<span class="badge neg">negatief ion</span> ' + (-net) + ' elektron' + (net < -1 ? 'en' : '') + ' te veel';
+    read.innerHTML = st + '<div class="mono">protonen ' + p + ' · elektronen ' + ne + ' · netto lading = ' + (net > 0 ? '+' : '') + net + ' e' + (net !== 0 ? ' = ' + fmt(net * E_CH) + ' C' : ' = 0 C') + '</div>';
+  }
+  $('#elem').onchange = e => { p = +e.target.value; ne = p; upd(); };
+  $('#eplus').onclick = () => { if (ne < 28) ne++; upd(); };
+  $('#eminus').onclick = () => { if (ne > 0) ne--; upd(); };
+  $('#ereset').onclick = () => { ne = p; upd(); };
+  upd();
+  /* rekenhulp */
+  function calc() {
+    const n = parseNum($('#cN').value), s = +$('#cT').value;
+    $('#cQ').innerHTML = isNaN(n) ? 'ongeldig getal' : fmt(s * n * E_CH) + ' C';
+    const q = parseNum($('#cQin').value);
+    $('#cNout').innerHTML = isNaN(q) ? 'ongeldig getal' : sci(Math.abs(q) / E_CH, 2) + ' elektronen ' + (q < 0 ? 'te veel' : q > 0 ? 'te weinig' : '');
+  }
+  ['#cN', '#cT', '#cQin'].forEach(s => $(s).addEventListener('input', calc)); calc();
+  bindChecks(root, 'l11', checks);
+} });
+
+/* ---------- 1.2 Aantrekken en afstoten ---------- */
+addPage({ id: 'l12', group: 'h1', no: '1.2', title: 'Aantrekken en afstoten', render(root) {
+  const checks = [
+    { q: 'Een positieve en een negatieve lading liggen dicht bij elkaar. Wat gebeurt er?', o: ['Ze stoten elkaar af', 'Ze trekken elkaar aan', 'Er is geen kracht'], a: 1, w: 'Ongelijksoortige ladingen trekken elkaar aan.' },
+    { q: 'Twee negatieve ladingen: wat geldt voor de kracht?', o: ['Afstoting', 'Aantrekking', 'Alleen de grootste lading voelt een kracht'], a: 0, w: 'Gelijksoortige ladingen (+ en +, of − en −) stoten elkaar af.', hint: 'Gelijk of ongelijk? Dat bepaalt alles.' },
+    { q: 'Lading A is groot, lading B is klein. Welke kracht is groter?', o: ['De kracht op A', 'De kracht op B', 'Ze zijn even groot'], a: 2, w: 'Derde wet van Newton: de krachten op A en B zijn even groot en tegengesteld. Dit komt nog terug bij de wet van Coulomb.', hint: 'Denk aan actie en reactie.' }
+  ];
+  root.innerHTML = head(H1, 'Aantrekken en afstoten', 'De allereerste regel van elektrostatica. Je hebt hem nodig bij elke oefening.') + `
+  <div class="focus"><span class="tag">Focus</span>
+    <p><b>Gelijksoortige</b> ladingen stoten elkaar <b>af</b>: <span class="pos">+ +</span> en <span class="neg">− −</span>.</p>
+    <p><b>Ongelijksoortige</b> ladingen trekken elkaar <b>aan</b>: <span class="pos">+</span> <span class="neg">−</span>.</p></div>
+  <div class="sim"><header><b>Probeer alle combinaties</b><span>Klik op een lading om het teken te wisselen</span></header>
+    <div class="stage" id="s12"></div>
+    <div class="controls"><div class="ctl"><label for="r12">Afstand <output id="o12"></output></label><input type="range" id="r12" min="1" max="10" step="1" value="4"></div>
+      <div class="ctl"><span class="lab">Teken</span><div class="btnrow"><button class="btn p" id="a12">A wisselen</button><button class="btn p" id="b12">B wisselen</button></div></div></div>
+    <div class="readout" id="rd12"></div></div>
+  <p>Hoe kleiner de afstand, hoe groter de kracht. De pijlen worden langer als je de ladingen dichter bij elkaar brengt. Hoe de kracht precies van de afstand afhangt, leer je in hoofdstuk 2.</p>` + checksHTML('l12', checks);
+  let qa = 1, qb = -1, d = 4;
+  const cv = setupCanvas($('#s12'), { aspect: .36, minH: 190, draw(c, w, h, C) {
+    const y = h / 2 + 10, gap = 40 + d * (w - 160) / 10, xa = w / 2 - gap / 2, xb = w / 2 + gap / 2;
+    const L = 20 + 150 / (d * d * .6 + .4);
+    const rep = qa * qb > 0;
+    const col = C.ink;
+    const t = (Math.sin(performance.now() / 300) + 1) * 3;
+    if (rep) { arrow(c, xa - 28, y, xa - 28 - L - t, y, col, 4, 12); arrow(c, xb + 28, y, xb + 28 + L + t, y, col, 4, 12); }
+    else { arrow(c, xa + 28, y, xa + 28 + Math.min(L, gap / 2 - 36) + t * .3, y, col, 4, 12); arrow(c, xb - 28, y, xb - 28 - Math.min(L, gap / 2 - 36) - t * .3, y, col, 4, 12); }
+    charge(c, xa, y, 22, qa, C, 'A'); charge(c, xb, y, 22, qb, C, 'B');
+  } });
+  animate(() => cv.redraw());
+  const upd = () => {
+    $('#o12').textContent = d; const rep = qa * qb > 0;
+    $('#rd12').innerHTML = '<div><span class="badge ' + (rep ? 'res' : 'zero') + '">' + (rep ? 'afstoting' : 'aantrekking') + '</span> A is ' + (qa > 0 ? '<b class="pos">positief</b>' : '<b class="neg">negatief</b>') + ', B is ' + (qb > 0 ? '<b class="pos">positief</b>' : '<b class="neg">negatief</b>') + '. ' + (rep ? 'Gelijk teken: de ladingen duwen elkaar weg.' : 'Ongelijk teken: de ladingen trekken naar elkaar toe.') + '</div><div class="mono">F op A = F op B (even groot, tegengestelde zin)</div>';
+  };
+  $('#a12').onclick = () => { qa = -qa; upd(); }; $('#b12').onclick = () => { qb = -qb; upd(); };
+  $('#r12').oninput = e => { d = +e.target.value; upd(); };
+  const cvEl = cv.cv; cvEl.addEventListener('pointerdown', e => { const pt = pointer(cvEl, e); if (pt.x < cv.w / 2) qa = -qa; else qb = -qb; upd(); });
+  upd(); bindChecks(root, 'l12', checks);
+} });
+
+/* ---------- 1.3 Geleiders en isolatoren ---------- */
+addPage({ id: 'l13', group: 'h1', no: '1.3', title: 'Geleiders en isolatoren', render(root) {
+  const checks = [
+    { q: 'Je brengt lading aan op één plek van een metalen staaf. Wat gebeurt er?', o: ['De lading blijft daar zitten', 'De lading verspreidt zich over de hele staaf', 'De lading verdwijnt'], a: 1, w: 'In een metaal zijn er vrije elektronen. De aangebrachte ladingen stoten elkaar af en verspreiden zich.' },
+    { q: 'Waarom blijft lading op een kunststof voorwerp ter plaatse?', o: ['Kunststof heeft geen protonen', 'Er zijn geen vrije elektronen: de elektronen zitten vast in atoombindingen', 'Kunststof trekt lading sterk aan'], a: 1, w: 'Isolatoren hebben atoombindingen zonder vrije elektronen, dus de lading kan zich niet verplaatsen.' },
+    { q: 'Welk materiaal geleidt óók zonder vrije elektronen?', o: ['Zout water (ionen kunnen bewegen)', 'Rubber', 'Droog hout'], a: 0, w: 'In vloeistoffen en gassen kunnen ionen zich verplaatsen. Dat geeft ook geleiding.' }
+  ];
+  root.innerHTML = head(H1, 'Geleiders en isolatoren', 'Het verschil zit in de vrije elektronen. Probeer het zelf: klik op de staven om lading aan te brengen.') + `
+  <section class="sec"><h2>Het verschil in drie regels</h2>
+  <div class="tablewrap"><table><thead><tr><th>Soort</th><th>Bouw</th><th>Lading op het voorwerp</th></tr></thead><tbody>
+    <tr><td><b>Geleider</b> (metalen)</td><td>Metaalbinding: <b>vrije elektronen</b></td><td>Verspreidt zich over het hele voorwerp, door onderlinge afstoting</td></tr>
+    <tr><td><b>Isolator</b> (meeste kunststoffen)</td><td>Atoombindingen: <b>geen vrije elektronen</b></td><td>Blijft ter plaatse</td></tr>
+    <tr><td><b>Halfgeleider</b></td><td>Tussenvorm</td><td>Beperkte geleiding</td></tr></tbody></table></div>
+  <p>Ook <b>vloeistoffen en gassen</b> kunnen geleiden: de ionen in een vloeistof kunnen zich verplaatsen.</p></section>
+  <div class="sim"><header><b>Lading aanbrengen</b><span>Klik op een staaf. Maximaal 10 ladingen per staaf.</span></header>
+    <div class="stage" id="s13"></div>
+    <div class="controls"><div class="ctl"><span class="lab">Soort lading</span><div class="btnrow"><button class="btn n on" id="neg13">− elektronen toevoegen</button><button class="btn p" id="pos13">+ elektronen wegnemen</button><button class="btn" id="clr13">Wissen</button></div></div></div>
+    <div class="readout">Bovenaan zie je een metaal met vrije elektronen (grijze stipjes). De ladingen op het metaal stoten elkaar af en schuiven naar de uiteinden. De kunststof staaf heeft geen vrije elektronen: elke lading blijft waar je hem neerzet.</div></div>
+  <div class="note"><span class="tag">Onthoud</span><p>Elektronen verplaatsen zich naar waar ze het minst afgestoten of het meest aangetrokken worden. Dat idee gebruik je meteen bij aarding.</p></div>` + checksHTML('l13', checks);
+  let sign = -1; const rods = [[], []];
+  const free = Array.from({ length: 26 }, () => ({ x: Math.random(), y: Math.random(), a: Math.random() * 6 }));
+  const geom = (w, h, i) => { const x0 = 40, x1 = w - 40, th = Math.min(46, h * .2), y = i === 0 ? h * .28 : h * .72; return { x0, x1, y, th }; };
+  const cv = setupCanvas($('#s13'), { aspect: .5, minH: 240, draw(c, w, h, C) {
+    [0, 1].forEach(i => {
+      const g = geom(w, h, i);
+      c.fillStyle = i === 0 ? C.surface : C.surface; c.strokeStyle = C.ink2; c.lineWidth = 2;
+      c.beginPath(); c.roundRect(g.x0, g.y - g.th / 2, g.x1 - g.x0, g.th, 10); c.fill(); c.stroke();
+      txt(c, i === 0 ? 'Geleider (metaal)' : 'Isolator (kunststof)', g.x0, g.y - g.th / 2 - 14, C.ink, 13, 'left', 700);
+      if (i === 0) free.forEach(f => { const x = g.x0 + 8 + f.x * (g.x1 - g.x0 - 16), y = g.y - g.th / 2 + 6 + (.5 + .5 * Math.sin(f.a)) * (g.th - 12); c.beginPath(); c.arc(x, y, 2.5, 0, 7); c.fillStyle = C.ink2; c.globalAlpha = .45; c.fill(); c.globalAlpha = 1; });
+      else { for (let k = 0; k < 18; k++) { const x = g.x0 + 14 + k * (g.x1 - g.x0 - 28) / 17; [-8, 8].forEach(dy => { c.beginPath(); c.arc(x, g.y + dy, 2.2, 0, 7); c.fillStyle = C.line; c.fill(); }); } }
+      rods[i].forEach(p => { const x = g.x0 + 10 + p * (g.x1 - g.x0 - 20); charge(c, x, g.y, 11, sign, C); });
+    });
+  } });
+  animate((dt) => {
+    free.forEach(f => { f.a += dt * 3 * (.5 + f.x); f.x += Math.sin(f.a * .7) * dt * .08; f.x = Math.max(0, Math.min(1, f.x)); });
+    const pts = rods[0], n = pts.length;
+    for (let i = 0; i < n; i++) {
+      let F = 0;
+      for (let j = 0; j < n; j++) if (j !== i) { const d = pts[i] - pts[j], ad = Math.max(Math.abs(d), .03); F += Math.sign(d || (i - j)) / (ad * ad) * .0006; }
+      const a = Math.max(pts[i], .03), b = Math.max(1 - pts[i], .03);
+      F += .0003 * (1 / (a * a) - 1 / (b * b));
+      pts[i] = Math.max(.02, Math.min(.98, pts[i] + Math.max(-.012, Math.min(.012, F))));
+    }
+    cv.redraw();
+  });
+  cv.cv.addEventListener('pointerdown', e => { const pt = pointer(cv.cv, e); for (let i = 0; i < 2; i++) { const g = geom(cv.w, cv.h, i); if (Math.abs(pt.y - g.y) < g.th / 2 + 8 && rods[i].length < 10) rods[i].push(Math.max(0, Math.min(1, (pt.x - g.x0 - 10) / (g.x1 - g.x0 - 20)))); } });
+  const setS = s => { sign = s; rods[0].length = 0; rods[1].length = 0; $('#neg13').classList.toggle('on', s < 0); $('#pos13').classList.toggle('on', s > 0); };
+  $('#neg13').onclick = () => setS(-1); $('#pos13').onclick = () => setS(1); $('#clr13').onclick = () => { rods[0].length = 0; rods[1].length = 0; };
+  bindChecks(root, 'l13', checks);
+} });
+
+/* ---------- 1.4 Aarding ---------- */
+addPage({ id: 'l14', group: 'h1', no: '1.4', title: 'Aarding', render(root) {
+  const checks = [
+    { q: 'Een negatief geladen metalen bol wordt geaard. Welke kant gaan de elektronen op?', o: ['Van de bol naar de aarde', 'Van de aarde naar de bol', 'Ze blijven op de bol'], a: 0, w: 'De bol heeft elektronen te veel. Ze worden afgestoten en vloeien weg naar de aarde.', hint: 'De bol heeft een overschot of een tekort aan elektronen?' },
+    { q: 'Een positief geladen metalen bol wordt geaard. Wat gebeurt er?', o: ['Elektronen gaan van de aarde naar de bol', 'Protonen gaan van de bol naar de aarde', 'Er gebeurt niets'], a: 0, w: 'De bol heeft elektronen te weinig. De aarde levert elektronen aan tot de bol neutraal is. Protonen bewegen nooit.' },
+    { q: 'Je aardt een geladen kunststof bol. Wat gebeurt er?', o: ['Hij wordt direct neutraal', 'Er stromen geen elektronen: de lading blijft zitten', 'Hij wordt tegengesteld geladen'], a: 1, w: 'Een isolator heeft geen vrije elektronen. Er kan dus geen stroom vloeien.' }
+  ];
+  root.innerHTML = head(H1, 'Aarding', 'De aarde is een enorme, goede geleider. Verbind je een geladen geleider met de aarde, dan stromen er elektronen tot hij neutraal is.') + `
+  <div class="focus"><span class="tag">Focus</span>
+    <p>Geladen geleider verbinden met de aarde: <b>elektronen stromen</b>.</p>
+    <p><span class="neg">Negatief</span> geladen voorwerp: elektronen gaan <b>van het voorwerp naar de aarde</b>.<br><span class="pos">Positief</span> geladen voorwerp: elektronen gaan <b>van de aarde naar het voorwerp</b>.</p>
+    <p>Bij een <b>isolator</b> stromen er geen elektronen.</p></div>
+  <div class="sim"><header><b>Aarden</b><span>Kies lading en materiaal, sluit dan de schakelaar</span></header>
+    <div class="stage" id="s14"></div>
+    <div class="controls">
+      <div class="ctl"><label for="q14">Lading op de bol</label><select id="q14"><option value="-6">Negatief (6 elektronen te veel)</option><option value="6">Positief (6 elektronen te weinig)</option></select></div>
+      <div class="ctl"><label for="m14">Materiaal</label><select id="m14"><option value="g">Geleider (metaal)</option><option value="i">Isolator (kunststof)</option></select></div>
+      <div class="ctl"><span class="lab">Verbinding</span><div class="btnrow"><button class="btn primary" id="sw14">Verbind met aarde</button><button class="btn" id="rs14">Opnieuw</button></div></div></div>
+    <div class="readout" id="rd14"></div></div>
+  <p>Waarom stromen de elektronen die kant op? Elektronen gaan naar de plaats waar ze het minst worden afgestoten of het meest worden aangetrokken. Een negatieve bol stoot ze af, een positieve bol trekt ze aan.</p>` + checksHTML('l14', checks);
+  let n = -6, mat = 'g', on = false, dots = [], acc = 0;
+  const path = (w, h) => { const bx = w * .3, by = h * .5 + 62; return [[bx, by], [bx, h - 40], [w * .62, h - 40], [w * .78, h - 40]]; };
+  const pt = (P, t) => { const L = []; let tot = 0; for (let i = 0; i < P.length - 1; i++) { const l = Math.hypot(P[i + 1][0] - P[i][0], P[i + 1][1] - P[i][1]); L.push(l); tot += l; } let d = t * tot; for (let i = 0; i < L.length; i++) { if (d <= L[i]) { const f = d / L[i]; return [P[i][0] + (P[i + 1][0] - P[i][0]) * f, P[i][1] + (P[i + 1][1] - P[i][1]) * f]; } d -= L[i]; } return P[P.length - 1]; };
+  const cv = setupCanvas($('#s14'), { aspect: .52, minH: 270, draw(c, w, h, C) {
+    const P = path(w, h), cx = w * .3, cy = h * .5, R = 58;
+    c.strokeStyle = C.ink2; c.lineWidth = 3;
+    c.beginPath(); c.moveTo(P[0][0], P[0][1]); c.lineTo(P[1][0], P[1][1]); c.lineTo(P[2][0], P[2][1]); c.stroke();
+    c.beginPath(); c.moveTo(P[2][0], P[2][1]); if (on) c.lineTo(P[3][0] - 24, P[3][1]); else c.lineTo(P[2][0] + 30, P[2][1] - 28); c.stroke();
+    c.beginPath(); c.moveTo(P[3][0] - 24, P[3][1]); c.lineTo(P[3][0], P[3][1]); c.stroke();
+    for (let i = 0; i < 3; i++) { c.beginPath(); c.moveTo(P[3][0] + i * 7, P[3][1] - 22 + i * 7); c.lineTo(P[3][0] + i * 7, P[3][1] + 22 - i * 7); c.stroke(); }
+    txt(c, 'aarde', P[3][0] + 18, P[3][1] + 38, C.ink2, 12);
+    c.beginPath(); c.arc(cx, cy, R, 0, 7); c.fillStyle = mat === 'g' ? C.surface : C.sunk; c.fill(); c.strokeStyle = C.ink2; c.lineWidth = 3; c.stroke();
+    txt(c, mat === 'g' ? 'metaal' : 'kunststof', cx, cy, C.ink2, 13, 'center', 600);
+    const k = Math.abs(n);
+    for (let i = 0; i < k; i++) { const a = i / 6 * Math.PI * 2 - Math.PI / 2 + .3; const x = cx + Math.cos(a) * (R - 20), y = cy + Math.sin(a) * (R - 20) * 1; charge(c, x, y + (i > 5 ? 0 : 0), 9, Math.sign(n), C); }
+    dots.forEach(d => { const [x, y] = pt(P, d.t); c.beginPath(); c.arc(x, y, 6, 0, 7); c.fillStyle = C.neg; c.fill(); txt(c, 'e⁻', x, y - 14, C.neg, 11, 'center', 700); });
+    if (n === 0) txt(c, 'neutraal', cx, cy + R + 22, C.res, 14, 'center', 700);
+  } });
+  const upd = () => {
+    let s;
+    if (!on) s = 'De schakelaar staat open. Sluit hem om te aarden.';
+    else if (mat === 'i') s = '<b>Isolator:</b> er stromen geen elektronen. De lading blijft op de bol zitten.';
+    else if (n === 0) s = '<b>Klaar:</b> de bol is neutraal. Er is geen verschil meer, dus de stroom stopt.';
+    else s = n < 0 ? 'Elektronen stromen <b>van de bol naar de aarde</b> tot de bol neutraal is.' : 'Elektronen stromen <b>van de aarde naar de bol</b> tot de bol neutraal is.';
+    $('#rd14').innerHTML = s + '<div class="mono">netto lading: ' + (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n) + ' e</div>';
+    $('#sw14').textContent = on ? 'Verbreek verbinding' : 'Verbind met aarde';
+  };
+  animate(dt => {
+    const pend = dots.filter(d => d.dir < 0).length;
+    if (on && mat === 'g' && (n < 0 || n - pend > 0)) { acc += dt; if (acc > .5) { acc = 0; dots.push({ t: n < 0 ? 0 : 1, dir: n < 0 ? 1 : -1 }); if (n < 0) { n++; upd(); } } }
+    dots.forEach(d => { d.t += d.dir * dt * .45; });
+    dots = dots.filter(d => { if (d.t > 1 || d.t < 0) { if (d.dir < 0) { n--; upd(); } return false; } return true; });
+    cv.redraw();
+  });
+  $('#sw14').onclick = () => { on = !on; upd(); };
+  const reset = () => { on = false; dots = []; n = +$('#q14').value; upd(); };
+  $('#rs14').onclick = reset; $('#q14').onchange = reset; $('#m14').onchange = e => { mat = e.target.value; reset(); };
+  upd(); bindChecks(root, 'l14', checks);
+} });
+/* ===== Hoofdstuk 1, deel B ===== */
+
+/* ---------- 1.5 Laden door wrijving ---------- */
+const TRIBO = ['dierenvacht', 'glas', 'haar', 'nylon', 'wol', 'zijde', 'papier', 'katoen', 'hout', 'hard rubber', 'polyester', 'polyethyleen (PE)', 'polypropyleen (PP)', 'polyvinylchloride (pvc)', 'zacht rubber'];
+addPage({ id: 'l15', group: 'h1', no: '1.5', title: 'Laden door wrijving', render(root) {
+  const checks = [
+    { q: 'Je wrijft een glazen staaf met zijde. Glas staat hoger in de tribo-elektrische reeks. Hoe zijn glas en zijde daarna geladen?', o: ['Glas negatief, zijde positief', 'Glas positief, zijde negatief', 'Beide positief'], a: 1, w: 'Glas staat hoger, dus het geeft elektronen af en wordt positief. De zijde neemt ze op en wordt negatief. De totale lading blijft 0.', hint: 'Wie hoger staat, geeft elektronen af.' },
+    { q: 'Je wrijft pvc met dierenvacht. Wat wordt negatief?', o: ['De dierenvacht', 'Het pvc'], a: 1, w: 'Pvc staat onderaan de reeks: het neemt elektronen op en wordt negatief. De vacht staat bovenaan en wordt positief.' },
+    { q: 'Waarom lukt laden door wrijving niet bij een metalen staaf die je in je hand houdt?', o: ['Metaal heeft geen elektronen', 'De elektronen verspreiden zich weer: het metaal is een geleider', 'Metaal staat niet in de reeks'], a: 1, w: 'Bij geleiders verspreiden de elektronen zich meteen over het voorwerp. Wrijving laadt dus vooral isolatoren.' }
+  ];
+  root.innerHTML = head(H1, 'Laden door wrijving', 'Wrijf je twee isolatoren tegen elkaar, dan springen er elektronen van het ene voorwerp naar het andere. De tribo-elektrische reeks zegt welke kant op.') + `
+  <div class="focus"><span class="tag">Focus</span>
+    <p>Het materiaal dat <b>hoger</b> staat in de reeks heeft meer neiging om elektronen <b>af te geven</b> en wordt <b class="pos">positief</b>.<br>Het materiaal dat <b>lager</b> staat <b>neemt elektronen op</b> en wordt <b class="neg">negatief</b>.</p></div>
+  <div class="sim"><header><b>Tribo-elektrische reeks</b><span>Klik twee materialen aan en wrijf</span></header>
+    <div class="tribo"><div class="ladder" id="lad"><div class="cap">neiging om elektronen af te geven</div></div>
+      <div class="rubarea"><div class="blocks"><div class="blk" id="bA"><b></b><div class="sym"></div><small></small></div><div class="blk" id="bB"><b></b><div class="sym"></div><small></small></div></div>
+        <div class="btnrow"><button class="btn primary" id="rub">Wrijf</button><button class="btn" id="swp">Wissel A en B</button></div>
+        <div id="rtxt" style="font-size:.95rem"></div></div></div></div>
+  <p>Laden door wrijving gaat niet bij geleiders: de elektronen verspreiden zich meteen weer. Daarom laad je vooral isolatoren zoals kunststoffen op deze manier.</p>` + checksHTML('l15', checks);
+  const lad = $('#lad');
+  TRIBO.forEach((m, i) => { const b = document.createElement('button'); b.dataset.i = i; b.innerHTML = '<span>' + m.charAt(0).toUpperCase() + m.slice(1) + '</span><span class="ab"></span>'; lad.appendChild(b); });
+  const cap2 = document.createElement('div'); cap2.className = 'cap'; cap2.textContent = 'neiging om elektronen op te nemen'; lad.appendChild(cap2);
+  let A = 1, B = 5, turn = 0, timers = [];
+  const nm = i => TRIBO[i].charAt(0).toUpperCase() + TRIBO[i].slice(1);
+  function paint(rubbed) {
+    $$('#lad button').forEach(b => { const i = +b.dataset.i; b.classList.toggle('selA', i === A); b.classList.toggle('selB', i === B); $('.ab', b).textContent = i === A ? 'A' : i === B ? 'B' : ''; });
+    [['#bA', A, 'A'], ['#bB', B, 'B']].forEach(([s, i, l]) => { const e = $(s); $('b', e).textContent = l + ': ' + nm(i); $('small', e).textContent = rubbed ? '' : 'neutraal'; if (!rubbed) $('.sym', e).innerHTML = ''; });
+    $('#rtxt').innerHTML = A === B ? 'Kies twee verschillende materialen.' : '<b>' + nm(Math.min(A, B)) + '</b> staat hoger dan <b>' + nm(Math.max(A, B)) + '</b>. Na wrijven: ' + nm(Math.min(A, B)) + ' wordt <b class="pos">positief</b> en ' + nm(Math.max(A, B)) + ' wordt <b class="neg">negatief</b>. Afstand in de reeks: ' + Math.abs(A - B) + ' plaatsen (hoe verder uit elkaar, hoe sterker de lading meestal).';
+  }
+  lad.addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; const i = +b.dataset.i; timers.forEach(clearTimeout); if (turn === 0) A = i; else B = i; turn = 1 - turn; paint(false); });
+  $('#swp').onclick = () => { [A, B] = [B, A]; timers.forEach(clearTimeout); paint(false); };
+  $('#rub').onclick = () => {
+    if (A === B) return; timers.forEach(clearTimeout); paint(false);
+    const hi = A < B ? '#bA' : '#bB', lo = A < B ? '#bB' : '#bA';
+    for (let k = 0; k < 4; k++) timers.push(setTimeout(() => {
+      $('.sym', $(hi)).insertAdjacentHTML('beforeend', '<i class="p">+</i>');
+      $('.sym', $(lo)).insertAdjacentHTML('beforeend', '<i class="n">−</i>');
+      $('small', $(hi)).textContent = 'positief: elektronen afgegeven'; $('small', $(lo)).textContent = 'negatief: elektronen opgenomen';
+    }, 250 + k * 350));
+  };
+  onCleanup(() => timers.forEach(clearTimeout));
+  paint(false); bindChecks(root, 'l15', checks);
+} });
+
+/* ---------- 1.6 Elektroscoop ---------- */
+addPage({ id: 'l16', group: 'h1', no: '1.6', title: 'Elektroscoop', render(root) {
+  const checks = [
+    { q: 'Je raakt een neutrale elektroscoop aan met een negatieve staaf en neemt de staaf weg. Hoe is de elektroscoop geladen?', o: ['Negatief', 'Positief', 'Neutraal'], a: 0, w: 'Bij contact gaan elektronen van de staaf naar de elektroscoop. Laden door contact geeft hetzelfde teken als de staaf.' },
+    { q: 'De elektroscoop is positief geladen. Je brengt een positieve staaf in de buurt, zonder aan te raken. Wat zie je?', o: ['De bladen wijken verder uit', 'De bladen sluiten zich', 'Niets'], a: 0, w: 'De positieve staaf trekt elektronen naar de plaat. Daardoor komt er nog meer positieve lading in de bladen: ze wijken verder uit. Zo test je het teken van een lading.', hint: 'Waar gaan de elektronen heen als je een positieve staaf nadert?' },
+    { q: 'Hoe ontlaad je een elektroscoop?', o: ['Door de plaat aan te raken met een staaf', 'Door aarding', 'Door hem te schudden'], a: 1, w: 'Aarding laat elektronen weg of aanstromen tot de elektroscoop neutraal is.' }
+  ];
+  root.innerHTML = head(H1, 'Elektroscoop', 'Een elektroscoop toont of iets geladen is. De bladen wijken uit zodra ze dezelfde lading dragen.') + `
+  <section class="sec"><h2>Hoe werkt hij?</h2>
+    <p>Bovenaan zit een metalen plaat, daaronder een stang met twee dunne metalen bladen. Alles is metaal, dus lading kan vrij bewegen. De bladen dragen dan dezelfde lading, stoten elkaar af en gaan uit elkaar. Hoe meer lading, hoe verder.</p>
+    <ul class="clean"><li><b>Laden door contact:</b> raak de plaat aan met een geladen staaf. Elektronen verhuizen. De elektroscoop krijgt <b>hetzelfde teken</b> als de staaf.</li>
+    <li><b>Ontladen:</b> door <b>aarding</b>.</li>
+    <li><b>Staaf alleen naderen:</b> geen contact, maar de lading in de elektroscoop verschuift toch (influentie).</li></ul></section>
+  <div class="sim"><header><b>Elektroscoop</b><span>Kies een staaf, beweeg hem, aard de elektroscoop</span></header>
+    <div class="stage" id="s16"></div>
+    <div class="controls">
+      <div class="ctl"><span class="lab">Staaf</span><div class="btnrow"><button class="btn" data-rod="0">Geen</button><button class="btn p" data-rod="1">+ staaf</button><button class="btn n" data-rod="-1">− staaf</button></div></div>
+      <div class="ctl"><span class="lab">Plaats van de staaf</span><div class="btnrow"><button class="btn" data-pos="0">Ver weg</button><button class="btn" data-pos="1">Dichtbij</button><button class="btn" data-pos="2">Raak aan</button></div></div>
+      <div class="ctl"><span class="lab">Aarding</span><div class="btnrow"><button class="btn" id="gr16">Aarding aan</button><button class="btn" id="rs16">Alles resetten</button></div></div></div>
+    <div class="readout" id="rd16"></div></div>
+  <div class="note"><span class="tag">Probeer dit</span><p>1) Kies een + staaf, ga naar Raak aan, daarna Ver weg: de elektroscoop is positief.<br>2) Zet de aarding aan: hij wordt neutraal.<br>3) Kies een + staaf, zet de plaats op Dichtbij, zet aarding aan, schakel de aarding weer uit en haal dan pas de staaf weg. De elektroscoop is nu <b class="neg">negatief</b>. Dat is laden door influentie (zie 1.7).</p></div>` + checksHTML('l16', checks);
+  let Q = 0, rod = 0, pos = 0, gr = false;
+  const S = () => (pos === 1 && rod) ? 3 * rod : 0;
+  const apply = () => { if (gr) Q = pos === 1 ? -6 * rod : 0; };
+  const cv = setupCanvas($('#s16'), { aspect: .86, minH: 380, draw(c, w, h, C) {
+    const cx = w / 2, plY = h * .36, half = Math.min(62, w * .17), jarT = plY + 16, jarB = h - 26, pivY = plY + h * .26;
+    const Sx = S(), Lc = Q / 2 + Sx, Tc = Q / 2 - Sx;
+    const th = Math.abs(Lc) < .5 ? 4 : Math.min(58, 10 + Math.abs(Lc) * 7);
+    const rb = pos === 0 ? plY - 118 : pos === 1 ? plY - 34 : plY - 3;
+    /* jar */
+    c.strokeStyle = C.ink2; c.lineWidth = 2.5; c.fillStyle = C.sunk;
+    const jw = Math.min(w * .36, 150);
+    c.beginPath(); c.moveTo(cx - jw, jarT); c.lineTo(cx - jw, jarB - 22); c.quadraticCurveTo(cx - jw, jarB, cx - jw + 22, jarB); c.lineTo(cx + jw - 22, jarB); c.quadraticCurveTo(cx + jw, jarB, cx + jw, jarB - 22); c.lineTo(cx + jw, jarT); c.closePath(); c.globalAlpha = .55; c.fill(); c.globalAlpha = 1; c.stroke();
+    /* stem + plate */
+    c.strokeStyle = C.ink; c.lineWidth = 5; c.lineCap = 'round';
+    c.beginPath(); c.moveTo(cx, plY); c.lineTo(cx, pivY); c.stroke();
+    c.lineWidth = 7; c.beginPath(); c.moveTo(cx - half, plY); c.lineTo(cx + half, plY); c.stroke();
+    /* leaves */
+    const L = h * .2, r = th * Math.PI / 180;
+    c.lineWidth = 6; c.strokeStyle = C.ink2;
+    c.beginPath(); c.moveTo(cx, pivY); c.lineTo(cx - Math.sin(r) * L, pivY + Math.cos(r) * L); c.stroke();
+    c.beginPath(); c.moveTo(cx, pivY); c.lineTo(cx + Math.sin(r) * L, pivY + Math.cos(r) * L); c.stroke();
+    /* ladingen */
+    const sym = (x, y, s) => txt(c, s > 0 ? '+' : '−', x, y, s > 0 ? C.pos : C.neg, 17, 'center', 800, true);
+    const nT = Math.min(7, Math.round(Math.abs(Tc))), nL = Math.min(8, Math.round(Math.abs(Lc)));
+    for (let i = 0; i < nT; i++) sym(cx - half + 12 + (i + .5) * (2 * half - 24) / Math.max(nT, 1), plY - 14, Math.sign(Tc));
+    for (let i = 0; i < nL; i++) { const side = i % 2 ? 1 : -1, k = Math.floor(i / 2) + 1, d = L * k / (Math.ceil(nL / 2) + .6); sym(cx + side * (Math.sin(r) * d + 15), pivY + Math.cos(r) * d, Math.sign(Lc)); }
+    /* staaf */
+    if (rod) {
+      c.fillStyle = rod > 0 ? C.posSoft : C.negSoft; c.strokeStyle = rod > 0 ? C.pos : C.neg; c.lineWidth = 2.5;
+      c.beginPath(); c.roundRect(cx - 15, rb - 100, 30, 100, 8); c.fill(); c.stroke();
+      for (let i = 0; i < 4; i++) sym(cx, rb - 14 - i * 22, rod);
+      txt(c, rod > 0 ? '+ staaf' : '− staaf', cx + 52, rb - 50, rod > 0 ? C.pos : C.neg, 13, 'left', 700);
+    }
+    txt(c, 'Q = ' + (Q > 0 ? '+' : Q < 0 ? '−' : '') + Math.abs(Q) + ' e', 16, 22, C.ink, 14, 'left', 700, true);
+    if (gr) { c.strokeStyle = C.ink2; c.lineWidth = 3; const gx = cx - half, gy = plY; c.beginPath(); c.moveTo(gx, gy); c.lineTo(gx - 30, gy); c.lineTo(gx - 30, gy + 58); c.stroke(); for (let i = 0; i < 3; i++) { c.beginPath(); c.moveTo(gx - 44 + i * 7, gy + 58 + i * 7); c.lineTo(gx - 16 - i * 7, gy + 58 + i * 7); c.stroke(); } txt(c, 'aarde', gx - 30, gy + 92, C.ink2, 12); }
+  } });
+  const upd = () => {
+    apply();
+    $$('[data-rod]', root).forEach(b => b.classList.toggle('on', +b.dataset.rod === rod));
+    $$('[data-pos]', root).forEach(b => { b.classList.toggle('on', +b.dataset.pos === pos); b.disabled = rod === 0; });
+    $('#gr16').classList.toggle('on', gr); $('#gr16').textContent = gr ? 'Aarding uit' : 'Aarding aan';
+    let t;
+    if (rod && pos === 2) t = '<b>Contact:</b> elektronen gaan ' + (rod > 0 ? 'van de elektroscoop naar de staaf' : 'van de staaf naar de elektroscoop') + '. De elektroscoop krijgt het <b>zelfde teken</b> als de staaf' + (gr ? ', maar door de aarding stromen de elektronen meteen weg of aan: Q blijft 0.' : '.');
+    else if (rod && pos === 1) {
+      t = '<b>Influentie:</b> de ' + (rod > 0 ? 'positieve staaf trekt elektronen naar de plaat' : 'negatieve staaf duwt elektronen naar de bladen') + '. De plaat krijgt ' + (rod > 0 ? '<b class="neg">−</b>' : '<b class="pos">+</b>') + ', de bladen krijgen ' + (rod > 0 ? '<b class="pos">+</b>' : '<b class="neg">−</b>') + ' (zelfde teken als de staaf).';
+      if (gr) t += ' <b>Aarding:</b> elektronen stromen ' + (rod > 0 ? 'van de aarde naar de elektroscoop' : 'van de elektroscoop naar de aarde') + ' tot de bladen neutraal zijn. Schakel eerst de aarding uit en haal dan de staaf weg.';
+    } else t = Q === 0 ? 'De elektroscoop is <b>neutraal</b>: de bladen hangen naast elkaar.' : 'De elektroscoop is ' + (Q > 0 ? '<b class="pos">positief</b>' : '<b class="neg">negatief</b>') + ' geladen. De bladen stoten elkaar af.';
+    if (rod === 0) t += ' Kies een staaf om te beginnen.';
+    $('#rd16').innerHTML = t; cv.redraw();
+  };
+  const clickH = e => {
+    const b = e.target.closest('button'); if (!b) return;
+    if (b.dataset.rod !== undefined) { rod = +b.dataset.rod; pos = 0; upd(); }
+    if (b.dataset.pos !== undefined && rod) { const np = +b.dataset.pos; if (np === 2 && pos !== 2 && !gr) Q = Math.max(-12, Math.min(12, Q + rod * 6)); pos = np; upd(); }
+    if (b.id === 'gr16') { gr = !gr; upd(); }
+    if (b.id === 'rs16') { Q = 0; rod = 0; pos = 0; gr = false; upd(); }
+  };
+  root.addEventListener('click', clickH); onCleanup(() => root.removeEventListener('click', clickH));
+  upd(); bindChecks(root, 'l16', checks);
+} });
+
+/* ---------- 1.7 Influentie ---------- */
+addPage({ id: 'l17', group: 'h1', no: '1.7', title: 'Laden door influentie', render(root) {
+  const checks = [
+    { q: 'Je nadert een neutrale metalen bol met een negatieve staaf. Wat doen de vrije elektronen?', o: ['Ze gaan naar de staaf toe', 'Ze worden weggeduwd naar de verre kant van de bol', 'Ze verlaten de bol'], a: 1, w: 'Gelijke ladingen stoten af: de elektronen schuiven naar de kant die het verst van de staaf ligt. Dat heet influentie.' },
+    { q: 'Je laadt een bol door influentie met een positieve staaf en aarding. Hoe is de bol uiteindelijk geladen?', o: ['Positief', 'Negatief', 'Neutraal'], a: 1, w: 'De positieve staaf trekt elektronen aan. Bij aarding komen er elektronen uit de aarde bij. Na het wegnemen van de staaf heeft de bol elektronen te veel: negatief. Tegengesteld aan de staaf.', hint: 'Bij een positieve staaf komen er elektronen bij of gaan er weg?' },
+    { q: 'Wat is de juiste volgorde?', o: ['Staaf weg, dan aarding verwijderen', 'Aarding verwijderen, dan staaf weg', 'Beide tegelijk'], a: 1, w: 'Haal je eerst de staaf weg terwijl de bol nog geaard is, dan stromen de elektronen terug en is de bol weer neutraal. Dus: eerst aarding los, dan staaf weg.' },
+    { q: 'Wat geldt voor het teken van de lading na laden door contact, vergeleken met de staaf?', o: ['Gelijk', 'Tegengesteld', 'Altijd neutraal'], a: 0, w: 'Contact: zelfde teken. Influentie met aarding: tegengesteld teken. Dit onderscheid komt vaak op een toets.' }
+  ];
+  root.innerHTML = head(H1, 'Laden door influentie', 'Je kunt een geleider laden zonder hem aan te raken. Daarvoor heb je een staaf en aarding nodig, in de juiste volgorde.') + `
+  <div class="focus"><span class="tag">Focus</span><p><b>Elektrische influentie</b> = het ontstaan van een ladingsverschuiving in een geleider in de buurt van een geladen voorwerp.</p></div>
+  <div class="sim"><header><b>Bol laden door influentie</b><span>Doorloop de 5 stappen</span></header>
+    <div class="stage" id="s17"></div>
+    <div class="controls"><div class="ctl"><span class="lab">Staaf</span><div class="btnrow"><button class="btn n on" id="rn17">− staaf</button><button class="btn p" id="rp17">+ staaf</button></div></div>
+      <div class="ctl"><span class="lab">Stap <output id="st17"></output> van 5</span><div class="btnrow"><button class="btn" id="bk17">Vorige</button><button class="btn primary" id="nx17">Volgende</button></div></div></div>
+    <div class="readout" id="rd17"></div></div>
+  <section class="sec"><h2>Contact of influentie?</h2>
+    <div class="tablewrap"><table><thead><tr><th></th><th>Contact</th><th>Influentie + aarding</th></tr></thead><tbody>
+      <tr><td><b>Raakt de staaf aan?</b></td><td>Ja</td><td>Nee</td></tr>
+      <tr><td><b>Teken van het resultaat</b></td><td>Zelfde als de staaf</td><td>Tegengesteld aan de staaf</td></tr>
+      <tr><td><b>Wat gebeurt er</b></td><td>Elektronen springen over</td><td>Lading verschuift, aarding voert elektronen af of aan</td></tr></tbody></table></div></section>` + checksHTML('l17', checks);
+  let s = -1, step = 0;
+  const N = 8;
+  const data = () => s < 0 ? [[8, 0, 6.28], [8, 0, 4.2], [5, 0, 3.4], [5, 0, 3.4], [5, 0, 6.28]] : [[8, 0, 6.28], [8, Math.PI, 4.0], [11, Math.PI, 5.4], [11, Math.PI, 5.4], [11, 0, 6.28]];
+  function angles(n, ctr, spread) { if (spread >= 6.2) return Array.from({ length: n }, (_, i) => i / n * Math.PI * 2 + .2); return Array.from({ length: n }, (_, i) => ctr + (n === 1 ? 0 : (i / (n - 1) - .5) * spread)); }
+  const cv = setupCanvas($('#s17'), { aspect: .56, minH: 290, draw(c, w, h, C) {
+    const cx = w * .56, cy = h * .46, R = Math.min(h * .3, 74);
+    const near = step >= 1 && step <= 3;
+    const rx = near ? cx - R - 18 : cx - R - 150;
+    /* staaf */
+    const rodCol = s > 0 ? C.pos : C.neg;
+    c.fillStyle = s > 0 ? C.posSoft : C.negSoft; c.strokeStyle = rodCol; c.lineWidth = 2.5;
+    c.beginPath(); c.roundRect(rx - 120, cy - 15, 120, 30, 8); c.fill(); c.stroke();
+    for (let i = 0; i < 4; i++) txt(c, s > 0 ? '+' : '−', rx - 20 - i * 28, cy, rodCol, 18, 'center', 800, true);
+    /* aarde */
+    const gx = cx, gy = cy + R;
+    if (step >= 2 && step <= 3) {
+      c.strokeStyle = C.ink2; c.lineWidth = 3; c.beginPath(); c.moveTo(gx, gy); c.lineTo(gx, gy + 24);
+      if (step === 2) c.lineTo(gx, h - 34); else { c.moveTo(gx, gy + 24); c.lineTo(gx + 10, gy + 36); c.moveTo(gx, h - 50); c.lineTo(gx, h - 34); }
+      c.stroke(); for (let i = 0; i < 3; i++) { c.beginPath(); c.moveTo(gx - 20 + i * 6, h - 34 + i * 6); c.lineTo(gx + 20 - i * 6, h - 34 + i * 6); c.stroke(); }
+      txt(c, 'aarde', gx + 44, h - 22, C.ink2, 12);
+      if (step === 2) { const up = s > 0; arrow(c, gx + 26, up ? h - 70 : gy + 40, gx + 26, up ? gy + 40 : h - 70, C.neg, 3, 10); txt(c, 'e⁻', gx + 46, (gy + h) / 2 - 4, C.neg, 13, 'left', 700); }
+    }
+    /* bol */
+    c.beginPath(); c.arc(cx, cy, R, 0, 7); c.fillStyle = C.surface; c.fill(); c.strokeStyle = C.ink2; c.lineWidth = 3; c.stroke();
+    for (let i = 0; i < N; i++) { const a = i / N * Math.PI * 2; txt(c, '+', cx + Math.cos(a) * R * .45, cy + Math.sin(a) * R * .45, C.pos, 15, 'center', 800, true); }
+    const [ne, ctr, spr] = data()[step];
+    angles(ne, ctr, spr).forEach(a => txt(c, '−', cx + Math.cos(a) * R * .78, cy + Math.sin(a) * R * .78, C.neg, 17, 'center', 800, true));
+    txt(c, 'metalen bol', cx, cy - R - 14, C.ink2, 12);
+    txt(c, 'vaste + (kernen)  en  beweeglijke − (vrije elektronen)', 14, h - 12, C.ink2, 11, 'left');
+  } });
+  const texts = () => [
+    'Neutrale metalen bol: evenveel + (atoomkernen) als − (vrije elektronen).',
+    s < 0 ? '<b>Naderen met een negatieve staaf.</b> De elektronen worden weggeduwd naar de verre kant. Dichtbij blijft een + over, ver weg is er een − teveel. De bol blijft in totaal neutraal.' : '<b>Naderen met een positieve staaf.</b> De elektronen worden aangetrokken en verzamelen aan de kant van de staaf. De verre kant blijft + over. De bol blijft in totaal neutraal.',
+    s < 0 ? '<b>Aarding, staaf blijft in de buurt.</b> De elektronen aan de verre kant stromen naar de aarde. De bol heeft nu elektronen <b>te weinig</b>.' : '<b>Aarding, staaf blijft in de buurt.</b> Er stromen elektronen van de aarde naar de bol om de + aan de verre kant te neutraliseren. De bol heeft nu elektronen <b>te veel</b>.',
+    '<b>Eerst de aarding verwijderen</b>, terwijl de staaf er nog is. De lading kan nu niet meer weg of bij.',
+    '<b>Staaf wegnemen.</b> De overtollige lading verspreidt zich over de hele bol. Resultaat: de bol is ' + (s < 0 ? '<b class="pos">positief</b>' : '<b class="neg">negatief</b>') + ' geladen, <b>tegengesteld aan de staaf</b>.'
+  ];
+  const upd = () => { $('#st17').textContent = step + 1; $('#rd17').innerHTML = texts()[step]; $('#bk17').disabled = step === 0; $('#nx17').disabled = step === 4; $('#rn17').classList.toggle('on', s < 0); $('#rp17').classList.toggle('on', s > 0); cv.redraw(); };
+  $('#nx17').onclick = () => { step = Math.min(4, step + 1); upd(); }; $('#bk17').onclick = () => { step = Math.max(0, step - 1); upd(); };
+  $('#rn17').onclick = () => { s = -1; upd(); }; $('#rp17').onclick = () => { s = 1; upd(); };
+  upd(); bindChecks(root, 'l17', checks);
+} });
+
+/* ---------- 1.8 Polarisatie ---------- */
+addPage({ id: 'l18', group: 'h1', no: '1.8', title: 'Polarisatie bij isolatoren', render(root) {
+  const checks = [
+    { q: 'Waarom trekt een geladen kam ongeladen papiersnippers aan?', o: ['De snippers zijn eigenlijk geladen', 'De moleculen in de snippers polariseren: de lading die het dichtst bij de kam zit is tegengesteld aan de kam, en wint van de verder gelegen lading', 'De kam duwt de lucht weg'], a: 1, w: 'Dipoolmoleculen draaien. Aan de kant van de kam zit de tegengestelde lading, die dichterbij is en dus sterker wordt aangetrokken dan de gelijke lading verderop. Netto: aantrekking.' },
+    { q: 'Wat gebeurt er in een isolator als je er een geladen staaf bij brengt?', o: ['Vrije elektronen stromen naar de staaf', 'De elektronenwolken vervormen: er ontstaan dipoolmoleculen', 'Er gebeurt niets'], a: 1, w: 'Isolatoren hebben geen vrije elektronen. De elektronenwolken van de atoombindingen vervormen, zodat elke molecule een positieve en een negatieve kant krijgt.' }
+  ];
+  root.innerHTML = head(H1, 'Polarisatie bij isolatoren', 'In een isolator kunnen elektronen niet wegstromen. Toch trekt een geladen staaf hem aan. Hoe dat kan zie je hier.') + `
+  <div class="focus"><span class="tag">Focus</span>
+    <p>Isolator: <b>geen vrije elektronen</b>. De elektronenwolken van de atoombindingen <b>vervormen</b>. Er ontstaan <b>dipoolmoleculen</b> met een negatieve en een positieve kant. Dit heet <b>polarisatie</b>.</p></div>
+  <div class="sim"><header><b>Dipolen in kunststof</b><span>Beweeg de staaf naar het kunststof</span></header>
+    <div class="stage" id="s18"></div>
+    <div class="controls"><div class="ctl"><label for="d18">Afstand tot de staaf <output id="od18"></output></label><input type="range" id="d18" min="0" max="100" value="85"></div>
+      <div class="ctl"><span class="lab">Staaf</span><div class="btnrow"><button class="btn n on" id="n18">− staaf</button><button class="btn p" id="p18">+ staaf</button></div></div></div>
+    <div class="readout" id="rd18"></div></div>
+  <p>De staaf trekt de tegengestelde kant van elke molecule naar zich toe en duwt de gelijke kant weg. Omdat de tegengestelde kant dichterbij zit, is de aantrekking sterker dan de afstoting. Daarom is de netto kracht op de isolator <b>aantrekkend</b>, ongeacht het teken van de staaf.</p>` + checksHTML('l18', checks);
+  let sgn = -1, dist = .85;
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const init = Array.from({ length: 24 }, () => rnd() * Math.PI * 2 - Math.PI);
+  const lerpA = (a, b, t) => { let d = ((b - a + Math.PI) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI) - Math.PI; return a + d * t; };
+  const cv = setupCanvas($('#s18'), { aspect: .5, minH: 260, draw(c, w, h, C) {
+    const a = Math.pow(1 - dist, 1.1);
+    const bx = w * .42, bw = w * .54, by = h * .1, bh = h * .8;
+    const rodW = Math.min(w * .26, 150), rx = (w * .02) + (1 - dist) * (bx - rodW - 4 - w * .02), ry = h / 2 - 20;
+    const rc = sgn > 0 ? C.pos : C.neg;
+    c.fillStyle = sgn > 0 ? C.posSoft : C.negSoft; c.strokeStyle = rc; c.lineWidth = 2.5; c.beginPath(); c.roundRect(rx, ry, rodW, 40, 10); c.fill(); c.stroke();
+    for (let i = 0; i < 4; i++) txt(c, sgn > 0 ? '+' : '−', rx + rodW - 18 - i * (rodW - 36) / 3, ry + 20, rc, 20, 'center', 800, true);
+    c.fillStyle = C.sunk; c.strokeStyle = C.ink2; c.lineWidth = 2; c.beginPath(); c.roundRect(bx, by, bw, bh, 14); c.fill(); c.stroke();
+    txt(c, 'kunststof (isolator)', bx + bw / 2, by + 14, C.ink2, 12);
+    const target = sgn > 0 ? 0 : Math.PI;
+    const cols = 6, rows = 4;
+    for (let i = 0; i < 24; i++) {
+      const x = bx + 38 + (i % cols) * (bw - 76) / (cols - 1), y = by + 42 + Math.floor(i / cols) * (bh - 84) / (rows - 1);
+      const ang = lerpA(init[i], target, a);
+      c.save(); c.translate(x, y); c.rotate(ang);
+      const Ld = Math.min(15, bw / 16);
+      c.lineCap = 'round'; c.lineWidth = 11;
+      c.strokeStyle = C.neg; c.beginPath(); c.moveTo(-Ld, 0); c.lineTo(0, 0); c.stroke();
+      c.strokeStyle = C.pos; c.beginPath(); c.moveTo(0, 0); c.lineTo(Ld, 0); c.stroke();
+      c.restore();
+    }
+    const n = Math.round(a * 5);
+    for (let i = 0; i < n; i++) { const yy = by + 30 + (i + .5) * (bh - 60) / Math.max(n, 1); txt(c, sgn > 0 ? '−' : '+', bx + 9, yy, sgn > 0 ? C.neg : C.pos, 15, 'center', 800, true); txt(c, sgn > 0 ? '+' : '−', bx + bw - 9, yy, sgn > 0 ? C.pos : C.neg, 15, 'center', 800, true); }
+    if (a > .08) { arrow(c, bx - 4, h - 22, bx - 4 - 18 - a * 60, h - 22, C.res, 4, 11); txt(c, 'F: aantrekking', bx - 28 - a * 60, h - 40, C.res, 12, 'right', 700); }
+    c.font = '11px ' + C.font;
+  } });
+  const upd = () => {
+    $('#od18').textContent = dist > .66 ? 'ver' : dist > .33 ? 'middel' : 'dichtbij';
+    const a = Math.pow(1 - dist, 1.1);
+    $('#rd18').innerHTML = a < .08 ? 'Ver weg: de moleculen staan door elkaar. Geen netto effect.' : 'Polarisatie <b>' + Math.round(a * 100) + '%</b>: de ' + (sgn > 0 ? '<b class="neg">negatieve</b>' : '<b class="pos">positieve</b>') + ' kant van de moleculen wijst naar de staaf. Aan de rand van het kunststof ontstaat een <b>schaduwlading</b> met tegengesteld teken, en netto trekt de staaf het kunststof aan.';
+    cv.redraw();
+  };
+  $('#d18').oninput = e => { dist = e.target.value / 100; upd(); };
+  $('#n18').onclick = () => { sgn = -1; $('#n18').classList.add('on'); $('#p18').classList.remove('on'); upd(); };
+  $('#p18').onclick = () => { sgn = 1; $('#p18').classList.add('on'); $('#n18').classList.remove('on'); upd(); };
+  upd(); bindChecks(root, 'l18', checks);
+} });
+/* ===== Krachtenmotor en lab ===== */
+function forcesOn(charges, ti) {
+  const t = charges[ti], list = []; let sx = 0, sy = 0;
+  charges.forEach((c, j) => {
+    if (j === ti) return;
+    const dx = t.x - c.x, dy = t.y - c.y, rcm = Math.hypot(dx, dy);
+    if (rcm < 1e-9 || c.hidden) return;
+    const r = rcm / 100, F = K * Math.abs(c.q * 1e-6 * t.q * 1e-6) / (r * r);
+    const s = c.q * t.q > 0 ? 1 : c.q * t.q < 0 ? -1 : 0;
+    const ux = s * dx / rcm, uy = s * dy / rcm;
+    list.push({ from: j, to: ti, F, r: rcm, fx: F * ux, fy: F * uy, rep: s > 0, ang: Math.atan2(uy, ux) * 180 / Math.PI });
+    sx += F * ux; sy += F * uy;
+  });
+  return { list, fx: sx, fy: sy, F: Math.hypot(sx, sy), ang: Math.atan2(sy, sx) * 180 / Math.PI };
+}
+function dirText(fx, fy) {
+  const F = Math.hypot(fx, fy);
+  if (F < 1e-12) return 'geen richting (F = 0)';
+  const ax = Math.abs(fx) / F, ay = Math.abs(fy) / F;
+  const h = fx >= 0 ? 'rechts' : 'links', v = fy >= 0 ? 'boven' : 'onder';
+  if (ay < 1e-3) return 'horizontaal naar ' + h;
+  if (ax < 1e-3) return 'verticaal naar ' + (fy >= 0 ? 'boven' : 'onder');
+  const a = Math.atan(Math.abs(fy) / Math.abs(fx)) * 180 / Math.PI;
+  return deg(a) + ' ' + v + ' de horizontale, naar ' + h;
+}
+const FL = (i, j) => 'F' + sub(i) + sub(j);
+const qtxt = q => (q > 0 ? '+' : q < 0 ? '−' : '') + dec(Math.abs(q).toFixed(Math.abs(q) % 1 ? 1 : 1));
+
+function ForceLab(box, o) {
+  const init = o.charges.map(c => ({ ...c }));
+  let ch = o.charges.map(c => ({ ...c })), tgt = o.target || 0, comps = !!o.showComp, vec = o.showVectors !== false, drag = -1;
+  const xs = init.map(c => c.x), ys = init.map(c => c.y);
+  let x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
+  const pad = Math.max(10, (x1 - x0) * .22, (y1 - y0) * .3);
+  x0 -= pad; x1 += pad; y0 -= pad * (o.lockY ? 1.8 : 1.15); y1 += pad * (o.lockY ? 1.8 : 1.15);
+  if (x1 - x0 < 50) { const m = (x0 + x1) / 2; x0 = m - 25; x1 = m + 25; }
+  const aspect = Math.max(.34, Math.min(.85, (y1 - y0) / (x1 - x0)));
+  const names = new Proxy({}, { get: (t, k) => ch[k] ? (ch[k].label || 'Q' + sub(+k + 1)) : '' });
+  let distLabel = o.distLabel || null, title = o.title || 'Krachtenlab';
+  const fname = f => ch[f.to].label ? 'F' + sub(f.from + 1) + '\u2192' + ch[f.to].label : FL(f.from + 1, f.to + 1);
+  const rname = () => ch[tgt].label ? 'F(' + ch[tgt].label + ')' : 'F' + sub(tgt + 1);
+  box.innerHTML = '<div class="sim"><header><b class="ttl">' + title + '</b><span>' + (o.hint || '') + '</span></header><div class="stage"></div>' +
+    '<div class="controls"></div><div class="readout"></div></div>';
+  const stage = $('.stage', box), ctr = $('.controls', box), rd = $('.readout', box);
+  const dim = { w: 300, h: 200 };
+  const sc = () => { const w = dim.w, h = dim.h; const s = Math.min(w / (x1 - x0), h / (y1 - y0)); return { s, ox: w / 2 - (x0 + x1) / 2 * s, oy: h / 2 + (y0 + y1) / 2 * s }; };
+  const toS = (x, y) => { const k = sc(); return [k.ox + x * k.s, k.oy - y * k.s]; };
+  const toW = (px, py) => { const k = sc(); return [(px - k.ox) / k.s, (k.oy - py) / k.s]; };
+  const cv = setupCanvas(stage, { aspect, minH: 230, draw: (c, w, h, C) => { dim.w = w; dim.h = h; draw(c, w, h, C); } });
+  function draw(c, w, h, C) {
+    const k = sc();
+    /* raster */
+    c.strokeStyle = C.line; c.lineWidth = 1; c.globalAlpha = .6;
+    const g = (x1 - x0) > 120 ? 20 : 10;
+    for (let x = Math.ceil(x0 / g) * g; x <= x1; x += g) { const [px] = toS(x, 0); c.beginPath(); c.moveTo(px, 0); c.lineTo(px, h); c.stroke(); }
+    for (let y = Math.ceil(y0 / g) * g; y <= y1; y += g) { const [, py] = toS(0, y); c.beginPath(); c.moveTo(0, py); c.lineTo(w, py); c.stroke(); }
+    c.globalAlpha = 1; txt(c, 'rasterlijnen: ' + g + ' cm', w - 10, h - 10, C.ink2, 11, 'right');
+    /* afstanden */
+    const pairs = []; for (let i = 0; i < ch.length; i++) for (let j = i + 1; j < ch.length; j++) if (!ch[i].hidden && !ch[j].hidden) pairs.push([i, j]);
+    pairs.forEach(([i, j]) => {
+      const [ax, ay] = toS(ch[i].x, ch[i].y), [bx, by] = toS(ch[j].x, ch[j].y);
+      c.setLineDash([5, 5]); c.strokeStyle = C.ink2; c.lineWidth = 1.2; c.beginPath(); c.moveTo(ax, ay); c.lineTo(bx, by); c.stroke(); c.setLineDash([]);
+      const d = Math.hypot(ch[i].x - ch[j].x, ch[i].y - ch[j].y);
+      const mx = (ax + bx) / 2, my = (ay + by) / 2, dl = distLabel ? distLabel(i, j, d) : null, lab = dl != null ? dl : dec((+d.toFixed(1)).toString()) + ' cm';
+      c.font = '600 12px ' + C.font; const tw = c.measureText(lab).width;
+      c.fillStyle = C.surface; c.globalAlpha = .9; c.fillRect(mx - tw / 2 - 4, my - 9, tw + 8, 18); c.globalAlpha = 1;
+      txt(c, lab, mx, my, C.ink2, 12);
+    });
+    /* krachten */
+    if (vec) {
+      const res = forcesOn(ch, tgt), [tx, ty] = toS(ch[tgt].x, ch[tgt].y);
+      const maxF = Math.max(res.F, ...res.list.map(f => f.F));
+      const Lmax = Math.min(w, h) * .36, len = F => maxF > 0 ? Math.max(F > 0 ? 8 : 0, F / maxF * Lmax) : 0;
+      if (maxF > 0) {
+        if (comps && res.F > 0) {
+          res.list.forEach(f => { const l = len(f.F), ux = f.fx / (f.F || 1), uy = -f.fy / (f.F || 1); c.setLineDash([3, 4]); c.strokeStyle = C.accent; c.globalAlpha = .55; c.lineWidth = 1.5; c.beginPath(); c.moveTo(tx, ty); c.lineTo(tx + ux * l, ty); c.lineTo(tx + ux * l, ty + uy * l); c.stroke(); c.setLineDash([]); c.globalAlpha = 1; });
+          const l = len(res.F), ux = res.fx / res.F * l, uy = -res.fy / res.F * l;
+          c.setLineDash([6, 4]); c.strokeStyle = C.res; c.lineWidth = 2; c.beginPath(); c.moveTo(tx, ty); c.lineTo(tx + ux, ty); c.lineTo(tx + ux, ty + uy); c.stroke(); c.setLineDash([]);
+          txt(c, 'Fx', tx + ux / 2, ty + (uy > 0 ? -12 : 12), C.res, 12, 'center', 700);
+          txt(c, 'Fy', tx + ux + (ux >= 0 ? 16 : -16), ty + uy / 2, C.res, 12, 'center', 700);
+        }
+        res.list.forEach(f => {
+          if (f.F <= 0) return; const l = len(f.F), ux = f.fx / f.F, uy = -f.fy / f.F;
+          arrow(c, tx, ty, tx + ux * l, ty + uy * l, C.accent, 3, 11);
+          txt(c, fname(f), tx + ux * (l + 20) + (Math.abs(ux) < .3 ? 14 : 0), ty + uy * (l + 14), C.accent, 13, 'center', 700);
+        });
+        if (res.F > maxF * 1e-6 && res.list.length > 1) {
+          const l = len(res.F), ux = res.fx / res.F, uy = -res.fy / res.F;
+          arrow(c, tx, ty, tx + ux * l, ty + uy * l, C.res, 4.5, 13);
+          txt(c, rname(), tx + ux * (l + 20) - uy * 12, ty + uy * (l + 14) + ux * 12, C.res, 14, 'center', 800);
+        } else if (res.list.length > 1) txt(c, rname() + ' = 0', tx, ty - 38, C.res, 14, 'center', 800);
+      }
+    }
+    /* ladingen */
+    ch.forEach((q, i) => {
+      if (q.hidden) return;
+      const [x, y] = toS(q.x, q.y), r = 13 + Math.min(10, Math.sqrt(Math.abs(q.q)) * 2.4);
+      if (i === tgt && vec) { c.beginPath(); c.arc(x, y, r + 6, 0, 7); c.strokeStyle = C.res; c.lineWidth = 2; c.setLineDash([3, 3]); c.stroke(); c.setLineDash([]); }
+      charge(c, x, y, r, q.q, C);
+      txt(c, names[i] + (q.hideQ ? '' : ' = ' + qtxt(q.q) + ' µC'), x, y + r + 15, C.ink, 12, 'center', 700);
+    });
+  }
+  /* slepen */
+  if (o.editable) {
+    const el = cv.cv; el.style.cursor = 'grab';
+    el.addEventListener('pointerdown', e => { const p = pointer(el, e); let best = -1, bd = 28; ch.forEach((q, i) => { const [x, y] = toS(q.x, q.y), d = Math.hypot(x - p.x, y - p.y); if (d < bd) { bd = d; best = i; } }); if (best >= 0) { drag = best; el.setPointerCapture(e.pointerId); if (o.pick !== false) { tgt = best; sync(); } } });
+    el.addEventListener('pointermove', e => { if (drag < 0) return; const p = pointer(el, e); let [wx, wy] = toW(p.x, p.y); wx = Math.max(x0 + 2, Math.min(x1 - 2, Math.round(wx))); wy = Math.max(y0 + 2, Math.min(y1 - 2, Math.round(wy))); ch[drag].x = wx; if (!o.lockY) ch[drag].y = wy; refresh(); });
+    el.addEventListener('pointerup', () => { drag = -1; }); el.addEventListener('pointercancel', () => { drag = -1; });
+  }
+  /* bediening */
+  ctr.innerHTML = (o.fixedTarget ? '' : '<div class="ctl"><span class="lab">Kracht berekenen op</span><div class="btnrow" id="tg"></div></div>') +
+    '<div class="ctl"><span class="lab">Weergave</span><div class="btnrow">' + (o.vectorToggle ? '<button class="btn" id="tv">Toon krachten</button>' : '') + '<button class="btn" id="tc">Toon componenten</button>' + (o.editable || o.qEdit ? '<button class="btn" id="rs">Terug naar start</button>' : '') + '</div></div>' +
+    (o.qEdit ? ch.map((q, i) => q.fixedQ ? '' : '<div class="ctl"><label for="qs' + i + '">' + names[i] + ' <output id="qo' + i + '"></output></label><input type="range" id="qs' + i + '" min="-10" max="10" step="0.5" value="' + q.q + '"></div>').join('') : '');
+  const tg = $('#tg', ctr);
+  if (tg) ch.forEach((q, i) => { if (q.noTarget || q.hidden) return; const b = document.createElement('button'); b.className = 'btn'; b.textContent = names[i]; b.onclick = () => { tgt = i; sync(); }; tg.appendChild(b); });
+  if (o.qEdit) ch.forEach((q, i) => { const s = $('#qs' + i, ctr); if (!s) return; s.oninput = () => { ch[i].q = +s.value; refresh(); }; });
+  $('#tc', ctr).onclick = () => { comps = !comps; sync(); };
+  if (o.vectorToggle) $('#tv', ctr).onclick = () => { vec = !vec; sync(); };
+  if ($('#rs', ctr)) $('#rs', ctr).onclick = () => { ch = init.map(c => ({ ...c })); if (o.qEdit) ch.forEach((q, i) => { const s = $('#qs' + i, ctr); if (s) s.value = q.q; }); sync(); };
+  function refresh() {
+    ch.forEach((q, i) => { const out = $('#qo' + i, ctr); if (out) out.textContent = qtxt(q.q) + ' µC'; });
+    const res = forcesOn(ch, tgt); let h = '';
+    if (!vec) h = 'Klik op “Toon krachten” om de krachten op ' + names[tgt] + ' te zien.';
+    else {
+      res.list.forEach(f => { h += '<div class="mono">' + fname(f) + ' = ' + fmt(f.F) + ' N <span style="color:var(--ink2)">(' + (f.rep ? 'afstoting' : 'aantrekking') + ', r = ' + dec(+f.r.toFixed(1)) + ' cm, hoek ' + deg(f.ang) + ')</span></div>'; });
+      h += '<div class="mono">Fx = ' + fmt(res.fx) + ' N &nbsp; Fy = ' + fmt(res.fy) + ' N</div>';
+      h += '<div class="big res">' + rname() + ' = ' + fmt(res.F) + ' N, ' + dirText(res.fx, res.fy) + '</div>';
+    }
+    rd.innerHTML = h; rd.hidden = !!o.hideReadout && !vec; cv.redraw();
+  }
+  function sync() {
+    $$('#tg button', ctr).forEach((b, i) => b.classList.toggle('on', i === tgt));
+    $('#tc', ctr).classList.toggle('on', comps); if (o.vectorToggle) { $('#tv', ctr).classList.toggle('on', vec); $('#tv', ctr).textContent = vec ? 'Verberg krachten' : 'Toon krachten'; }
+    refresh();
+  }
+  if (o.noControls) ctr.hidden = true;
+  sync();
+  return { setVectors(v) { vec = v; sync(); }, setComps(v) { comps = v; sync(); }, setTitle(t) { $('.ttl', box).textContent = t; }, setDistLabel(f) { distLabel = f; cv.redraw(); }, get charges() { return ch; }, setTarget(i) { tgt = i; sync(); }, setCharges(a) { ch = a.map(c => ({ ...c })); sync(); }, sync };
+}
+
+/* ---------- 2.1 Wet van Coulomb ---------- */
+addPage({ id: 'l21', group: 'h2', no: '2.1', title: 'De wet van Coulomb', render(root) {
+  const checks = [
+    { q: 'De afstand tussen twee ladingen wordt 2 keer zo groot. Wat gebeurt er met de kracht?', o: ['2 keer zo groot', '2 keer zo klein', '4 keer zo klein', '4 keer zo groot'], a: 2, w: 'r staat in het kwadraat in de noemer: (2r)² = 4r². De kracht wordt 4 keer kleiner.', hint: 'Kijk waar r staat in de formule, en in welke macht.' },
+    { q: 'Q₁ wordt 3 keer zo groot, de rest blijft gelijk. De kracht wordt...', o: ['3 keer zo groot', '9 keer zo groot', '3 keer zo klein'], a: 0, w: 'F is recht evenredig met |Q₁|, dus 3 keer groter.' },
+    { q: 'Beide ladingen en de afstand worden elk 2 keer zo groot. De kracht wordt...', o: ['2 keer zo groot', 'even groot', '2 keer zo klein', '4 keer zo klein'], a: 1, w: 'Teller: 2·2 = 4 keer groter. Noemer: 2² = 4 keer groter. Samen: factor 1.' },
+    { q: 'Q₁ = +2 µC en Q₂ = +8 µC. Welke lading voelt de grootste kracht?', o: ['Q₁', 'Q₂', 'Allebei evenveel'], a: 2, w: 'Derde wet van Newton: de krachten zijn even groot en tegengesteld, ook als de ladingen verschillen.' },
+    { q: 'Hoeveel is 3,5 µC in coulomb?', o: ['3,5·10<sup>−3</sup> C', '3,5·10<sup>−6</sup> C', '3,5·10<sup>6</sup> C'], a: 1, w: 'µ betekent micro = 10<sup>−6</sup>.' },
+    { q: 'In water is de coulombkracht tussen twee ladingen...', o: ['80 keer kleiner dan in lucht', '80 keer groter dan in lucht', 'even groot als in lucht'], a: 0, w: 'De elektrische permittiviteit van water is 80 keer groter, dus k is 80 keer kleiner en de kracht ook.' }
+  ];
+  root.innerHTML = head(H2, 'De wet van Coulomb', 'Hoe groot is de kracht tussen twee ladingen? Eén formule, vier kenmerken en één stappenplan.') + `
+  <section class="sec"><h2>De kracht is een vector</h2>
+    <p>De coulombkracht <b>F</b> heeft vier kenmerken:</p>
+    <ul class="clean"><li><b>Aangrijpingspunt:</b> het centrum van de lading.</li><li><b>Richting:</b> volgens de verbindingslijn tussen de ladingen.</li><li><b>Zin:</b> hangt af van de tekens: gelijk stoot af, ongelijk trekt aan.</li><li><b>Grootte:</b> recht evenredig met de grootte van de ladingen en omgekeerd evenredig met het kwadraat van de afstand.</li></ul></section>
+  <div class="focus"><span class="tag">Focus: coulombkracht</span>
+    <div class="formula">F<sub>c</sub> = k · ${frac('|Q<sub>1</sub>| · |Q<sub>2</sub>|', 'r<sup>2</sup>')}</div>
+    <dl class="legend"><dt>F<sub>c</sub></dt><dd>coulombkracht in newton (N)</dd><dt>k</dt><dd>8,99·10<sup>9</sup> N·m²/C²</dd><dt>|Q<sub>1</sub>|, |Q<sub>2</sub>|</dt><dd>grootte van de ladingen in coulomb (C)</dd><dt>r</dt><dd>afstand tussen de ladingen in meter (m)</dd></dl></div>
+  <div class="sim"><header><b>Coulomb-simulatie</b><span>Verander alles en kijk wat er met F gebeurt</span></header>
+    <div class="stage" id="s21"></div>
+    <div class="controls">
+      <div class="ctl"><label for="q1">Q₁ <output id="o1"></output></label><input type="range" id="q1" min="-20" max="20" step="0.5" value="2.5"></div>
+      <div class="ctl"><label for="q2">Q₂ <output id="o2"></output></label><input type="range" id="q2" min="-20" max="20" step="0.5" value="-4"></div>
+      <div class="ctl"><label for="rr">Afstand r <output id="or"></output></label><input type="range" id="rr" min="1" max="120" step="0.5" value="20"></div>
+      <div class="ctl"><label for="med">Middenstof</label><select id="med"><option value="1">Vacuüm of lucht</option><option value="80">Water (k is 80 keer kleiner)</option></select></div>
+    </div>
+    <div class="controls"><div class="ctl"><span class="lab">Test de verhoudingen</span><div class="btnrow"><button class="btn" data-f="q1">Q₁ × 2</button><button class="btn" data-f="q2">Q₂ × 2</button><button class="btn" data-f="r2">r × 2</button><button class="btn" data-f="rh">r ÷ 2</button><button class="btn" data-f="ref">Nieuwe referentie</button></div></div></div>
+    <div class="readout" id="rd21"></div></div>
+  <section class="sec"><h2>Stappenplan voor elke rekenoefening</h2>
+    <div class="step"><h3>1. Alles naar SI-eenheden</h3><p>µC → 10<sup>−6</sup> C, nC → 10<sup>−9</sup> C, mC → 10<sup>−3</sup> C. cm → 10<sup>−2</sup> m, mm → 10<sup>−3</sup> m.</p></div>
+    <div class="step"><h3>2. Grootte met absolute waarden</h3><p>Vul |Q₁| en |Q₂| in de formule in, zonder minteken. Zo krijg je een positief getal.</p></div>
+    <div class="step"><h3>3. Zin met de tekens</h3><p>Gelijke tekens: afstoting. Verschillende tekens: aantrekking. Teken een pijl op de lading waarvoor je de kracht zoekt.</p></div>
+    <div class="step"><h3>4. Antwoord met eenheid en zin</h3><p>Schrijf de grootte in N en zeg of het aantrekking of afstoting is, of naar welke kant de kracht wijst.</p></div></section>
+  <div class="warnbox"><span class="tag">Veelgemaakte fouten</span>
+    <p>Vergeten om µC of cm om te zetten. Het minteken meenemen in de grootte. De afstand niet kwadrateren. Bij drie ladingen de kracht van een verre lading vergeten omdat er een andere tussen zit: elke lading oefent altijd haar eigen kracht uit.</p></div>
+  <div class="note"><span class="tag">Achtergrond</span><p>De constante k komt uit de elektrische permittiviteit ε: <span class="mono">k = 1/(4πε)</span>. In vacuüm en bij benadering in lucht is ε = ε<sub>0</sub> en k = 8,99·10<sup>9</sup>. Water heeft een 80 keer grotere ε, dus k en F zijn 80 keer kleiner.</p></div>
+  <div class="note"><span class="tag">Voorbeeld uit de les</span>
+    <p>Q\u2081 = 2,5 \u00B5C en Q\u2082 = 4,0 \u00B5C staan 5,0 mm van elkaar. Gevraagd: F.</p>
+    <div class="formula" style="text-align:left">F = 8,99\u00B710<sup>9</sup> \u00B7 ${frac('2,5\u00B710<sup>\u22126</sup> \u00B7 4,0\u00B710<sup>\u22126</sup>', '(5,0\u00B710<sup>\u22123</sup>)<sup>2</sup>')} = <b id="vb"></b></div>
+    <p>Beide ladingen zijn positief, dus de kracht is <b>afstotend</b>. Controleer het zelf in de simulatie: Q\u2081 = 2,5, Q\u2082 = 4,0 en r = 0,5 cm.</p></div>
+  <div class="warnbox"><span class="tag">Let op: foutje op de dia</span>
+    <p>Op de dia staat als antwoord 3,6\u00B710<sup>\u22123</sup> N. Met r = 5,0 mm is het juiste resultaat <b>3,6\u00B710<sup>3</sup> N</b>. De waarde 3,6\u00B710<sup>\u22123</sup> N hoort bij r = 5,0 m. Reken zelf na op je rekenmachine en laat je niet misleiden door dit getal. Vraag eventueel aan je leerkracht welke versie geldt.</p></div>` + checksHTML('l21', checks);
+  let q1 = 2.5, q2 = -4, r = 20, med = 1, ref = null;
+  const Fn = () => K * Math.abs(q1 * 1e-6 * q2 * 1e-6) / Math.pow(r / 100, 2) / med;
+  ref = Fn();
+  const cv = setupCanvas($('#s21'), { aspect: .34, minH: 200, draw(c, w, h, C) {
+    const y = h * .52, ra = 14 + Math.sqrt(Math.abs(q1)) * 3.4, rb = 14 + Math.sqrt(Math.abs(q2)) * 3.4;
+    const xa = Math.max(70, w * .1) + 0, avail = w - 2 * Math.max(70, w * .1) - ra - rb;
+    const xb = xa + ra + rb + 10 + (r / 120) * avail;
+    const F = Fn(), rep = q1 * q2 > 0;
+    const L = Math.min(w * .22, 14 + 26 * Math.log10(1 + 10 * F));
+    const gap = xb - xa;
+    if (rep) { arrow(c, xa - ra - 6, y, xa - ra - 6 - L, y, C.accent, 4, 12); arrow(c, xb + rb + 6, y, xb + rb + 6 + L, y, C.accent, 4, 12); }
+    else { const l2 = Math.max(6, Math.min(L, (gap - ra - rb) / 2 - 8)); arrow(c, xa + ra + 6, y, xa + ra + 6 + l2, y, C.accent, 4, 12); arrow(c, xb - rb - 6, y, xb - rb - 6 - l2, y, C.accent, 4, 12); }
+    c.setLineDash([4, 4]); c.strokeStyle = C.ink2; c.lineWidth = 1.2; c.beginPath(); c.moveTo(xa, y + 52); c.lineTo(xb, y + 52); c.stroke(); c.setLineDash([]);
+    txt(c, 'r = ' + dec(+r.toFixed(1)) + ' cm', (xa + xb) / 2, y + 68, C.ink2, 12, 'center', 600);
+    charge(c, xa, y, ra, q1, C, 'Q₁'); charge(c, xb, y, rb, q2, C, 'Q₂');
+    txt(c, 'F op Q₁ = F op Q₂ (pijllengte op log-schaal)', 12, 16, C.ink2, 11, 'left');
+  } });
+  const upd = () => {
+    $('#o1').textContent = qtxt(q1) + ' µC'; $('#o2').textContent = qtxt(q2) + ' µC'; $('#or').textContent = dec(+r.toFixed(1)) + ' cm';
+    const F = Fn(), rep = q1 * q2 > 0, rm = r / 100;
+    $('#rd21').innerHTML = '<div class="mono">F<sub>c</sub> = k · |Q<sub>1</sub>| · |Q<sub>2</sub>| / r<sup>2</sup> = 8,99·10<sup>9</sup> · (' + fmt(Math.abs(q1) * 1e-6, 2) + ' · ' + fmt(Math.abs(q2) * 1e-6, 2) + ') / (' + fmt(rm, 2) + ')<sup>2</sup>' + (med > 1 ? ' / 80' : '') + '</div><div class="big">F = ' + fmt(F) + ' N <span class="badge ' + (rep ? 'res' : 'zero') + '">' + (q1 * q2 === 0 ? 'geen kracht' : rep ? 'afstotend' : 'aantrekkend') + '</span></div><div>Verhouding met de referentie: <b class="mono">× ' + fmt(F / ref, 3) + '</b></div>';
+    cv.redraw();
+  };
+  const set = (id, fn) => $(id).oninput = e => { fn(+e.target.value); upd(); };
+  set('#q1', v => q1 = v); set('#q2', v => q2 = v); set('#rr', v => r = v);
+  $('#med').onchange = e => { med = +e.target.value; upd(); };
+  $$('[data-f]', root).forEach(b => b.onclick = () => {
+    const f = b.dataset.f;
+    if (f === 'q1') q1 = Math.max(-20, Math.min(20, q1 * 2)); if (f === 'q2') q2 = Math.max(-20, Math.min(20, q2 * 2));
+    if (f === 'r2') r = Math.min(120, r * 2); if (f === 'rh') r = Math.max(1, r / 2);
+    if (f === 'ref') ref = Fn();
+    $('#q1').value = q1; $('#q2').value = q2; $('#rr').value = r; upd();
+  });
+  $('#vb').innerHTML = fmt(K * 2.5e-6 * 4e-6 / Math.pow(5e-3, 2)) + ' N';
+  upd(); bindChecks(root, 'l21', checks);
+} });
+/* ===== Hoofdstuk 2, deel B ===== */
+
+/* ---------- 2.2 Meerdere ladingen op een rechte ---------- */
+addPage({ id: 'l22', group: 'h2', no: '2.2', title: 'Meerdere ladingen op een rechte', render(root) {
+  const checks = [
+    { q: 'Q₁ = +3 µC staat links van Q₂ = −2 µC, en Q₃ = +5 µC staat rechts. Je zoekt de kracht op Q₂. Hoe wijzen F₁₂ en F₃₂?', o: ['Beide naar rechts', 'Beide naar links', 'F₁₂ naar links, F₃₂ naar rechts'], a: 2, w: 'Q₂ is negatief, Q₁ en Q₃ zijn positief: allebei aantrekking. Q₂ wordt naar Q₁ (links) en naar Q₃ (rechts) getrokken. Ze werken dus tegen elkaar in en je trekt de groottes van elkaar af.', hint: 'Teken de pijlen op Q₂: aantrekking wijst naar de andere lading toe.' },
+    { q: 'Q₂ staat tussen Q₁ en Q₃. Hoe bereken je de kracht van Q₁ op Q₃?', o: ['Q₂ schermt af, dus die kracht is kleiner', 'Gewoon met de afstand Q₁Q₃, alsof Q₂ er niet is', 'Je mag die kracht weglaten'], a: 1, w: 'Een lading oefent altijd haar eigen kracht uit. Er bestaat geen afscherming. Bereken elke kracht apart en tel dan op.' },
+    { q: 'Twee krachten op dezelfde lading wijzen allebei naar rechts: 3,0 N en 2,0 N. Wat is de resultante?', o: ['1,0 N naar rechts', '5,0 N naar rechts', '5,0 N naar links'], a: 1, w: 'Dezelfde zin: je telt de groottes op.' }
+  ];
+  const ex = [{ x: 0, y: 0, q: 4 }, { x: 10, y: 0, q: 1 }, { x: 30, y: 0, q: 2 }];
+  const a = forcesOn(ex, 1), F12 = a.list[0], F32 = a.list[1];
+  root.innerHTML = head(H2, 'Meerdere ladingen op een rechte', 'Drie ladingen op een lijn: bereken elke kracht apart, geef er een teken aan en tel op.') + `
+  <section class="sec"><h2>Aanpak in drie stappen</h2>
+    <div class="step"><h3>1. Kies een positieve zin</h3><p>Bijvoorbeeld naar rechts. Krachten naar rechts krijgen een plus, krachten naar links een min.</p></div>
+    <div class="step"><h3>2. Bereken elke kracht apart</h3><p>Gebruik voor elk paar de wet van Coulomb met hun eigen afstand. Bepaal de zin met de tekens van de twee ladingen.</p></div>
+    <div class="step"><h3>3. Tel op met de tekens</h3><p><b>F = F₁ + F₂</b>. Dezelfde zin: optellen. Tegengestelde zin: aftrekken. Een positief eindresultaat betekent naar rechts, een negatief naar links.</p></div>
+    <div class="focus"><span class="tag">Voorbeeld</span><p>Q₁ = +4 µC (op 0 cm), Q₂ = +1 µC (op 10 cm), Q₃ = +2 µC (op 30 cm). Kracht op Q₂?</p>
+      <div class="step"><div class="calc">F₁₂ = ${fmt(F12.F)} N, afstoting, Q₂ wordt naar rechts geduwd: <b>+${fmt(F12.F)} N</b></div>
+      <div class="calc">F₃₂ = ${fmt(F32.F)} N, afstoting, Q₂ wordt naar links geduwd: <b>−${fmt(F32.F)} N</b></div>
+      <div class="calc">F₂ = (+${fmt(F12.F)}) + (−${fmt(F32.F)}) = <b>${sgn(a.fx, 3)} N</b>, dus naar rechts</div></div></div></section>
+  <div id="lab22"></div>
+  <div class="warnbox"><span class="tag">Valkuil</span><p>Een lading ertussen schermt niets af. De kracht van Q₁ op Q₃ bereken je met de afstand Q₁Q₃, ook als Q₂ er tussen staat.</p></div>` + checksHTML('l22', checks);
+  ForceLab($('#lab22'), { title: 'Experimenteer op een rechte', hint: 'Sleep de ladingen horizontaal en verander de ladingen met de schuiven', charges: ex.map(c => ({ ...c })), target: 1, editable: true, qEdit: true, lockY: true });
+  bindChecks(root, 'l22', checks);
+} });
+
+/* ---------- 2.3 Krachten in een vlak ---------- */
+addPage({ id: 'l23', group: 'h2', no: '2.3', title: 'Krachten in een vlak (2D)', render(root) {
+  const checks = [
+    { q: 'Twee loodrechte krachten van 3 N en 4 N werken op dezelfde lading. Wat is de resultante?', o: ['7 N', '5 N', '1 N'], a: 1, w: 'Loodrecht: stelling van Pythagoras. √(3² + 4²) = 5 N.' },
+    { q: 'Een kracht van 10 N maakt een hoek van 30° met de horizontale. Hoe groot is de horizontale component?', o: ['5,0 N', '8,7 N', '10 N'], a: 1, w: 'Fₓ = F·cos α = 10 · cos 30° = 8,7 N. De verticale component is 10 · sin 30° = 5,0 N.', hint: 'Horizontaal naast de hoek: cosinus. Verticaal tegenover de hoek: sinus.' },
+    { q: 'Twee krachten van 4 N hebben precies tegengestelde zin (hoek 180°). Wat is de resultante?', o: ['8 N', '0 N', '4 N'], a: 1, w: 'Even groot en tegengesteld: ze heffen elkaar op.' },
+    { q: 'De twee krachten op Q₃ staan niet loodrecht op elkaar. Wat doe je?', o: ['Toch Pythagoras gebruiken', 'Ontbinden in componenten, of de cosinusregel met de hoek tussen de vectoren gebruiken', 'De kleinste kracht weglaten'], a: 1, w: 'Pythagoras werkt alleen bij loodrechte vectoren. Anders ontbind je in x en y en tel je de componenten op, of je gebruikt R² = F₁² + F₂² + 2F₁F₂ cos φ.' }
+  ];
+  const slide = [{ x: 0, y: 0, q: 50, fixedQ: true }, { x: 18, y: -24, q: 30 }, { x: 50, y: 0, q: 20 }];
+  const sres = forcesOn(slide, 2), f13 = sres.list[0], f23 = sres.list[1];
+  const alpha = Math.acos(40 / 50) * 180 / Math.PI;
+  root.innerHTML = head(H2, 'Krachten in een vlak', 'Staan de ladingen niet op een lijn, dan wijzen de krachten in verschillende richtingen. Dan moet je vectoren optellen. Hier leer je hoe, stap voor stap.') + `
+  <section class="sec"><h2>Stap A: een kracht ontbinden</h2>
+    <p>Een schuine kracht F kun je vervangen door een <b>horizontale</b> en een <b>verticale</b> component. Samen vormen ze een rechthoekige driehoek.</p>
+    <div class="focus"><span class="tag">Focus</span><div class="formula">F<sub>x</sub> = F · cos α &nbsp;&nbsp; F<sub>y</sub> = F · sin α</div><div class="formula">F = √(F<sub>x</sub><sup>2</sup> + F<sub>y</sub><sup>2</sup>) &nbsp;&nbsp; tan α = ${frac('F<sub>y</sub>', 'F<sub>x</sub>')}</div></div></section>
+  <div class="sim"><header><b>Ontbinden</b><span>Verander F en de hoek α met de horizontale</span></header>
+    <div class="stage" id="s23a"></div>
+    <div class="controls"><div class="ctl"><label for="fa">Kracht F <output id="ofa"></output></label><input type="range" id="fa" min="1" max="10" step="0.5" value="5"></div>
+      <div class="ctl"><label for="aa">Hoek α <output id="oaa"></output></label><input type="range" id="aa" min="0" max="90" step="1" value="37"></div></div>
+    <div class="readout" id="rda"></div></div>
+
+  <section class="sec"><h2>Stap B: twee krachten optellen</h2>
+    <p>De twee krachten op een lading werken in hetzelfde punt. De resultante is de diagonaal van het parallellogram. De hoek <b>φ</b> is de hoek tussen de twee krachtvectoren, als je ze vanuit hetzelfde punt tekent.</p>
+    <div class="focus"><span class="tag">Focus</span><div class="formula">F<sup>2</sup> = F<sub>1</sub><sup>2</sup> + F<sub>2</sub><sup>2</sup> + 2 · F<sub>1</sub> · F<sub>2</sub> · cos φ</div>
+      <p>φ = 0°: optellen. φ = 90°: Pythagoras. φ = 180°: aftrekken.</p></div></section>
+  <div class="sim"><header><b>Parallellogram van krachten</b><span>Verander groottes en hoek</span></header>
+    <div class="stage" id="s23b"></div>
+    <div class="controls"><div class="ctl"><label for="f1">F₁ <output id="of1"></output></label><input type="range" id="f1" min="1" max="10" step="0.5" value="4"></div>
+      <div class="ctl"><label for="f2">F₂ <output id="of2"></output></label><input type="range" id="f2" min="1" max="10" step="0.5" value="3"></div>
+      <div class="ctl"><label for="ph">Hoek φ <output id="oph"></output></label><input type="range" id="ph" min="0" max="180" step="1" value="90"></div></div>
+    <div class="readout" id="rdb"></div></div>
+
+  <section class="sec"><h2>Stap C: het voorbeeld uit de les</h2>
+    <p>Drie ladingen op de hoekpunten van een driehoek: Q₁ = 50 µC, Q₂ = 30 µC en Q₃ = 20 µC. Afstanden: r₁₂ = 30 cm, r₂₃ = 40 cm, r₁₃ = 50 cm. Bereken de kracht op Q₃.</p>
+    <div class="step"><h3>1. Elke kracht apart</h3>
+      <div class="calc">F₁₃ = k·|Q₁|·|Q₃|/r₁₃² = ${fmt(f13.F)} N (afstoting, weg van Q₁, naar rechts)</div>
+      <div class="calc">F₂₃ = k·|Q₂|·|Q₃|/r₂₃² = ${fmt(f23.F)} N (afstoting, weg van Q₂, schuin omhoog)</div></div>
+    <div class="step"><h3>2. De hoek bepalen</h3><p>De driehoek 30-40-50 heeft een rechte hoek bij Q₂. De hoek α tussen F₂₃ en de horizontale:</p>
+      <div class="calc">cos α = r₂₃ / r₁₃ = 40/50 = 0,8 → α = ${deg(alpha, 0)}</div></div>
+    <div class="step"><h3>3. Ontbind F₂₃</h3>
+      <div class="calc">F₂₃ₓ = ${fmt(f23.F)} · cos ${deg(alpha, 0)} = ${fmt(f23.fx)} N<br>F₂₃ᵧ = ${fmt(f23.F)} · sin ${deg(alpha, 0)} = ${fmt(f23.fy)} N</div></div>
+    <div class="step"><h3>4. Componenten optellen</h3>
+      <div class="calc">F₃ₓ = ${fmt(f13.fx)} + ${fmt(f23.fx)} = ${fmt(sres.fx)} N<br>F₃ᵧ = ${fmt(f23.fy)} N</div></div>
+    <div class="step"><h3>5. Pythagoras</h3>
+      <div class="calc">F₃ = √(${fmt(sres.fx)}² + ${fmt(sres.fy)}²) = <b>${fmt(sres.F)} N</b>, ${dirText(sres.fx, sres.fy)}</div></div></section>
+  <div id="lab23a"></div>
+  <section class="sec"><h2>Stap D: experimenteer vrij</h2><p>Sleep de ladingen, verander de ladingen en kies op welke lading je de resultante wilt zien. Zet “Toon componenten” aan om de ontbinding te volgen.</p></section>
+  <div id="lab23b"></div>` + checksHTML('l23', checks);
+  ForceLab($('#lab23a'), { title: 'Het voorbeeld uit de les', hint: 'Q₁ en Q₃ staan 50 cm uit elkaar', charges: slide.map(c => ({ ...c })), target: 2, editable: true, qEdit: false, showComp: true });
+  ForceLab($('#lab23b'), { title: 'Vrij experimenteren', hint: 'Sleep en verander', charges: [{ x: 0, y: 0, q: 4 }, { x: 40, y: 0, q: -3 }, { x: 20, y: 30, q: 2 }], target: 2, editable: true, qEdit: true, showComp: false });
+  /* ontbinden */
+  let F = 5, al = 37;
+  const cvA = setupCanvas($('#s23a'), { aspect: .46, minH: 230, draw(c, w, h, C) {
+    const s = Math.min((w - 110) / 10, (h - 70) / 10), ox = 60, oy = h - 40, r = al * Math.PI / 180;
+    const fx = F * Math.cos(r) * s, fy = F * Math.sin(r) * s;
+    c.strokeStyle = C.line; c.lineWidth = 1.5; c.beginPath(); c.moveTo(ox - 20, oy); c.lineTo(w - 20, oy); c.moveTo(ox, oy + 20); c.lineTo(ox, 16); c.stroke();
+    c.setLineDash([6, 5]); c.lineWidth = 2.5; c.strokeStyle = C.res; c.beginPath(); c.moveTo(ox, oy); c.lineTo(ox + fx, oy); c.lineTo(ox + fx, oy - fy); c.stroke(); c.setLineDash([]);
+    arrow(c, ox, oy, ox + fx, oy - fy, C.accent, 4.5, 13);
+    c.strokeStyle = C.ink2; c.lineWidth = 1.5; c.beginPath(); c.arc(ox, oy, 38, -r, 0); c.stroke();
+    txt(c, 'α', ox + 52, oy - 10 - Math.sin(r / 2) * 14, C.ink, 14, 'left', 700);
+    txt(c, 'F', ox + fx / 2 - 14, oy - fy / 2 - 12, C.accent, 15, 'center', 800);
+    txt(c, 'Fₓ', ox + fx / 2, oy + 16, C.res, 14, 'center', 800);
+    txt(c, 'Fᵧ', ox + fx + 18, oy - fy / 2, C.res, 14, 'center', 800);
+  } });
+  const updA = () => {
+    const r = al * Math.PI / 180, fx = F * Math.cos(r), fy = F * Math.sin(r);
+    $('#ofa').textContent = dec(F) + ' N'; $('#oaa').textContent = al + '°';
+    $('#rda').innerHTML = '<div class="mono">Fₓ = F · cos α = ' + dec(F) + ' · cos ' + al + '° = <b>' + fmt(fx) + ' N</b></div><div class="mono">Fᵧ = F · sin α = ' + dec(F) + ' · sin ' + al + '° = <b>' + fmt(fy) + ' N</b></div><div class="mono">Controle: √(Fₓ² + Fᵧ²) = ' + fmt(Math.hypot(fx, fy)) + ' N en tan α = Fᵧ/Fₓ = ' + (fx > 1e-9 ? fmt(fy / fx) : '∞') + '</div>';
+    cvA.redraw();
+  };
+  $('#fa').oninput = e => { F = +e.target.value; updA(); }; $('#aa').oninput = e => { al = +e.target.value; updA(); }; updA();
+  /* parallellogram */
+  let f1 = 4, f2 = 3, ph = 90;
+  const cvB = setupCanvas($('#s23b'), { aspect: .5, minH: 250, draw(c, w, h, C) {
+    const p = ph * Math.PI / 180, v2 = [f2 * Math.cos(p), f2 * Math.sin(p)], R = [f1 + v2[0], v2[1]];
+    const pts = [[0, 0], [f1, 0], v2, R], minx = Math.min(...pts.map(q => q[0])), maxx = Math.max(...pts.map(q => q[0])), maxy = Math.max(...pts.map(q => q[1]));
+    const bw = Math.max(maxx - minx, 1), bh = Math.max(maxy, 1), s = Math.min((w - 90) / bw, (h - 80) / bh, 46);
+    const ox = w / 2 - (minx + maxx) / 2 * s, oy = h - 40 - (h - 80 - bh * s) / 2;
+    const P = q => [ox + q[0] * s, oy - q[1] * s];
+    const [o1, a1, a2, aR] = pts.map(P);
+    c.setLineDash([5, 5]); c.strokeStyle = C.ink2; c.lineWidth = 1.5; c.beginPath(); c.moveTo(a1[0], a1[1]); c.lineTo(aR[0], aR[1]); c.lineTo(a2[0], a2[1]); c.stroke(); c.setLineDash([]);
+    arrow(c, o1[0], o1[1], a1[0], a1[1], C.accent, 4, 12); arrow(c, o1[0], o1[1], a2[0], a2[1], C.accent, 4, 12); arrow(c, o1[0], o1[1], aR[0], aR[1], C.res, 5, 14);
+    txt(c, 'F₁', (o1[0] + a1[0]) / 2, o1[1] + 18, C.accent, 14, 'center', 800); txt(c, 'F₂', (o1[0] + a2[0]) / 2 - 14, (o1[1] + a2[1]) / 2 - 8, C.accent, 14, 'center', 800); txt(c, 'F', (o1[0] + aR[0]) / 2 + 4, (o1[1] + aR[1]) / 2 - 16, C.res, 15, 'center', 800);
+    c.strokeStyle = C.ink2; c.lineWidth = 1.5; c.beginPath(); c.arc(o1[0], o1[1], 26, -p, 0); c.stroke(); txt(c, 'φ', o1[0] + 40, o1[1] - 12, C.ink, 14, 'left', 700);
+  } });
+  const updB = () => {
+    const p = ph * Math.PI / 180, R2 = f1 * f1 + f2 * f2 + 2 * f1 * f2 * Math.cos(p), R = Math.sqrt(Math.max(0, R2)), rx = f1 + f2 * Math.cos(p), ry = f2 * Math.sin(p);
+    $('#of1').textContent = dec(f1) + ' N'; $('#of2').textContent = dec(f2) + ' N'; $('#oph').textContent = ph + '°';
+    const sp = ph === 0 ? 'Zelfde zin: de groottes tellen op.' : ph === 90 ? 'Loodrecht: dit is gewoon Pythagoras.' : ph === 180 ? 'Tegengestelde zin: de groottes worden afgetrokken.' : '';
+    $('#rdb').innerHTML = '<div class="mono">F² = ' + dec(f1) + '² + ' + dec(f2) + '² + 2·' + dec(f1) + '·' + dec(f2) + '·cos ' + ph + '° = ' + fmt(R2) + '</div><div class="big res">F = ' + fmt(R) + ' N</div><div class="mono">Via componenten: Fₓ = ' + fmt(rx) + ' N, Fᵧ = ' + fmt(ry) + ' N → √(Fₓ² + Fᵧ²) = ' + fmt(Math.hypot(rx, ry)) + ' N (zelfde antwoord)</div>' + (R > 1e-9 ? '<div>Hoek van F met F₁: ' + deg(Math.atan2(ry, rx) * 180 / Math.PI) + '</div>' : '') + (sp ? '<div><b>' + sp + '</b></div>' : '');
+    cvB.redraw();
+  };
+  $('#f1').oninput = e => { f1 = +e.target.value; updB(); }; $('#f2').oninput = e => { f2 = +e.target.value; updB(); }; $('#ph').oninput = e => { ph = +e.target.value; updB(); }; updB();
+  bindChecks(root, 'l23', checks);
+} });
+
+/* ---------- 2.4 Evenwichtspunten ---------- */
+function zeroPoints(q1, q2, r) {
+  if (q1 === 0 || q2 === 0) return null;
+  const a = Math.abs(q1), b = Math.abs(q2);
+  if (q1 * q2 > 0) return { x: r * Math.sqrt(a) / (Math.sqrt(a) + Math.sqrt(b)), kind: 'tussen' };
+  if (a === b) return null;
+  if (a > b) return { x: r + r / (Math.sqrt(a / b) - 1), kind: 'rechts' };
+  return { x: -r / (Math.sqrt(b / a) - 1), kind: 'links' };
+}
+addPage({ id: 'l24', group: 'h2', no: '2.4', title: 'Waar is de kracht nul?', render(root) {
+  const checks = [
+    { q: 'Twee positieve ladingen, Q₁ = +9 µC en Q₂ = +4 µC. Waar kan de kracht op een testlading nul zijn?', o: ['Tussen de ladingen, dichter bij Q₂', 'Tussen de ladingen, dichter bij Q₁', 'Buiten de ladingen'], a: 0, w: 'Gelijk teken: de krachten werken alleen tussen de ladingen tegen elkaar in. Het nulpunt ligt dichter bij de kleinste lading, want die duwt minder hard.', hint: 'De krachten moeten even groot zijn. Welke lading duwt zwakker als de afstand gelijk is?' },
+    { q: 'Q₁ = +4 µC en Q₂ = −1 µC. Waar ligt het nulpunt?', o: ['Tussen de twee', 'Links van Q₁', 'Rechts van Q₂ (bij de kleinste lading)'], a: 2, w: 'Tussen de ladingen wijzen beide krachten dezelfde kant op. Buiten de ladingen moet de afstand tot de grootste lading groter zijn, dus het nulpunt ligt aan de kant van de kleinste lading.' },
+    { q: 'Twee even grote ladingen met tegengesteld teken. Is er een punt waar de kracht nul is?', o: ['Ja, precies in het midden', 'Nee', 'Ja, ver weg'], a: 1, w: 'Tussen de ladingen wijzen de krachten dezelfde kant op. Buiten hebben ze nooit gelijke grootte omdat de afstanden verschillen. Er is geen nulpunt.' },
+    { q: 'Verandert de plaats van het nulpunt als je een testlading van +1 µC vervangt door −5 µC?', o: ['Ja', 'Nee: de testlading valt uit de vergelijking weg'], a: 1, w: 'In k·|Q₁|·|q|/d₁² = k·|Q₂|·|q|/d₂² vallen k en q weg. Alleen Q₁, Q₂ en de afstand tellen.' }
+  ];
+  root.innerHTML = head(H2, 'Waar is de kracht nul?', 'Bij twee ladingen kun je een punt zoeken waar een testlading geen netto kracht voelt. Eerst bepaal je het gebied, dan reken je de plaats uit.') + `
+  <section class="sec"><h2>Eerst redeneren, dan rekenen</h2>
+    <div class="tablewrap"><table><thead><tr><th>Ladingen</th><th>Gebied van het nulpunt</th><th>Waarom</th></tr></thead><tbody>
+      <tr><td><b>Zelfde teken</b> (+ +, of − −)</td><td><b>Tussen</b> de ladingen, dichter bij de kleinste</td><td>Alleen daar werken de krachten tegen elkaar in</td></tr>
+      <tr><td><b>Tegengesteld teken</b></td><td><b>Buiten</b> de ladingen, aan de kant van de kleinste</td><td>Tussen de ladingen wijzen de krachten dezelfde kant op</td></tr>
+      <tr><td>Even groot, tegengesteld teken</td><td>Geen nulpunt</td><td>De afstanden zouden gelijk moeten zijn</td></tr></tbody></table></div>
+    <div class="focus"><span class="tag">Rekenen</span>
+      <p>Stel de groottes van de twee krachten gelijk. De constante k en de testlading vallen weg:</p>
+      <div class="formula">${frac('|Q<sub>1</sub>|', 'd<sub>1</sub><sup>2</sup>')} = ${frac('|Q<sub>2</sub>|', 'd<sub>2</sub><sup>2</sup>')} &nbsp;→&nbsp; ${frac('√|Q<sub>1</sub>|', 'd<sub>1</sub>')} = ${frac('√|Q<sub>2</sub>|', 'd<sub>2</sub>')}</div>
+      <p>Neem links en rechts de vierkantswortel, schrijf d₁ en d₂ als verhouding en gebruik het verband tussen d₁, d₂ en de afstand r tussen de ladingen.</p></div></section>
+  <div class="sim"><header><b>Waar voelt een testlading niets?</b><span>Schuif het punt P en kijk naar de grafiek</span></header>
+    <div class="stage" id="s24"></div>
+    <div class="controls">
+      <div class="ctl"><label for="z1">Q₁ <output id="oz1"></output></label><input type="range" id="z1" min="-10" max="10" step="0.5" value="9"></div>
+      <div class="ctl"><label for="z2">Q₂ <output id="oz2"></output></label><input type="range" id="z2" min="-10" max="10" step="0.5" value="4"></div>
+      <div class="ctl"><label for="zr">Afstand tussen Q₁ en Q₂ <output id="ozr"></output></label><input type="range" id="zr" min="2" max="60" step="1" value="30"></div>
+      <div class="ctl"><label for="zp">Plaats van P</label><input type="range" id="zp" min="0" max="1000" step="1" value="300"></div></div>
+    <div class="controls"><div class="ctl"><span class="lab">Voorbeelden</span><div class="btnrow"><button class="btn" data-z="9,4,30">Zelfde teken (oef. 6)</button><button class="btn" data-z="4,-1,24">Tegengesteld (oef. 7)</button><button class="btn" data-z="-4,-1,2">Voorbeeld op de dia</button><button class="btn primary" id="zj">Spring naar het nulpunt</button></div></div></div>
+    <div class="readout" id="rd24"></div></div>
+  <div class="note"><span class="tag">Voorbeeld uit de les</span><p>Twee negatieve ladingen Q₁ = −4,0 µC en Q₂ = −1,0 µC liggen 2,0 cm uit elkaar. Waar plaats je een derde lading (+6,0 µC) zodat de som van de krachten nul is? Gelijk teken, dus tussen de ladingen. √4 / d₁ = √1 / d₂ geeft d₁ = 2·d₂. Samen 2,0 cm, dus d₂ = 0,67 cm en d₁ = 1,3 cm van Q₁. Klik hierboven op “Voorbeeld op de dia”.</p></div>` + checksHTML('l24', checks);
+  let q1 = 9, q2 = 4, r = 30, pf = .3;
+  const xmin = () => -.8 * r, xmax = () => 1.8 * r, px = () => xmin() + pf * (xmax() - xmin());
+  const Fnet = x => { let s = 0; [[q1, 0], [q2, r]].forEach(([q, xj]) => { const d = Math.abs(x - xj); if (d < 1e-9 || q === 0) return; s += Math.sign(q) * Math.sign(x - xj) * K * Math.abs(q) * 1e-12 / Math.pow(d / 100, 2); }); return s; };
+  const ys = F => Math.sign(F) * Math.log10(1 + Math.abs(F) / .05);
+  const cv = setupCanvas($('#s24'), { aspect: .78, minH: 330, draw(c, w, h, C) {
+    const pad = 36, X = x => pad + (x - xmin()) / (xmax() - xmin()) * (w - 2 * pad), dy = h * .24;
+    /* diagram */
+    c.strokeStyle = C.ink2; c.lineWidth = 2; c.beginPath(); c.moveTo(pad - 10, dy); c.lineTo(w - pad + 10, dy); c.stroke();
+    const xp = px(), P1 = forcesOn([{ x: 0, y: 0, q: q1 }, { x: r, y: 0, q: q2 }, { x: xp, y: 0, q: 1 }], 2);
+    const net = Fnet(xp), mx = Math.max(...P1.list.map(f => f.F), Math.abs(net), 1e-9), sc = Math.min(w * .17, 70) / Math.log10(1 + mx / .05);
+    const L = F => Math.log10(1 + F / .05) * sc;
+    P1.list.forEach((f, i) => { const l = L(f.F) * Math.sign(f.fx || 1), yy = dy - 34 - i * 0; if (f.F > 1e-9) arrow(c, X(xp), dy - 26 - i * 14, X(xp) + (f.fx >= 0 ? 1 : -1) * L(f.F), dy - 26 - i * 14, C.accent, 3, 9); });
+    if (Math.abs(net) > mx * 1e-4) arrow(c, X(xp), dy - 66, X(xp) + Math.sign(net) * L(Math.abs(net)), dy - 66, C.res, 4, 11); else txt(c, 'F = 0', X(xp), dy - 66, C.res, 14, 'center', 800);
+    charge(c, X(0), dy, 15, q1, C, 'Q₁'); charge(c, X(r), dy, 15, q2, C, 'Q₂');
+    c.beginPath(); c.arc(X(xp), dy, 8, 0, 7); c.fillStyle = C.warn; c.fill(); txt(c, 'P', X(xp), dy + 22, C.ink, 13, 'center', 800);
+    /* grafiek */
+    const gy0 = h * .52, gy1 = h - 28, gm = (gy0 + gy1) / 2, ym = 4.2;
+    c.strokeStyle = C.line; c.lineWidth = 1.5; c.beginPath(); c.moveTo(pad - 10, gm); c.lineTo(w - pad + 10, gm); c.stroke();
+    txt(c, 'F op P (+ = naar rechts), schematische schaal', pad - 10, gy0 - 10, C.ink2, 11, 'left');
+    c.setLineDash([3, 5]); c.strokeStyle = C.ink2; [0, r].forEach(x => { c.beginPath(); c.moveTo(X(x), dy + 20); c.lineTo(X(x), gy1); c.stroke(); }); c.setLineDash([]);
+    c.strokeStyle = C.accent; c.lineWidth = 2.5; c.beginPath(); let pen = false;
+    const N = 500;
+    for (let i = 0; i <= N; i++) { const x = xmin() + (xmax() - xmin()) * i / N; if (Math.abs(x) < .2 || Math.abs(x - r) < .2) { pen = false; continue; } const y = gm - Math.max(-ym, Math.min(ym, ys(Fnet(x)))) / ym * (gy1 - gy0) / 2; if (!pen) { c.moveTo(X(x), y); pen = true; } else c.lineTo(X(x), y); }
+    c.stroke();
+    const z = zeroPoints(q1, q2, r);
+    if (z) { c.beginPath(); c.arc(X(z.x), gm, 7, 0, 7); c.fillStyle = C.res; c.fill(); txt(c, 'F = 0', X(z.x), gm + (q1 * q2 > 0 ? 22 : -18), C.res, 12, 'center', 800); }
+    const yp = gm - Math.max(-ym, Math.min(ym, ys(net))) / ym * (gy1 - gy0) / 2;
+    c.beginPath(); c.arc(X(xp), yp, 6, 0, 7); c.fillStyle = C.warn; c.fill(); c.strokeStyle = C.surface; c.lineWidth = 2; c.stroke();
+  } });
+  const upd = () => {
+    $('#oz1').textContent = qtxt(q1) + ' µC'; $('#oz2').textContent = qtxt(q2) + ' µC'; $('#ozr').textContent = r + ' cm';
+    const xp = px(), net = Fnet(xp), z = zeroPoints(q1, q2, r); let h = '';
+    h += '<div class="mono">P ligt op ' + dec(+xp.toFixed(1)) + ' cm van Q₁ en ' + dec(+Math.abs(xp - r).toFixed(1)) + ' cm van Q₂. Kracht op een testlading van +1 µC: <b>' + (Math.abs(net) < 1e-6 ? '0 N' : fmt(Math.abs(net)) + ' N naar ' + (net > 0 ? 'rechts' : 'links')) + '</b></div>';
+    if (q1 === 0 || q2 === 0) h += '<div>Een van de ladingen is 0: er is geen nulpunt.</div>';
+    else if (!z) h += '<div><b>Geen nulpunt:</b> even grote ladingen met tegengesteld teken.</div>';
+    else {
+      const a = Math.abs(q1), b = Math.abs(q2), sa = Math.sqrt(a), sb = Math.sqrt(b);
+      if (z.kind === 'tussen') h += '<div><b>Gebied:</b> gelijk teken, dus tussen de ladingen. √|Q₁|/d₁ = √|Q₂|/d₂ → d₂ = d₁ · ' + fmt(sb / sa) + ' en d₁ + d₂ = ' + r + ' cm.</div><div class="big res">d₁ = ' + dec(+z.x.toFixed(2)) + ' cm, d₂ = ' + dec(+(r - z.x).toFixed(2)) + ' cm</div>';
+      else { const small = z.kind === 'rechts' ? 'Q₂' : 'Q₁', ratio = Math.max(sa / sb, sb / sa), d = r / (ratio - 1); h += '<div><b>Gebied:</b> tegengesteld teken, dus buiten de ladingen aan de kant van de kleinste lading (' + small + '). Noem x de afstand tot ' + small + ': √|Q<sub>groot</sub>|/(x + r) = √|Q<sub>klein</sub>|/x → x = r/(' + fmt(ratio) + ' − 1).</div><div class="big res">x = ' + dec(+d.toFixed(2)) + ' cm van ' + small + ' (' + dec(+(d + r).toFixed(2)) + ' cm van de grote lading)</div>'; }
+    }
+    $('#rd24').innerHTML = h; cv.redraw();
+  };
+  $('#z1').oninput = e => { q1 = +e.target.value; upd(); }; $('#z2').oninput = e => { q2 = +e.target.value; upd(); }; $('#zr').oninput = e => { r = +e.target.value; upd(); };
+  $('#zp').oninput = e => { pf = e.target.value / 1000; upd(); };
+  $$('[data-z]', root).forEach(b => b.onclick = () => { const [a, bq, rr] = b.dataset.z.split(',').map(Number); q1 = a; q2 = bq; r = rr; $('#z1').value = a; $('#z2').value = bq; $('#zr').value = rr; const z = zeroPoints(q1, q2, r); pf = z ? (z.x - xmin()) / (xmax() - xmin()) : .5; $('#zp').value = Math.round(pf * 1000); upd(); });
+  $('#zj').onclick = () => { const z = zeroPoints(q1, q2, r); if (z) { pf = (z.x - xmin()) / (xmax() - xmin()); $('#zp').value = Math.round(pf * 1000); upd(); } };
+  upd(); bindChecks(root, 'l24', checks);
+} });
+/* ===== Oefeningen ===== */
+const rnd = (a, b, st = 1) => +(a + Math.floor(Math.random() * (Math.round((b - a) / st) + 1)) * st).toFixed(6);
+const pick = a => a[Math.floor(Math.random() * a.length)];
+const sg = () => Math.random() < .5 ? -1 : 1;
+const Fc = (q1, q2, rcm) => K * Math.abs(q1 * q2) * 1e-12 / Math.pow(rcm / 100, 2);
+const sq = q => (q > 0 ? '+' : '−') + fmt(Math.abs(q), 3);
+const siQ = (n, q) => n + ' = ' + sq(q) + ' µC = ' + sq(q * 1e-6).replace(/^([+−])/, '$1') + ' C';
+const siR = (n, cm) => n + ' = ' + fmt(cm) + ' cm = ' + fmt(cm / 100) + ' m';
+const calc = (name, q1, q2, rcm) => name + ' = k·|Q|·|Q|/r² = 8,99·10<sup>9</sup> · (' + fmt(Math.abs(q1) * 1e-6) + ' · ' + fmt(Math.abs(q2) * 1e-6) + ') / (' + fmt(rcm / 100) + ')<sup>2</sup> = <b>' + fmt(Fc(q1, q2, rcm)) + ' N</b>';
+const QUAD = ['naar rechts en omhoog', 'naar rechts en omlaag', 'naar links en omhoog', 'naar links en omlaag'];
+const quad = (fx, fy) => (fx >= 0 ? 0 : 2) + (fy >= 0 ? 0 : 1);
+const acute = (fx, fy) => Math.atan2(Math.abs(fy), Math.abs(fx)) * 180 / Math.PI;
+const NUM = (id, label, unit, val, o = {}) => ({ kind: 'num', id, label, unit, val, ...o });
+const CH = (id, label, options, correct) => ({ kind: 'choice', id, label, options, correct });
+const st = (t, body) => ({ t, body });
+
+function steps2D(ch, ti, pre = []) {
+  const r = forcesOn(ch, ti), n = ti + 1, out = [...pre];
+  r.list.forEach(f => out.push(st('Kracht van Q' + sub(f.from + 1) + ' op Q' + sub(n) + ' (' + FL(f.from + 1, n) + ')',
+    '<div class="calc">' + calc(FL(f.from + 1, n), ch[f.from].q, ch[ti].q, f.r) + '</div><p>' + (f.rep ? 'Gelijke tekens: afstoting, de kracht wijst <b>weg van</b> Q' + sub(f.from + 1) + '.' : 'Ongelijke tekens: aantrekking, de kracht wijst <b>naar</b> Q' + sub(f.from + 1) + ' toe.') + ' Hoek met de horizontale as (tegen de wijzers in): ' + deg(f.ang) + '.</p>')));
+  const rows = r.list.map(f => FL(f.from + 1, n) + 'x = ' + fmt(f.F) + ' · cos(' + deg(f.ang) + ') = ' + fmt(f.fx) + ' N &nbsp; ' + FL(f.from + 1, n) + 'y = ' + fmt(f.F) + ' · sin(' + deg(f.ang) + ') = ' + fmt(f.fy) + ' N').join('<br>');
+  out.push(st('Ontbind in x- en y-componenten', '<div class="calc">' + rows + '</div>'));
+  out.push(st('Tel de componenten op', '<div class="calc">F' + sub(n) + 'x = ' + r.list.map(f => fmt(f.fx)).join(' + ') + ' = ' + fmt(r.fx) + ' N<br>F' + sub(n) + 'y = ' + r.list.map(f => fmt(f.fy)).join(' + ') + ' = ' + fmt(r.fy) + ' N</div>'));
+  out.push(st('Grootte en richting van de resultante', '<div class="calc">F' + sub(n) + ' = √(' + fmt(r.fx) + '² + ' + fmt(r.fy) + '²) = <b>' + fmt(r.F) + ' N</b><br>tan α = |F<sub>y</sub>|/|F<sub>x</sub>| = ' + fmt(Math.abs(r.fy)) + '/' + fmt(Math.abs(r.fx)) + ' → α = <b>' + deg(acute(r.fx, r.fy)) + '</b></div><p>Richting: ' + dirText(r.fx, r.fy) + '.</p>'));
+  return { out, r };
+}
+function lineEx(qs, d12, d23, ti, p0) {
+  const ch = [{ x: 0, y: 0, q: qs[0] }, { x: d12, y: 0, q: qs[1] }, { x: d12 + d23, y: 0, q: qs[2] }];
+  const r = forcesOn(ch, ti), n = ti + 1, steps = [st('Teken en kies een positieve zin', '<p>Kies naar rechts als positieve zin. Je zoekt de kracht op Q' + sub(n) + '. Teken de krachten van de andere twee ladingen op Q' + sub(n) + '.</p>')];
+  r.list.forEach(f => steps.push(st('Kracht van Q' + sub(f.from + 1) + ' op Q' + sub(n), '<div class="calc">' + calc(FL(f.from + 1, n), ch[f.from].q, ch[ti].q, f.r) + '</div><p>' + (f.rep ? 'Afstoting' : 'Aantrekking') + ': Q' + sub(n) + ' wordt <b>naar ' + (f.fx > 0 ? 'rechts' : 'links') + '</b> geduwd of getrokken, dus teken <b>' + (f.fx > 0 ? '+' : '−') + '</b>.</p>')));
+  steps.push(st('Tel op met de tekens', '<div class="calc">F' + sub(n) + ' = ' + r.list.map(f => '(' + (f.fx > 0 ? '+' : '−') + fmt(f.F) + ')').join(' + ') + ' = ' + (r.fx > 0 ? '+' : '−') + fmt(Math.abs(r.fx)) + ' N</div><p>' + (r.fx > 0 ? 'Positief: naar rechts' : 'Negatief: naar links') + '. De krachten werken ' + (r.list[0].fx * r.list[1].fx > 0 ? 'in dezelfde zin: optellen' : 'tegen elkaar in: aftrekken') + '.</p>'));
+  return { ch, r, steps, answers: [NUM('F', 'Grootte van de resultante', 'N', r.F, { tolRel: .06 }), CH('d', 'Zin van de resultante', ['naar links', 'naar rechts'], r.fx > 0 ? 1 : 0)] };
+}
+
+const EX = [
+  { id: 1, title: 'Kracht tussen twee ladingen', lvl: 'b', def: { q1: 2.4, q2: -3.1, r: 18 },
+    gen: () => ({ q1: rnd(1, 9, .1), q2: sg() * rnd(1, 9, .1), r: rnd(5, 40, 1) }),
+    make(p) {
+      const F = Fc(p.q1, p.q2, p.r);
+      return { text: 'Een puntlading Q₁ = ' + sq(p.q1) + ' µC en een puntlading Q₂ = ' + sq(p.q2) + ' µC bevinden zich ' + p.r + ' cm van elkaar. Bereken de grootte van de elektrische kracht tussen beide ladingen en geef aan of de kracht aantrekkend of afstotend is.',
+        ch: [{ x: 0, y: 0, q: p.q1 }, { x: p.r, y: 0, q: p.q2 }], target: 1,
+        answers: [NUM('F', 'Grootte van de kracht', 'N', F), CH('t', 'Soort kracht', ['aantrekkend', 'afstotend'], p.q1 * p.q2 < 0 ? 0 : 1)],
+        steps: [st('Zet om naar SI-eenheden', '<div class="calc">' + siQ('Q₁', p.q1) + '<br>' + siQ('Q₂', p.q2) + '<br>' + siR('r', p.r) + '</div>'),
+          st('Kies de formule', '<div class="calc">F = k · |Q₁| · |Q₂| / r²</div><p>Gebruik de absolute waarden: het minteken zegt iets over de zin, niet over de grootte.</p>'),
+          st('Vul in en reken uit', '<div class="calc">' + calc('F', p.q1, p.q2, p.r) + '</div>'),
+          st('Aantrekking of afstoting?', '<p>' + (p.q1 * p.q2 < 0 ? 'De ladingen hebben <b>ongelijke</b> tekens: <b>aantrekkend</b>.' : 'De ladingen hebben <b>gelijke</b> tekens: <b>afstotend</b>.') + '</p>')] };
+    } },
+  { id: 2, title: 'De afstand berekenen', lvl: 'b', def: { q1: 6, q2: 4, F: 2.4 },
+    gen: () => { const q1 = rnd(1, 9, .1), q2 = rnd(1, 9, .1), r = rnd(8, 50, 1); return { q1, q2, F: +Fc(q1, q2, r).toPrecision(3) }; },
+    make(p) {
+      const rm = Math.sqrt(K * p.q1 * p.q2 * 1e-12 / p.F), rc = rm * 100;
+      return { text: 'Twee positieve puntladingen Q₁ = ' + sq(p.q1) + ' µC en Q₂ = ' + sq(p.q2) + ' µC oefenen op elkaar een kracht uit van ' + dec(p.F) + ' N. Bereken de afstand tussen beide ladingen.',
+        ch: [{ x: 0, y: 0, q: p.q1 }, { x: rc, y: 0, q: p.q2 }], target: 1, hideDist: true,
+        answers: [NUM('r', 'Afstand r', 'cm', rc, { tolRel: .03 })],
+        steps: [st('Zet om naar SI-eenheden', '<div class="calc">Q₁ = ' + fmt(p.q1 * 1e-6) + ' C &nbsp; Q₂ = ' + fmt(p.q2 * 1e-6) + ' C &nbsp; F = ' + dec(p.F) + ' N</div>'),
+          st('Vorm de formule om naar r', '<div class="calc">F = k·Q₁·Q₂/r² → r² = k·Q₁·Q₂/F → r = √(k·Q₁·Q₂/F)</div>'),
+          st('Vul in', '<div class="calc">r = √(8,99·10<sup>9</sup> · ' + fmt(p.q1 * 1e-6) + ' · ' + fmt(p.q2 * 1e-6) + ' / ' + dec(p.F) + ') = ' + fmt(rm) + ' m</div>'),
+          st('Antwoord in cm', '<div class="calc">r = ' + fmt(rm) + ' m = <b>' + fmt(rc) + ' cm</b></div>')] };
+    } },
+  { id: 3, title: 'Drie ladingen op een rechte: kracht op Q₂', lvl: 'm', def: { q: [3, -2, 5], d12: 12, d23: 16 },
+    gen: () => { for (;;) { const q = [sg() * rnd(1, 6, .5), sg() * rnd(1, 5, .5), sg() * rnd(1, 6, .5)], d12 = rnd(8, 30, 2), d23 = rnd(8, 30, 2); const e = lineEx(q, d12, d23, 1), m = Math.max(...e.r.list.map(f => f.F)); if (e.r.F > .08 * m) return { q, d12, d23 }; } },
+    make(p) { const e = lineEx(p.q, p.d12, p.d23, 1);
+      return { text: 'Drie puntladingen liggen op één rechte: Q₁ = ' + sq(p.q[0]) + ' µC, Q₂ = ' + sq(p.q[1]) + ' µC en Q₃ = ' + sq(p.q[2]) + ' µC. De afstand Q₁Q₂ is ' + p.d12 + ' cm en de afstand Q₂Q₃ is ' + p.d23 + ' cm. Bereken de resulterende elektrische kracht op Q₂. Geef de grootte en de zin.', ch: e.ch, target: 1, answers: e.answers, steps: e.steps }; } },
+  { id: 4, title: 'Drie ladingen op een rechte: kracht op Q₃', lvl: 'm', def: { q: [-4, 2, 3], d12: 10, d23: 25 },
+    gen: () => { for (;;) { const q = [sg() * rnd(1, 6, .5), sg() * rnd(1, 5, .5), sg() * rnd(1, 6, .5)], d12 = rnd(8, 30, 2), d23 = rnd(8, 30, 2); const e = lineEx(q, d12, d23, 2), m = Math.max(...e.r.list.map(f => f.F)); if (e.r.F > .06 * m) return { q, d12, d23 }; } },
+    make(p) { const e = lineEx(p.q, p.d12, p.d23, 2);
+      return { text: 'Drie puntladingen liggen op één rechte: Q₁ = ' + sq(p.q[0]) + ' µC, Q₂ = ' + sq(p.q[1]) + ' µC en Q₃ = ' + sq(p.q[2]) + ' µC. Q₁Q₂ = ' + p.d12 + ' cm en Q₂Q₃ = ' + p.d23 + ' cm. Bereken de afzonderlijke krachten op Q₃ en bepaal daarna de resultante. Let op: Q₁ staat op ' + (p.d12 + p.d23) + ' cm van Q₃.', ch: e.ch, target: 2, answers: e.answers,
+        steps: [...e.steps.slice(0, 1), st('Let op de afstand', '<p>Q₂ staat tussen Q₁ en Q₃, maar schermt niets af. Voor F₁₃ gebruik je de afstand Q₁Q₃ = ' + p.d12 + ' + ' + p.d23 + ' = <b>' + (p.d12 + p.d23) + ' cm</b>.</p>'), ...e.steps.slice(1)] }; } },
+  { id: 5, title: 'Twee geleidende bolletjes in contact', lvl: 'm', def: { qA: 6, qB: -2, r: 20 },
+    gen: () => { for (;;) { const qA = rnd(2, 9, .5), qB = sg() * rnd(1, 6, .5); if (qA !== qB && qA + qB !== 0) return { qA, qB, r: rnd(10, 40, 1) }; } },
+    make(p) { const q = (p.qA + p.qB) / 2, F = Fc(q, q, p.r);
+      return { text: 'Twee identieke, geleidende metalen bolletjes A en B dragen aanvankelijk respectievelijk de ladingen ' + sq(p.qA) + ' µC en ' + sq(p.qB) + ' µC. De bolletjes worden met elkaar in contact gebracht en daarna opnieuw van elkaar verwijderd tot hun middelpunten ' + p.r + ' cm uit elkaar liggen. Bereken de lading op elk bolletje na het contact en vervolgens de grootte van de kracht tussen beide bolletjes.',
+        ch: [{ x: 0, y: 0, q: p.qA, label: 'A' }, { x: p.r, y: 0, q: p.qB, label: 'B' }], target: 1, title: 'Voor het contact', after: [{ x: 0, y: 0, q, label: 'A' }, { x: p.r, y: 0, q, label: 'B' }],
+        answers: [NUM('q', 'Lading op elk bolletje na contact', 'µC', q, { tolAbs: .03 }), NUM('F', 'Grootte van de kracht', 'N', F), CH('e', 'Elektronen gaan van...', ['A naar B', 'B naar A'], q < p.qA ? 1 : 0)],
+        steps: [st('Totale lading blijft behouden', '<div class="calc">Q<sub>totaal</sub> = ' + sq(p.qA) + ' + (' + sq(p.qB) + ') = ' + sq(p.qA + p.qB) + ' µC</div><p>Lading wordt niet gemaakt of vernietigd.</p>'),
+          st('Identieke geleiders delen de lading gelijk', '<div class="calc">q = ' + sq(p.qA + p.qB) + ' / 2 = <b>' + sq(q) + ' µC</b> op elk bolletje</div>'),
+          st('Welke elektronen verhuisden?', '<p>A ging van ' + sq(p.qA) + ' naar ' + sq(q) + ' µC: ' + (q < p.qA ? 'A werd minder positief (of meer negatief), dus A nam elektronen op: ze gingen van B naar A.' : 'A werd positiever, dus A gaf elektronen af: ze gingen van A naar B.') + '</p>'),
+          st('Kracht tussen de bolletjes', '<div class="calc">' + calc('F', q, q, p.r) + '</div><p>Beide bolletjes hebben nu hetzelfde teken: <b>afstotend</b>.</p>')] }; } },
+  { id: 6, title: 'Nulpunt tussen twee positieve ladingen', lvl: 'm', def: { q1: 9, q2: 4, r: 30 },
+    gen: () => ({ q1: rnd(2, 12, 1), q2: rnd(1, 12, 1), r: rnd(10, 60, 1) }),
+    make(p) { const z = zeroPoints(p.q1, p.q2, p.r), d1 = z.x, d2 = p.r - d1, s = Math.sqrt(p.q2 / p.q1);
+      return { text: 'Twee positieve puntladingen Q₁ = ' + sq(p.q1) + ' µC en Q₂ = ' + sq(p.q2) + ' µC staan ' + p.r + ' cm van elkaar. Waar moet tussen beide ladingen een kleine positieve testlading P geplaatst worden zodat de resulterende kracht op P nul is? Bereken de afstand van P tot beide ladingen.',
+        ch: [{ x: 0, y: 0, q: p.q1 }, { x: p.r, y: 0, q: p.q2 }, { x: d1, y: 0, q: 1, label: 'P', hideQ: true, hidden: true }], target: 2, dl: 1,
+        answers: [NUM('d1', 'Afstand van P tot Q₁', 'cm', d1, { tolRel: .02 }), NUM('d2', 'Afstand van P tot Q₂', 'cm', d2, { tolRel: .02 })],
+        steps: [st('Waar kan P liggen?', '<p>Gelijk teken, dus beide ladingen duwen P weg. Alleen tussen de ladingen duwen ze P in tegengestelde zin. P ligt dus tussen Q₁ en Q₂, dichter bij de kleinste lading.</p>'),
+          st('Stel de groottes van de krachten gelijk', '<div class="calc">k·|Q₁|·q/d₁² = k·|Q₂|·q/d₂² → |Q₁|/d₁² = |Q₂|/d₂²</div><p>k en q vallen weg.</p>'),
+          st('Neem de vierkantswortel', '<div class="calc">√' + fmt(p.q1) + ' / d₁ = √' + fmt(p.q2) + ' / d₂ → d₂ = d₁ · √(' + fmt(p.q2) + '/' + fmt(p.q1) + ') = ' + fmt(s) + ' · d₁</div>'),
+          st('Gebruik d₁ + d₂ = r', '<div class="calc">d₁ + ' + fmt(s) + '·d₁ = ' + p.r + ' cm → d₁ = ' + p.r + ' / ' + fmt(1 + s) + ' = <b>' + fmt(d1) + ' cm</b><br>d₂ = ' + p.r + ' − ' + fmt(d1) + ' = <b>' + fmt(d2) + ' cm</b></div>'),
+          st('Controle', '<p>P ligt dichter bij ' + (p.q2 < p.q1 ? 'Q₂' : p.q2 > p.q1 ? 'Q₁' : 'beide even ver (gelijke ladingen)') + ', de kleinste lading. Dat klopt.</p>')] }; } },
+  { id: 7, title: 'Nulpunt bij tegengestelde ladingen', lvl: 'h', def: { q1: 4, q2: -1, r: 24 },
+    gen: () => { for (;;) { const a = sg(), q1 = a * rnd(2, 9, .5), q2 = -a * rnd(1, 9, .5); if (Math.abs(q1) / Math.abs(q2) > 1.5 || Math.abs(q2) / Math.abs(q1) > 1.5) return { q1, q2, r: rnd(10, 40, 1) }; } },
+    make(p) { const z = zeroPoints(p.q1, p.q2, p.r), right = z.kind === 'rechts', d = right ? z.x - p.r : -z.x, small = right ? 'Q₂' : 'Q₁', ratio = Math.max(Math.sqrt(Math.abs(p.q1 / p.q2)), Math.sqrt(Math.abs(p.q2 / p.q1)));
+      return { text: 'Een puntlading Q₁ = ' + sq(p.q1) + ' µC en een puntlading Q₂ = ' + sq(p.q2) + ' µC staan ' + p.r + ' cm van elkaar. Onderzoek eerst in welk gebied op de rechte door beide ladingen een punt P kan liggen waar de resulterende kracht op een positieve testlading nul is. Bereken vervolgens de afstand van P tot de kleinste lading.',
+        ch: [{ x: 0, y: 0, q: p.q1 }, { x: p.r, y: 0, q: p.q2 }, { x: z.x, y: 0, q: 1, label: 'P', hideQ: true, hidden: true }], target: 2, dl: 1,
+        answers: [CH('g', 'Gebied van P', ['links van Q₁', 'tussen Q₁ en Q₂', 'rechts van Q₂'], right ? 2 : 0), NUM('x', 'Afstand van P tot de kleinste lading (' + small + ')', 'cm', d, { tolRel: .02 })],
+        steps: [st('Tussen de ladingen: onmogelijk', '<p>Bij tegengestelde tekens wijzen beide krachten op een testlading tussen de ladingen dezelfde kant op (de een duwt, de ander trekt). Ze kunnen elkaar dus niet opheffen.</p>'),
+          st('Buiten de ladingen: aan de kant van de kleinste', '<p>Buiten de ladingen wijzen de krachten tegen elkaar in. Ze zijn alleen even groot als P dichter bij de <b>kleinste</b> lading ligt: ' + small + '. P ligt dus ' + (right ? 'rechts van Q₂' : 'links van Q₁') + '.</p>'),
+          st('Stel de krachten gelijk', '<div class="calc">|Q<sub>groot</sub>|/(x + r)² = |Q<sub>klein</sub>|/x² → √(' + fmt(Math.max(Math.abs(p.q1), Math.abs(p.q2))) + ')/(x + ' + p.r + ') = √(' + fmt(Math.min(Math.abs(p.q1), Math.abs(p.q2))) + ')/x</div>'),
+          st('Los op naar x', '<div class="calc">x·' + fmt(ratio) + ' = x + ' + p.r + ' → x·(' + fmt(ratio) + ' − 1) = ' + p.r + ' → x = <b>' + fmt(d) + ' cm</b> van ' + small + '</div><p>Dat is ' + fmt(d + p.r) + ' cm van de grote lading.</p>')] }; } },
+  { id: 8, title: 'Evenwicht van Q₂ met een derde lading', lvl: 'h', def: { q1: 6, q2: 2, r: 18 },
+    gen: () => ({ q1: rnd(2, 9, .5), q2: rnd(1, 6, .5), r: rnd(10, 30, 1) }),
+    make(p) { return { text: 'Q₁ = ' + sq(p.q1) + ' µC en Q₂ = ' + sq(p.q2) + ' µC staan ' + p.r + ' cm van elkaar. Rechts van Q₂ wordt een derde lading Q₃ geplaatst. Q₃ heeft dezelfde grootte als Q₁ maar is negatief. Bereken de afstand x tussen Q₂ en Q₃ zodat de resulterende kracht op Q₂ nul is.',
+        ch: [{ x: 0, y: 0, q: p.q1 }, { x: p.r, y: 0, q: p.q2 }, { x: 2 * p.r, y: 0, q: -p.q1 }], target: 1, dl: 'x',
+        answers: [CH('o', 'Bestaat er een afstand x waarvoor de kracht op Q₂ nul is?', ['Ja, er is een oplossing', 'Nee, er is geen oplossing'], 1), NUM('x', 'Stel dat Q₃ positief was (+' + fmt(p.q1) + ' µC). Bereken dan x', 'cm', p.r, { tolRel: .02 })],
+        steps: [st('Teken de krachten op Q₂', '<p>Q₁ en Q₂ zijn beide positief: afstoting. Q₁ duwt Q₂ <b>naar rechts</b>.</p><p>Q₃ is negatief en Q₂ is positief: aantrekking. Q₃ staat rechts van Q₂, dus trekt Q₂ ook <b>naar rechts</b>.</p>'),
+          st('Conclusie voor de opgave zoals ze er staat', '<p>Beide krachten wijzen dezelfde kant op. Ze tellen op en kunnen nooit nul worden. <b>Er is geen oplossing.</b> Waarschijnlijk is er een tikfout in de opgave: vraag het aan je leerkracht.</p>'),
+          st('Zou Q₃ positief zijn: dan werkt het wel', '<p>Q₃ positief rechts van Q₂ duwt Q₂ naar links, tegen Q₁ in. Stel de groottes gelijk:</p><div class="calc">k·|Q₁|·|Q₂|/r² = k·|Q₃|·|Q₂|/x² → x = r·√(|Q₃|/|Q₁|) = ' + p.r + ' · √1 = <b>' + p.r + ' cm</b></div><p>Omdat |Q₃| = |Q₁|, moet Q₃ even ver van Q₂ staan als Q₁.</p>')] }; } },
+  { id: 9, title: 'Gelijkzijdige driehoek', lvl: 'h', def: { q: 3, q3: -2, a: 20 },
+    gen: () => ({ q: rnd(1, 6, .5), q3: sg() * rnd(1, 6, .5), a: rnd(10, 40, 2) }),
+    make(p) { const ch = [{ x: 0, y: 0, q: p.q }, { x: p.a, y: 0, q: p.q }, { x: p.a / 2, y: p.a * Math.sqrt(3) / 2, q: p.q3 }], r = forcesOn(ch, 2);
+      const s = steps2D(ch, 2, [st('Gebruik de symmetrie', '<p>Q₁ = Q₂ en beide staan even ver van Q₃, dus F₁₃ = F₂₃ in grootte. De horizontale componenten heffen elkaar op. De verticale componenten tellen op, met een hoek van 60° met de horizontale.</p>')]).out;
+      return { text: 'Drie puntladingen bevinden zich op de hoekpunten van een gelijkzijdige driehoek met zijde ' + p.a + ' cm: Q₁ = Q₂ = ' + sq(p.q) + ' µC (onderaan) en Q₃ = ' + sq(p.q3) + ' µC (bovenaan). Bereken de resulterende kracht op Q₃. Bepaal zowel de grootte als de richting van de resultante.', ch, target: 2, comps: true,
+        answers: [NUM('F', 'Grootte van de resultante', 'N', r.F), CH('d', 'Richting', ['loodrecht op Q₁Q₂, naar omlaag (naar Q₁Q₂ toe)', 'loodrecht op Q₁Q₂, naar omhoog (weg van Q₁Q₂)'], r.fy < 0 ? 0 : 1)], steps: s }; } },
+  { id: 10, title: 'Rechthoekige driehoek', lvl: 'h', def: { q1: 2, q2: -5, q3: 4 },
+    gen: () => ({ q1: sg() * rnd(1, 6, .5), q2: sg() * rnd(1, 6, .5), q3: sg() * rnd(1, 6, .5) }),
+    make(p) { const ch = [{ x: 0, y: 0, q: p.q1 }, { x: 40, y: 0, q: p.q2 }, { x: 0, y: 30, q: p.q3 }], r = forcesOn(ch, 0), s = steps2D(ch, 0).out;
+      return { text: 'Drie puntladingen bevinden zich op de hoekpunten van een rechthoekige driehoek met rechthoekszijden 30 cm en 40 cm: Q₁ = ' + sq(p.q1) + ' µC (hoek van 90°), Q₂ = ' + sq(p.q2) + ' µC (40 cm rechts van Q₁) en Q₃ = ' + sq(p.q3) + ' µC (30 cm boven Q₁). Bereken de resulterende kracht op Q₁. Bepaal ook de hoek die de resultante maakt met de horizontale zijde.', ch, target: 0, comps: true,
+        answers: [NUM('F', 'Grootte van de resultante', 'N', r.F), NUM('a', 'Hoek met de horizontale zijde (scherpe hoek)', '°', acute(r.fx, r.fy), { tolAbs: 1.2 }), CH('d', 'Richting van de resultante', QUAD, quad(r.fx, r.fy))], steps: s }; } },
+  { id: 11, title: 'Driehoek zonder rechte hoek', lvl: 'h', def: { q1: 4, q2: -3, q3: 2 },
+    gen: () => ({ q1: sg() * rnd(1, 6, .5), q2: sg() * rnd(1, 6, .5), q3: sg() * rnd(1, 6, .5) }),
+    make(p) { const x = (42 * 42 + 50 * 50 - 30 * 30) / (2 * 50), y = Math.sqrt(42 * 42 - x * x), ch = [{ x: 0, y: 0, q: p.q1 }, { x: 50, y: 0, q: p.q2 }, { x: x, y: y, q: p.q3 }], r = forcesOn(ch, 2);
+      const f1 = r.list[0], f2 = r.list[1], phi = Math.acos(Math.max(-1, Math.min(1, (f1.fx * f2.fx + f1.fy * f2.fy) / (f1.F * f2.F)))) * 180 / Math.PI, gam = Math.acos((42 * 42 + 30 * 30 - 50 * 50) / (2 * 42 * 30)) * 180 / Math.PI;
+      const pre = [st('Hoek tussen de twee krachtvectoren', '<p>Eerst de hoek γ van de driehoek bij Q₃ met de cosinusregel:</p><div class="calc">cos γ = (42² + 30² − 50²)/(2·42·30) → γ = ' + deg(gam) + '</div><p>De krachten wijzen ' + (Math.abs(phi - gam) < 1 ? 'allebei naar de ladingen toe of allebei ervan weg, dus φ = γ' : 'de ene naar een lading toe, de andere ervan weg, dus φ = 180° − γ') + '.</p><div class="calc">φ = <b>' + deg(phi) + '</b></div>')];
+      const s = steps2D(ch, 2, pre).out; s.push(st('Controle met de cosinusregel', '<div class="calc">F² = F₁² + F₂² + 2F₁F₂ cos φ = ' + fmt(f1.F) + '² + ' + fmt(f2.F) + '² + 2·' + fmt(f1.F) + '·' + fmt(f2.F) + '·cos ' + deg(phi) + ' → F = ' + fmt(Math.sqrt(f1.F * f1.F + f2.F * f2.F + 2 * f1.F * f2.F * Math.cos(phi * Math.PI / 180))) + ' N</div>'));
+      return { text: 'Drie puntladingen vormen een driehoek met Q₁Q₂ = 50 cm, Q₁Q₃ = 42 cm en Q₂Q₃ = 30 cm: Q₁ = ' + sq(p.q1) + ' µC, Q₂ = ' + sq(p.q2) + ' µC en Q₃ = ' + sq(p.q3) + ' µC (Q₁Q₂ ligt horizontaal). Bereken de resulterende kracht op Q₃. De twee krachten staan niet loodrecht op elkaar: bepaal eerst de hoek tussen beide krachtvectoren en bereken daarna de grootte en richting van de resultante.', ch, target: 2, comps: true,
+        answers: [NUM('p', 'Hoek φ tussen de krachtvectoren', '°', phi, { tolAbs: 1.2 }), NUM('F', 'Grootte van de resultante', 'N', r.F), NUM('a', 'Hoek van de resultante met de horizontale (scherp)', '°', acute(r.fx, r.fy), { tolAbs: 1.5 }), CH('d', 'Richting van de resultante', QUAD, quad(r.fx, r.fy))], steps: s }; } },
+  { id: 12, title: 'Twee zijden en een hoek', lvl: 'h', def: { q1: 5, q2: -2, q3: 3 },
+    gen: () => ({ q1: sg() * rnd(1, 6, .5), q2: sg() * rnd(1, 6, .5), q3: sg() * rnd(1, 6, .5) }),
+    make(p) { const rad = 55 * Math.PI / 180, ch = [{ x: 0, y: 0, q: p.q1 }, { x: 42, y: 0, q: p.q2 }, { x: 28 * Math.cos(rad), y: 28 * Math.sin(rad), q: p.q3 }], r = forcesOn(ch, 0), s = steps2D(ch, 0, [st('Plaats de driehoek in een assenstelsel', '<p>Zet Q₁ in de oorsprong, Q₂ op de horizontale as (42 cm) en Q₃ op 28 cm onder een hoek van 55°. De afstand Q₂Q₃ heb je niet nodig: je zoekt de kracht op Q₁.</p>')]).out;
+      s.push(st('Hoek ten opzichte van de rechte Q₁Q₂', '<p>Gemeten vanaf de richting Q₁ → Q₂ is de resultante ' + deg(Math.acos(r.fx / r.F) * 180 / Math.PI) + ' gedraaid. De scherpe hoek met de lijn Q₁Q₂ is ' + deg(acute(r.fx, r.fy)) + ' (' + dirText(r.fx, r.fy) + ').</p>'));
+      return { text: 'Q₁ = ' + sq(p.q1) + ' µC, Q₂ = ' + sq(p.q2) + ' µC en Q₃ = ' + sq(p.q3) + ' µC. Q₁Q₂ = 42 cm, Q₁Q₃ = 28 cm en de hoek bij Q₁ is 55°. Bereken de resulterende kracht op Q₁. Bepaal zowel de grootte als de hoek van de resultante ten opzichte van de rechte Q₁Q₂.', ch, target: 0, comps: true,
+        answers: [NUM('F', 'Grootte van de resultante', 'N', r.F), NUM('a', 'Scherpe hoek met de rechte Q₁Q₂', '°', acute(r.fx, r.fy), { tolAbs: 1.5, accept: [Math.acos(r.fx / r.F) * 180 / Math.PI] }), CH('d', 'Richting van de resultante', QUAD, quad(r.fx, r.fy))], steps: s }; } }
+];
+
+function exPage(ex) {
+  return { id: 'ex' + ex.id, group: 'ex', no: String(ex.id), title: ex.title, render(root) {
+    let p = JSON.parse(JSON.stringify(ex.def)), M, lab, shown = 0, solved = false;
+    const lv = { b: ['Basis', 'b'], m: ['Middel', 'm'], h: ['Moeilijk', 'h'] }[ex.lvl];
+    function build() {
+      M = ex.make(p); window.__lastM = M; shown = 0; solved = false;
+      root.innerHTML = head('Oefening ' + ex.id + ' van 12', ex.title, null) + '<div class="exhead"><span class="lvl ' + lv[1] + '">' + lv[0] + '</span><button class="btn" id="newn">Nieuwe getallen</button><button class="btn" id="orig">Getallen uit de opgave</button></div>' +
+        '<div class="problem">' + M.text + '</div><div id="fig"></div>' +
+        '<section class="sec"><h2>Jouw antwoord</h2><div class="answers" id="ans"></div><div class="btnrow"><button class="btn primary" id="chk">Controleer</button><button class="btn" id="hint">Hint</button><button class="btn" id="nxt">Volgende stap</button><button class="btn" id="all">Toon volledige oplossing</button></div><div id="hnt" class="mono" style="color:var(--ink2);font-size:.9rem"></div><div id="res" style="font-weight:700"></div></section>' +
+        '<section class="sec" id="stp"></section>';
+      $('#ans').innerHTML = M.answers.map(a => '<div class="ans" data-id="' + a.id + '"><span class="lab">' + a.label + '</span><div class="row">' + (a.kind === 'num' ? '<input type="text" inputmode="decimal" id="in-' + a.id + '" placeholder="getal" autocomplete="off"><span class="unit">' + a.unit + '</span>' : '<select id="in-' + a.id + '"><option value="">kies...</option>' + a.options.map((o, i) => '<option value="' + i + '">' + o + '</option>').join('') + '</select>') + '</div><div class="fb"></div></div>').join('');
+      const chs = M.ch.map(c => ({ ...c }));
+      if (M.dl === 1) chs[2].hidden = true;
+      lab = ForceLab($('#fig'), { title: M.title || 'Figuur', hint: 'Afstanden in cm. Ladingen in µC.', charges: chs, target: M.target, editable: false, fixedTarget: true, hideReadout: true, noControls: true, showVectors: false,
+        distLabel: M.hideDist ? () => 'r = ?' : M.dl === 'x' ? (i, j) => (i === 1 && j === 2) ? 'x = ?' : null : null });
+      $('#newn').onclick = () => { p = ex.gen(); build(); }; $('#orig').onclick = () => { p = JSON.parse(JSON.stringify(ex.def)); build(); };
+      $('#chk').onclick = check; $('#nxt').onclick = next; $('#all').onclick = () => { while (shown < M.steps.length) next(true); reveal(); };
+      $('#hint').onclick = () => { $('#hnt').textContent = shown < M.steps.length ? 'Hint: volgende stap is “' + M.steps[shown].t + '”.' : 'Alle stappen zijn getoond.'; };
+    }
+    function next(quiet) { if (shown >= M.steps.length) return; const s = M.steps[shown]; $('#stp').insertAdjacentHTML('beforeend', '<div class="step"><h3>Stap ' + (shown + 1) + ': ' + s.t + '</h3>' + s.body + '</div>'); shown++; $('#hnt').textContent = ''; }
+    function reveal() {
+      if (M.after) { lab.setCharges(M.after); lab.setTitle('Na het contact'); }
+      if (M.dl === 1) { const c = lab.charges.map(x => ({ ...x })); c[2].hidden = false; lab.setCharges(c); lab.setDistLabel(null); lab.setTarget(M.target); }
+      lab.setDistLabel(null); lab.setComps(!!M.comps); lab.setVectors(true);
+      const ans = M.answers.map(a => a.kind === 'num' ? a.label + ': <b>' + fmt(a.val) + ' ' + a.unit + '</b>' : a.label + ': <b>' + a.options[a.correct] + '</b>').join('<br>');
+      if (!$('#sol')) $('#stp').insertAdjacentHTML('beforeend', '<div class="focus" id="sol"><span class="tag">Antwoord</span><p>' + ans + '</p></div>');
+    }
+    function check() {
+      let all = true;
+      M.answers.forEach(a => {
+        const el = $('.ans[data-id="' + a.id + '"]'), inp = $('#in-' + a.id), fb = $('.fb', el); let ok;
+        if (a.kind === 'num') {
+          const v = parseNum(inp.value); if (isNaN(v)) { ok = false; fb.textContent = 'Vul een getal in.'; el.className = 'ans no'; all = false; return; }
+          const cands = [a.val, ...(a.accept || [])]; ok = cands.some(c => a.tolAbs != null ? Math.abs(v - c) <= a.tolAbs : Math.abs(v - c) <= Math.abs(c) * (a.tolRel || .03));
+          fb.textContent = ok ? 'Juist.' : (Math.abs(Math.log10(Math.abs(v / a.val) || 1)) > .9 ? 'Grootteorde klopt niet: controleer je eenheden (µC, cm).' : (Math.sign(v) !== Math.sign(a.val) ? 'Controleer het teken.' : 'Nog niet juist. Controleer je tussenstappen.'));
+        } else { ok = inp.value !== '' && +inp.value === a.correct; fb.textContent = ok ? 'Juist.' : (inp.value === '' ? 'Kies een antwoord.' : 'Nog niet juist.'); }
+        el.className = 'ans ' + (ok ? 'ok' : 'no'); if (!ok) all = false;
+      });
+      $('#res').innerHTML = all ? '<span style="color:var(--good)">Alles juist. Goed gedaan.</span>' : '<span style="color:var(--bad)">Nog niet helemaal. Gebruik een hint of de volgende stap.</span>';
+      if (all) { if (!solved) { solved = true; markDone('ex' + ex.id); } while (shown < M.steps.length) next(true); reveal(); }
+    }
+    build();
+  } };
+}
+EX.forEach(e => addPage(exPage(e)));
+/* ===== Startpagina, quiz, spiekbrief, router ===== */
+const QUIZ = [
+ ['Een voorwerp is negatief geladen. Wat betekent dat?', ['Meer elektronen dan protonen', 'Meer protonen dan elektronen', 'Alleen neutronen'], 0, 'Negatief = meer elektronen dan protonen.'],
+ ['Hoe groot is de elementaire lading?', ['1,6·10<sup>−19</sup> C', '1,6·10<sup>19</sup> C', '8,99·10<sup>9</sup> C'], 0, 'e = 1,6·10<sup>−19</sup> C, de lading van een proton of elektron.'],
+ ['Een voorwerp heeft 5,0·10<sup>12</sup> elektronen te veel. Wat is de lading?', ['+8,0·10<sup>−7</sup> C', '−8,0·10<sup>−7</sup> C', '−3,1·10<sup>31</sup> C'], 1, 'Q = −N·e = −5,0·10<sup>12</sup>·1,6·10<sup>−19</sup> = −8,0·10<sup>−7</sup> C.'],
+ ['Wat gebeurt er met lading bij het laden van voorwerpen?', ['Lading wordt bijgemaakt', 'Lading wordt vernietigd', 'Lading verhuist, de totale lading blijft behouden'], 2, 'Ladingen worden niet gemaakt of vernietigd. Elektronen verhuizen.'],
+ ['Waarom verspreidt lading zich over een metalen voorwerp?', ['Door vrije elektronen en onderlinge afstoting', 'Door de zwaartekracht', 'Door de atoomkernen'], 0, 'Een metaal heeft vrije elektronen. Gelijke ladingen stoten elkaar af.'],
+ ['Waarom blijft lading op een kunststof voorwerp ter plaatse?', ['Geen vrije elektronen', 'Kunststof is zwaar', 'Kunststof heeft protonen'], 0, 'Isolatoren hebben atoombindingen zonder vrije elektronen.'],
+ ['Een negatief geladen metalen bol wordt geaard. Wat gebeurt er?', ['Elektronen gaan van de bol naar de aarde', 'Elektronen gaan van de aarde naar de bol', 'Protonen gaan naar de aarde'], 0, 'Elektronenoverschot stroomt weg naar de aarde.'],
+ ['Een positief geladen metalen bol wordt geaard. Wat gebeurt er?', ['Elektronen gaan van de bol naar de aarde', 'Elektronen gaan van de aarde naar de bol', 'Er gebeurt niets'], 1, 'De bol heeft elektronen tekort, de aarde levert ze.'],
+ ['Je wrijft glas met zijde. Glas staat hoger in de tribo-elektrische reeks. Welke uitspraak klopt?', ['Glas wordt positief, zijde negatief', 'Glas wordt negatief, zijde positief', 'Beide worden positief'], 0, 'Wie hoger staat geeft elektronen af en wordt positief.'],
+ ['Waarom laad je een metalen staaf in je hand niet door wrijving?', ['Metaal heeft geen elektronen', 'De elektronen verspreiden zich weer: geleider', 'Metaal staat niet in de reeks'], 1, 'Bij geleiders verspreiden de elektronen zich over het voorwerp.'],
+ ['Je raakt een elektroscoop aan met een positieve staaf. Hoe is de elektroscoop daarna geladen?', ['Negatief', 'Positief', 'Neutraal'], 1, 'Laden door contact geeft hetzelfde teken als de staaf.'],
+ ['Hoe laad je een bol door influentie met een negatieve staaf?', ['Staaf nabij brengen, aarden, aarding weg, staaf weg: bol wordt positief', 'Staaf nabij brengen, staaf aanraken: bol wordt positief', 'Staaf nabij brengen, aarden, staaf weg, aarding weg: bol blijft neutraal'], 0, 'Eerst aarding weg, dan de staaf. Resultaat: tegengesteld teken.'],
+ ['Wat zie je als je een positieve staaf bij een positief geladen elektroscoop brengt?', ['De bladen wijken verder uit', 'De bladen sluiten', 'Niets'], 0, 'Elektronen worden naar de plaat getrokken, de bladen krijgen extra positieve lading.'],
+ ['Waarom trekt een geladen kam ongeladen papiersnippers aan?', ['Polarisatie: de nabije tegengestelde lading wint', 'De snippers zijn geladen', 'Luchtdruk'], 0, 'Dipolen draaien, de dichtstbijzijnde lading is tegengesteld en trekt sterker.'],
+ ['De afstand tussen twee ladingen wordt 3 keer zo groot. De kracht wordt...', ['3 keer zo klein', '9 keer zo klein', '9 keer zo groot'], 1, 'F is omgekeerd evenredig met r².'],
+ ['Beide ladingen worden 2 keer zo groot, de afstand blijft gelijk. De kracht wordt...', ['2 keer zo groot', '4 keer zo groot', '8 keer zo groot'], 1, 'F ~ |Q₁|·|Q₂|, dus 2·2 = 4.'],
+ ['Q₁ = 2 µC en Q₂ = 8 µC. Welke lading voelt de grootste kracht?', ['Q₁', 'Q₂', 'Beide evenveel'], 2, 'Derde wet van Newton: even groot, tegengesteld.'],
+ ['Wat is de eenheid van de constante k?', ['N·m²/C²', 'N/C', 'C/m'], 0, 'k = 8,99·10<sup>9</sup> N·m²/C².'],
+ ['Hoeveel meter is 4 cm?', ['4·10<sup>−2</sup> m', '4·10<sup>2</sup> m', '4·10<sup>−3</sup> m'], 0, 'cm = 10<sup>−2</sup> m.'],
+ ['In water is de coulombkracht tussen twee ladingen...', ['80 keer kleiner dan in lucht', '80 keer groter dan in lucht', 'gelijk aan lucht'], 0, 'ε is 80 keer groter, dus k en F zijn 80 keer kleiner.'],
+ ['Twee positieve ladingen: waar ligt het nulpunt voor een positieve testlading?', ['Tussen de ladingen, dichter bij de kleinste', 'Tussen de ladingen, dichter bij de grootste', 'Buiten de ladingen'], 0, 'Gelijk teken: nulpunt tussen, bij de kleinste lading.'],
+ ['Twee ladingen met tegengesteld teken en verschillende grootte: waar ligt het nulpunt?', ['Tussen de ladingen', 'Buiten, aan de kant van de kleinste lading', 'Buiten, aan de kant van de grootste lading'], 1, 'Alleen daar werken de krachten tegen elkaar in en kunnen even groot zijn.'],
+ ['Twee loodrechte krachten van 6 N en 8 N. De resultante is...', ['14 N', '10 N', '2 N'], 1, '√(6² + 8²) = 10 N.'],
+ ['Een kracht F maakt een hoek α met de horizontale. De verticale component is...', ['F·cos α', 'F·sin α', 'F/tan α'], 1, 'F<sub>y</sub> = F·sin α en F<sub>x</sub> = F·cos α.'],
+ ['Twee identieke geleidende bollen met +6 µC en −2 µC raken elkaar. Lading op elke bol daarna?', ['+4 µC', '+2 µC', '0 µC'], 1, '(6 + (−2))/2 = +2 µC.'],
+ ['Q₂ staat tussen Q₁ en Q₃. Hoe bereken je de kracht van Q₁ op Q₃?', ['Met de afstand Q₁Q₃, Q₂ schermt niets af', 'Met de afstand Q₁Q₂', 'Die kracht is 0'], 0, 'Elke lading oefent haar eigen kracht uit, zonder afscherming.']
+];
+addPage({ id: 'quiz', group: 'ex', no: '', title: 'Theorietoets', render(root) {
+  let order, i, score, wrong, mode = 'all';
+  const start = (m, from) => { mode = m; order = (from || QUIZ.map((_, k) => k)).slice().sort(() => Math.random() - .5); if (!from) order = order.slice(0, 12); i = 0; score = 0; wrong = []; show(); };
+  function show() {
+    if (i >= order.length) {
+      root.innerHTML = head('Theorietoets', 'Resultaat', null) + '<div class="problem"><div class="score">' + score + ' / ' + order.length + '</div><p>' + (score === order.length ? 'Perfect. Je beheerst de theorie.' : score >= order.length * .75 ? 'Sterk. Bekijk de fouten nog even.' : 'Herhaal de lessen waar je fouten maakte en probeer opnieuw.') + '</p></div><div class="btnrow"><button class="btn primary" id="again">Nieuwe toets (12 vragen)</button>' + (wrong.length ? '<button class="btn" id="redo">Alleen de foute vragen herhalen</button>' : '') + '</div>';
+      if (score === order.length && mode === 'all') markDone('quiz');
+      $('#again').onclick = () => start('all'); if ($('#redo')) $('#redo').onclick = () => start('wrong', wrong); return;
+    }
+    const q = QUIZ[order[i]];
+    root.innerHTML = head('Theorietoets · vraag ' + (i + 1) + ' van ' + order.length, 'Test je kennis', null) + '<div class="qprog"><i style="width:' + (i / order.length * 100) + '%"></i></div><div class="q"><p class="qt" style="font-size:1.1rem">' + q[0] + '</p><div class="opts">' + q[1].map((o, j) => '<button class="opt" data-j="' + j + '"><span class="k">' + 'ABC'[j] + '</span><span>' + o + '</span></button>').join('') + '</div><div class="why" hidden></div><div class="btnrow"><button class="btn primary" id="nq" hidden>Volgende</button></div></div>';
+    $$('.opt', root).forEach(b => b.onclick = () => {
+      const j = +b.dataset.j; $$('.opt', root).forEach(x => x.disabled = true);
+      $$('.opt', root)[q[2]].classList.add('ok'); if (j === q[2]) score++; else { b.classList.add('no'); wrong.push(order[i]); }
+      const w = $('.why', root); w.hidden = false; w.innerHTML = '<b class="' + (j === q[2] ? 'ok">Juist.' : 'no">Niet juist.') + '</b> ' + q[3]; $('#nq').hidden = false;
+    });
+    $('#nq').onclick = () => { i++; show(); };
+  }
+  root.innerHTML = head('Toets jezelf', 'Theorietoets', 'Willekeurige vragen uit beide hoofdstukken. Haal alle 12 juist om het vinkje te krijgen.') + '<div class="btnrow"><button class="btn primary" id="go">Start (12 vragen)</button><button class="btn" id="goall">Alle ' + QUIZ.length + ' vragen</button></div>';
+  $('#go').onclick = () => start('all'); $('#goall').onclick = () => { mode = 'full'; order = QUIZ.map((_, k) => k).sort(() => Math.random() - .5); i = 0; score = 0; wrong = []; show(); };
+} });
+
+addPage({ id: 'cheat', group: 'x', no: '', title: 'Spiekbrief', render(root) {
+  root.innerHTML = head('Samenvatting', 'Spiekbrief', 'Alles wat je moet kennen op één pagina.') + `
+  <section class="sec"><h2>Hoofdstuk 1: Ladingen</h2><div class="tablewrap"><table><tbody>
+    <tr><td><b>Lading</b></td><td>Neutraal: p = e. Negatief: meer elektronen. Positief: minder elektronen. e = 1,6·10<sup>−19</sup> C. Q = N·e. Alleen elektronen verhuizen.</td></tr>
+    <tr><td><b>Krachten</b></td><td>Gelijk stoot af, ongelijk trekt aan.</td></tr>
+    <tr><td><b>Geleider / isolator</b></td><td>Geleider: vrije elektronen, lading verspreidt zich. Isolator: geen vrije elektronen, lading blijft. Halfgeleider: beperkte geleiding.</td></tr>
+    <tr><td><b>Aarding</b></td><td>Negatief: elektronen voorwerp → aarde. Positief: aarde → voorwerp. Isolator: geen stroom.</td></tr>
+    <tr><td><b>Wrijving</b></td><td>Tribo-reeks: hoger geeft elektronen af (+), lager neemt op (−). Alleen bij isolatoren.</td></tr>
+    <tr><td><b>Elektroscoop</b></td><td>Contact: zelfde teken als de staaf. Ontladen: aarding. Bladen wijken uit bij gelijke lading.</td></tr>
+    <tr><td><b>Influentie</b></td><td>Staaf nabij, aarden, aarding weg, staaf weg: tegengesteld teken. Eerst aarding weg, dan staaf.</td></tr>
+    <tr><td><b>Polarisatie</b></td><td>Isolator: elektronenwolken vervormen, dipolen, netto aantrekking.</td></tr></tbody></table></div></section>
+  <section class="sec"><h2>Hoofdstuk 2: Wet van Coulomb</h2>
+    <div class="focus"><div class="formula">F<sub>c</sub> = k · ${frac('|Q<sub>1</sub>| · |Q<sub>2</sub>|', 'r<sup>2</sup>')} &nbsp; k = 8,99·10<sup>9</sup> N·m²/C²</div></div>
+    <ul class="clean"><li>µC = 10<sup>−6</sup> C, nC = 10<sup>−9</sup> C, cm = 10<sup>−2</sup> m, mm = 10<sup>−3</sup> m.</li>
+    <li>r ×2 → F ÷4. Q ×2 → F ×2. Water: F is 80 keer kleiner.</li>
+    <li>F₁₂ = F₂₁ in grootte (derde wet van Newton). Fᵢⱼ = kracht van Qᵢ op Qⱼ.</li>
+    <li><b>Op een rechte:</b> kies een positieve zin, bereken elke kracht apart, tel op met tekens.</li>
+    <li><b>In een vlak:</b> ontbind Fₓ = F·cos α en Fᵧ = F·sin α, tel componenten op, F = √(Fₓ² + Fᵧ²), tan α = |Fᵧ|/|Fₓ|.</li>
+    <li><b>Niet loodrecht:</b> F² = F₁² + F₂² + 2F₁F₂ cos φ, met φ de hoek tussen de krachtvectoren.</li>
+    <li><b>Nulpunt:</b> zelfde teken: tussen, bij de kleinste. Tegengesteld: buiten, bij de kleinste. Gelijke groottes opstellen: √|Q₁|/d₁ = √|Q₂|/d₂.</li>
+    <li><b>Bollen in contact (identiek, geleidend):</b> elk (Q₁ + Q₂)/2.</li></ul></section>`;
+} });
+
+addPage({ id: 'home', group: 'x', no: '', title: 'Start', render(root) {
+  const lessons = PAGES.filter(p => p.group === 'h1' || p.group === 'h2');
+  root.innerHTML = head('Elektrostatica', 'Alles over ladingen en krachten, om te snappen en te oefenen', 'Twee hoofdstukken uit je cursus als interactieve lessen. Elke les heeft een korte uitleg, een simulatie om mee te spelen en controlevragen. Daarna kun je 12 oefeningen maken, met stap-voor-stap uitwerking en nieuwe getallen zo vaak je wilt.') + `
+  <section class="sec"><h2>Aanpak</h2>
+    <div class="step"><h3>Lees de uitleg, speel met de simulatie</h3><p>Verander dingen en kijk wat er gebeurt. Zo onthoud je het beter dan door te lezen.</p></div>
+    <div class="step"><h3>Beantwoord de controlevragen</h3><p>Een les krijgt een vinkje als je alle vragen juist hebt.</p></div>
+    <div class="step"><h3>Maak de oefeningen</h3><p>Probeer eerst zelf. Gebruik daarna hint, stap voor stap of de volledige oplossing. Klik op “Nieuwe getallen” om te blijven oefenen.</p></div></section>
+  <section class="sec"><h2>Lessen</h2><div class="cards" id="hc"></div></section>
+  <section class="sec"><h2>Oefenen en herhalen</h2><div class="cards" id="hx"></div></section>
+  <div class="warnbox"><span class="tag">Twee afwijkingen in je materiaal</span><p><b>1.</b> Op dia 3 van hoofdstuk 2 staat 3,6·10<sup>−3</sup> N, maar met r = 5,0 mm is het juiste antwoord 3,6·10<sup>3</sup> N.<br><b>2.</b> In oefening 8 van de extra oefeningen is er geen oplossing: beide krachten op Q₂ wijzen naar rechts. Waarschijnlijk moet Q₃ positief zijn. Vraag het aan je leerkracht.</p></div>`;
+  $('#hc').innerHTML = lessons.map(l => '<button class="card' + (progress[l.id] ? ' done' : '') + '" data-go="' + l.id + '"><span class="n">' + l.no + '</span><b>' + l.title + '</b></button>').join('');
+  $('#hx').innerHTML = '<button class="card' + (EX.every(e => progress['ex' + e.id]) ? ' done' : '') + '" data-go="ex1"><span class="n">12 oefeningen</span><b>Extra oefeningen Wet van Coulomb</b><small>' + EX.filter(e => progress['ex' + e.id]).length + ' van 12 gemaakt</small></button><button class="card' + (progress.quiz ? ' done' : '') + '" data-go="quiz"><span class="n">' + QUIZ.length + ' vragen</span><b>Theorietoets</b></button><button class="card" data-go="cheat"><span class="n">1 pagina</span><b>Spiekbrief</b></button>';
+} });
+
+/* ----- navigatie ----- */
+const ORDER = () => ['home', ...PAGES.filter(p => p.group === 'h1').map(p => p.id), ...PAGES.filter(p => p.group === 'h2').map(p => p.id), ...EX.map(e => 'ex' + e.id), 'quiz', 'cheat'];
+let cur = 'home';
+function buildNav() {
+  const btn = p => '<button class="navbtn" data-go="' + p.id + '" data-id="' + p.id + '"><span class="no">' + (p.no || '') + '</span><span>' + p.title + '</span><span class="tick"></span></button>';
+  $('#nav').innerHTML =
+    '<div class="navgroup"><button class="navbtn" data-go="home" data-id="home"><span class="no"></span><span>Start</span></button></div>' +
+    '<div class="navgroup"><h4>Hoofdstuk 1 · Ladingen</h4>' + PAGES.filter(p => p.group === 'h1').map(btn).join('') + '</div>' +
+    '<div class="navgroup"><h4>Hoofdstuk 2 · Krachten</h4>' + PAGES.filter(p => p.group === 'h2').map(btn).join('') + '</div>' +
+    '<div class="navgroup"><h4>Oefeningen</h4><div class="exgrid">' + EX.map(e => '<button data-go="ex' + e.id + '" data-id="ex' + e.id + '" title="' + e.title + '">' + e.id + '</button>').join('') + '</div><button class="navbtn" data-go="quiz" data-id="quiz" style="margin-top:6px"><span class="no"></span><span>Theorietoets</span><span class="tick"></span></button></div>' +
+    '<div class="navgroup"><button class="navbtn" data-go="cheat" data-id="cheat"><span class="no"></span><span>Spiekbrief</span></button></div>';
+}
+function updateNav() {
+  $$('#nav [data-id]').forEach(b => { const id = b.dataset.id; b.classList.toggle('done', !!progress[id]); if (id === cur) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current'); });
+  const tot = PAGES.filter(p => p.group === 'h1' || p.group === 'h2').length + EX.length + 1, d = Object.keys(progress).length;
+  $('#progbar').style.width = Math.min(100, d / tot * 100) + '%'; $('#progtxt').textContent = d + ' van ' + tot + ' onderdelen afgerond';
+}
+function go(id, noHash) {
+  const page = PAGES.find(p => p.id === id) || PAGES.find(p => p.id === 'home');
+  runCleanups(); cur = page.id;
+  const root = view(); root.innerHTML = ''; root.scrollTop = 0;
+  try { page.render(root); } catch (e) { root.innerHTML = '<div class="warnbox"><span class="tag">Fout</span><p>Deze pagina kon niet laden: ' + String(e && e.message) + '</p></div>'; console.error(e); }
+  const o = ORDER(), k = o.indexOf(cur), titleOf = i => { const q = PAGES.find(p => p.id === i); return (q.no ? q.no + ' ' : '') + q.title; };
+  if (cur !== 'home') root.insertAdjacentHTML('beforeend', '<div class="pager"><span>' + (k > 0 ? '<button class="btn" data-go="' + o[k - 1] + '">← ' + titleOf(o[k - 1]) + '</button>' : '') + '</span><span>' + (k < o.length - 1 ? '<button class="btn primary" data-go="' + o[k + 1] + '">' + titleOf(o[k + 1]) + ' →</button>' : '') + '</span></div>');
+  $('#topttl').textContent = (page.no ? page.no + ' ' : '') + page.title;
+  document.body.classList.remove('menu'); updateNav();
+  window.scrollTo(0, 0);
+  if (!noHash) { try { history.replaceState(null, '', '#' + cur); } catch (e) { } }
+}
+document.addEventListener('click', e => { const b = e.target.closest('[data-go]'); if (b) go(b.dataset.go); });
+$('#menubtn').onclick = () => document.body.classList.toggle('menu'); $('#scrim').onclick = () => document.body.classList.remove('menu');
+buildNav();
+const startId = (location.hash || '').replace('#', '');
+go(PAGES.some(p => p.id === startId) ? startId : 'home', true);
+</script>
+</body>
+</html>
