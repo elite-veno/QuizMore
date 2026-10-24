@@ -206,6 +206,63 @@ details.lees ul{margin:8px 0 0;padding-left:18px;display:flex;flex-direction:col
 .pertopic td:last-child,.pertopic th:last-child{text-align:right;font-variant-numeric:tabular-nums}
 .tools{margin-top:4px}
 .small{font-size:13px}
+/* UI-review: contrast, gsm-ergonomie, toegankelijkheid */
+:root{--warn:#7A4E00;--good:#176B3C;--field:#8A9AA5;--chip-ink:#075E5A}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--warn:#E9B04A;--good:#4CC17F;--field:#4F6877;--chip-ink:var(--accent)}}
+:root[data-theme="dark"]{--warn:#E9B04A;--good:#4CC17F;--field:#4F6877;--chip-ink:var(--accent)}
+.opt,input[type=text],select,textarea,.oitem{border-color:var(--field)}
+.chip.a{color:var(--chip-ink)}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.qtext:focus{outline:none}
+.cloze input.good{border-color:var(--good);background:var(--good-soft)}
+.cloze input.bad{border-color:var(--bad);background:var(--bad-soft)}
+.fb.part{background:var(--warn-soft);border-color:var(--warn)}
+.fb.part .h{color:var(--warn)}
+.fb .h span{margin-right:2px}
+.opt.good .key,.opt.bad .key,.opt.missed .key{font-size:14px;font-weight:700}
+.opt.good .key{background:var(--good);color:#fff}.opt.bad .key{background:var(--bad);color:#fff}.opt.missed .key{background:var(--surface2);color:var(--good)}
+.missedtag{display:block;font-size:13px;font-weight:600;color:var(--good)}
+.lbar i+i{border-left:2px solid var(--surface)}
+.l2{background:color-mix(in srgb,var(--accent) 55%,var(--surface))}.l1{background:repeating-linear-gradient(135deg,color-mix(in srgb,var(--accent) 35%,var(--surface)) 0 4px,var(--surface2) 4px 7px)}
+/* zekerheid */
+.confrow{display:flex;flex-direction:column;gap:8px;align-items:stretch;width:100%}
+.confbtns{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:420px}
+.confhint:empty{display:none}
+/* knoppen onderaan vast op een gsm */
+@media (max-width:600px){
+  .qcard>.actions-row{position:sticky;bottom:0;z-index:3;background:var(--surface);margin:0 -20px -20px;padding:12px 20px calc(12px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line);border-radius:0 0 12px 12px}
+  .confbtns{max-width:none}
+  .diagbox{position:sticky;top:0;z-index:2}
+  .diag{max-height:38vh}
+}
+.svgm .mrow{grid-template-columns:auto minmax(0,1fr)}
+@media (max-width:520px){.svgm .mrow{grid-template-columns:auto minmax(0,1fr)}}
+.svgm .mrow .l{min-width:2.2em;font-family:var(--font-mono)}
+.d-num{font-size:14px}
+/* rangschikken: tikken om te plaatsen */
+.oitem{padding:6px 8px}
+.oitem .txt{appearance:none;background:none;border:0;text-align:left;font:inherit;color:inherit;padding:8px 4px;cursor:pointer;border-radius:6px}
+.oitem.picked{border-color:var(--accent);background:var(--accent-soft);border-width:2px}
+.pickhint{font-size:13px;color:var(--chip-ink);font-weight:600}
+.mvs{display:flex;gap:4px;flex:none}
+.oitem .mv{min-width:44px;min-height:44px}
+/* theorie */
+.panel.theory{display:flex;flex-direction:column;gap:12px}
+.topbar .btn.primary{margin-left:auto}
+/* startscherm */
+.hero h1{font-size:clamp(28px,6vw,42px)}
+.now{display:flex;flex-direction:column;gap:12px;border:2px solid var(--accent)}
+.nowmsg{font-size:17px}
+.big-btn{min-height:52px;font-size:17px;align-self:flex-start;padding:12px 22px}
+.linkish{border:0;background:none;color:var(--chip-ink);text-decoration:underline;align-self:flex-start;min-height:36px;padding:4px 0}
+.ways{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:12px}
+.waylabel{font-family:var(--font-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+details.tools{padding:14px 20px}
+details.tools>summary{cursor:pointer;font-weight:600}
+details.tools[open]{display:flex;flex-direction:column;gap:10px}
+.cal{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline;font-size:14px}
+.calstat b{font-variant-numeric:tabular-nums}
+@media (max-width:600px){.big-btn{align-self:stretch}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
@@ -216,14 +273,14 @@ details.lees ul{margin:8px 0 0;padding-left:18px;display:flex;flex-direction:col
 /* ============ VRAGEN ============ */
 /* Heel specifieke getallen (exacte afstanden, temperaturen, limieten) staan in de vraag zelf. De kern moet je kennen. */
 const TOPICS=[
-{id:'pl',tag:'Hoofdstuk 1',title:'De aarde in het heelal',sum:[
+{id:'pl',tag:'H1',title:'De aarde in het heelal',sum:[
  '<b>Aardrevolutie</b>: de aarde draait in 1 jaar rond de zon, in een <b>ellips</b> met de zon in één <b>brandpunt</b>. Het vlak van die baan is het <b>eclipticavlak</b>; de schijnbare baan van de zon tussen de sterren heet de <b>ecliptica</b>.',
  '<b>Perihelium</b>: punt van de baan het dichtst bij de zon (begin januari). <b>Aphelium</b>: het verst van de zon (begin juli). Bij het perihelium gaat de aarde sneller, daardoor zijn de seizoenen niet even lang: op het noordelijk halfrond duren lente en zomer samen enkele dagen langer dan herfst en winter.',
  '<b>Aardrotatie</b>: de aarde draait in 1 dag om haar <b>rotatie-as</b>, van <b>west naar oost</b> (tegenwijzerzin gezien boven de noordpool). De as helt ca. <b>23,5°</b> (inclinatie) t.o.v. de loodlijn op het eclipticavlak: de oorzaak van de seizoenen.',
  '<b>Precessie</b>: de rotatie-as beschrijft een <b>tolbeweging</b> rond de loodlijn op het eclipticavlak, met een periode van ca. <b>26 000 jaar</b>. Gevolg: de hemelpool en dus de poolster verandert, en de sterrenbeelden verschuiven t.o.v. de seizoenen.',
  '<b>Afstandseenheden</b>: binnen het zonnestelsel km en de <b>astronomische eenheid</b> (1 AE ≈ 150 miljoen km = gemiddelde afstand aarde-zon). Buiten het zonnestelsel het <b>lichtjaar</b>: de afstand die licht aflegt in 1 jaar (ca. 9,46 × 10¹² km, c ≈ 300 000 km/s). Ook lichtminuten (zon: 8,3) en lichtseconden (maan: 1,28).',
  '<b>Structuur</b> van klein naar groot: <b>planetenstelsel</b> (planeten rond 1 centrale ster, bv. het zonnestelsel) → <b>sterrenstelsel</b> (sterren, planeten, gas en stof, wellicht donkere materie, bijeengehouden door onderlinge zwaartekracht, bv. de Melkweg) → <b>cluster</b> (30 tot 1000 sterrenstelsels, bv. de Lokale Groep) → nog grotere gehelen.']},
-{id:'st',tag:'Hoofdstuk 2',title:'Sterren',sum:[
+{id:'st',tag:'H2',title:'Sterren',sum:[
  '<b>Schijnbare magnitude</b> (m): hoe helder een ster <i>lijkt</i>. Hipparchus (200 v.C.) deelde sterren in van 1 (helderst) tot 6 (zwakst). Hoe <b>lager</b> het getal, hoe <b>helderder</b>; heel heldere objecten krijgen negatieve waarden (zon: −26,7). Het is een <b>logaritmische schaal</b>: 1 magnitude verschil = factor 2,512; 5 magnitudes = factor 100.',
  '"Schijnbaar" omdat de waargenomen helderheid afhangt van <b>afstand</b> én van de <b>uitgestraalde energie</b>. <b>Wet van de kwadratische afname</b>: ontvangen straling is omgekeerd evenredig met het kwadraat van de afstand (2× zo ver = 4× zo zwak).',
  '<b>Absolute magnitude</b> (M): de magnitude die een ster zou hebben op <b>10 parsec</b> (32,6 lj). Ze vergelijkt dus de echte lichtkracht. Formule: m − M = 5·log(d) − 5. Is m = M, dan staat de ster op 10 pc; is m &gt; M, dan staat ze verder.',
@@ -233,20 +290,20 @@ const TOPICS=[
  '<b>0,6 tot 8 M☉</b>: H op → ster krimpt, T stijgt → fusie He → C in de kern, H → He verhuist naar de schil → ster zwelt op, oppervlak koelt af → <b>rode reus</b>. He op → te weinig massa voor nieuwe fusie → buitenste lagen worden een <b>planetaire nevel</b>, de kern wordt een <b>witte dwerg</b> → na afkoeling <b>zwarte dwerg</b>.',
  '<b>Meer dan 8 M☉</b>: opeenvolgende fusies (C, Ne, O, Si tot Fe) → <b>superreus</b>. Fusie voorbij <b>ijzer</b> levert geen energie → kern implodeert → schokgolf → <b>supernova</b>, die elementen verspreidt en nieuwe stervorming kan uitlokken. Restant: <b>neutronenster</b> (8–20 M☉) of <b>zwart gat</b> (&gt; 20 M☉).',
  '<b>Witte dwerg</b>: zo groot als de aarde, max. 1,4 M☉ (Chandrasekhar-limiet), elektronen houden het instorten tegen. <b>Neutronenster</b>: ca. 10 km, elektronen en protonen versmelten tot neutronen, extreem dicht. <b>Zwart gat</b>: alle massa in een <b>singulariteit</b>; licht kan niet ontsnappen binnen de <b>waarnemingshorizon</b>.']},
-{id:'oz',tag:'§3.1',title:'Ontstaan van het zonnestelsel',sum:[
+{id:'oz',tag:'H3 · §3.1',title:'Ontstaan van het zonnestelsel',sum:[
  'Startpunt: een <b>moleculaire wolk</b> (vooral H₂), asymmetrisch en onstabiel. Een externe trigger laat ze plaatselijk samentrekken tot een <b>protostellaire wolk</b>.',
  'Ca. <b>4,6 miljard jaar</b> geleden: een <b>supernova</b> van een nabije ster. De schokgolf doet de wolk samentrekken en voegt <b>zwaardere elementen</b> toe. De wolk roteert, vormt een vortex en plat af tot een <b>accretieschijf</b>.',
  'Bijna alle massa (99,9%) gaat naar het centrum. Door compressiewarmte stijgt de temperatuur tot miljoenen kelvin → kernfusie → <b>geboorte van de zon</b>. De rest vormt de <b>protoplanetaire schijf</b>.',
  'Dicht bij de zon is het heet: enkel <b>silicaten en metalen</b> zijn vast, vluchtige gassen worden weggeblazen door zonneactiviteit → weinig massa. Voorbij de <b>frost line</b> (voorbij Mars) condenseren vluchtige stoffen (H₂O, H₂, He…), voorbij Saturnus ook CH₄ en NH₃ → veel meer massa.',
  'Stofdeeltjes klitten samen tot keien en stenen; na ca. 1 miljoen jaar objecten &gt; 1 km: <b>planetesimalen</b>. Door botsingen groeien ze; wie groot genoeg wordt om tot een bol samen te trekken is een <b>protoplaneet</b>, die zijn baan vrijmaakt (ringen in de schijf). Wat niet verder groeide, bleef over als <b>kometen en planetoïden</b>.',
  'Vóór de frost line: kleine <b>terrestrische (rotsachtige) planeten</b>: Mercurius, Venus, Aarde, Mars. Voorbij de frost line: grote <b>gas- en ijsreuzen</b>.']},
-{id:'sz',tag:'§3.2',title:'Structuur van het zonnestelsel',sum:[
+{id:'sz',tag:'H3 · §3.2',title:'Structuur van het zonnestelsel',sum:[
  'Van binnen naar buiten: <b>binnenzonnestelsel</b> → <b>buitenzonnestelsel</b> → <b>Kuipergordel</b> → <b>Oortwolk</b>.',
  '<b>Binnenzonnestelsel</b>: zon tot en met de planetoïdengordel (ca. 3,3 AE). Rotsachtige planeten en planetoïden, vooral lege ruimte. De <b>planetoïdengordel</b> (miljoenen planetoïden) kon nooit tot een planeet samentrekken door de nabijheid van <b>Jupiter</b>; samen veel minder massa dan de aarde en ver uit elkaar.',
  '<b>Buitenzonnestelsel</b>: van Jupiter (ca. 5 AE) tot Neptunus (ca. 30 AE). Voorbij de frost line → <b>gas- en ijsreuzen</b>.',
  '<b>Kuipergordel</b>: ca. 30 tot 50 AE, <b>donutvorm</b>, veel vluchtige stoffen. Bevat <b>dwergplaneten</b> (Pluto, Eris, Makemake…), honderdduizenden planetoïden en miljarden kometen.',
  '<b>Oortwolk</b>: <b>theoretische</b> zone (niet waargenomen) die verklaart waarom er nog altijd kometen zijn. Binnenste deel donutvormig, buitenste deel <b>bolvormig</b>, tot ca. 100 000 AE. Gevuld met restanten van de schijf die door <b>Jupiter en Saturnus</b> naar buiten geslingerd zijn en gevangen objecten van andere sterren.']},
-{id:'zo',tag:'§3.2',title:'De zon',sum:[
+{id:'zo',tag:'H3 · §3.2',title:'De zon',sum:[
  'Samenstelling: vooral <b>waterstof</b> (ca. 73% van de massa, 92% van de atomen) en <b>helium</b> (ca. 25% van de massa).',
  'Cijfers: 1 AE ver (8,3 lichtminuten); diameter ca. <b>109×</b> die van de aarde; massa ca. 333 000× de aarde; oppervlak ca. <b>5 800 K</b>, kern ca. <b>15 miljoen K</b>. Gemiddelde dichtheid kleiner dan die van de aarde.',
  '<b>Differentiële rotatie</b>: evenaar ca. 25 dagen, polen ca. 35 dagen. Daardoor raken magnetische veldlijnen verstrengeld → zonnevlekken en solar flares.',
@@ -255,7 +312,7 @@ const TOPICS=[
  '<b>Zonnewind</b>: continue stroom geladen deeltjes uit de corona (hoge T dus hoge kinetische energie, zwakkere aantrekking ver van de kern). <b>CME</b>: grote bellen plasma die uit de corona worden weggeslingerd.',
  '<b>Zonnecyclus</b>: elke <b>11 jaar</b> polt de zon om. Na ca. 5,5 jaar zonnemaximum (veel vlekken, flares, CME\'s).',
  '<b>Poollicht</b> (aurora borealis/australis): geladen deeltjes worden door het magnetisch veld van de aarde naar de <b>polen</b> geleid, exciteren atmosferische deeltjes die licht uitzenden bij het terugvallen. <b>Zuurstof</b>: groen of rood, <b>stikstof</b>: blauw.']},
-{id:'mw',tag:'Hoofdstuk 4',title:'Het Melkwegstelsel',sum:[
+{id:'mw',tag:'H4',title:'Het Melkwegstelsel',sum:[
  '<b>Sterrenstelsel</b>: tot miljarden sterren bijeengehouden door zwaartekracht, met een <b>centraal zwart gat</b>, nevels en stof, en donkere materie.',
  '<b>Classificatie van Hubble</b>: <b>elliptisch</b> (E, cijfer = mate van afplatting), <b>spiraalstelsel</b> (S, bolvormige kern, letter = hoe ver de armen van de kern staan), <b>balkspiraalstelsel</b> (SB, kern is een balk) en <b>onregelmatig</b> (chaotisch).',
  'Vorm van de Melkweg: we zitten erin, dus moeilijk. Maar de <b>band</b> aan de hemel toont een <b>platte</b> structuur (geen ellipsoïde) en de <b>snelheden en bewegingsrichtingen</b> van sterren tonen een spiraalbeweging → <b>balkspiraalstelsel</b> met 4 armen.',
@@ -263,13 +320,13 @@ const TOPICS=[
  '<b>Bolvormige sterrenhopen</b> rond de schijf: tienduizenden tot miljoenen <b>oude</b> sterren; vormen met losse sterren de <b>galactische halo</b>. <b>Open sterrenhopen</b> in de schijf: <b>jonge</b> sterren die samen ontstaan zijn en nog uit elkaar bewegen.',
  '<b>Satellietsterrenstelsels</b> draaien rond de Melkweg, bv. de <b>Magelhaense Wolken</b>.',
  '<b>Donkere materie</b>: theoretisch concept, <b>geen interactie met elektromagnetische straling</b> (onzichtbaar), nodig om de <b>zwaartekrachtseffecten</b> te verklaren, diffuus verspreid, ca. <b>85%</b> van alle materie.']},
-{id:'ok',tag:'Hoofdstuk 5',title:'De oerknal',sum:[
+{id:'ok',tag:'H5',title:'De oerknal',sum:[
  '<b>Roodverschuiving</b>: het spectrum van verre sterrenstelsels is naar rood verschoven → ze bewegen <b>van ons weg</b>.',
  '<b>Georges Lemaître</b>: als stelsels uit elkaar gaan, wordt het heelal groter, dus was het vroeger kleiner → in het begin één punt, het <b>oeratoom</b>, dat "ontplofte".',
  '<b>Bewijs 1 – Edwin Hubble</b>: hoe verder een stelsel, hoe sneller het weg beweegt: een <b>lineair verband</b> tussen afstand en snelheid. Tijd terugdraaien brengt alles terug tot één punt.',
  '<b>Bewijs 2 – nucleosynthese</b>: het oerknalmodel voorspelt een bepaalde verhouding van lichte kernen (²H, ³He, ⁴He, ⁷Li). Die verhouding zien we ook in verre (oude) stelsels en in stelsels met weinig latere kernfusie.',
  '<b>Bewijs 3 – kosmische achtergrondstraling (CMB)</b>: de eerste <b>380 000 jaar</b> waren protonen, neutronen en elektronen los → straling kon niet ontsnappen (ondoorzichtig heelal). Toen <b>atomen</b> ontstonden, kon straling ontsnappen. Die "echo" is door de uitdijing uitgerekt tot <b>microgolven</b> (ca. 3 K) en werd in <b>1965</b> waargenomen → oerknal algemeen aanvaard.']},
-{id:'wn',tag:'§6.1',title:'Waarnemingen van op aarde',sum:[
+{id:'wn',tag:'H6 · §6.1',title:'Waarnemingen van op aarde',sum:[
  'Voor een waarnemer lijkt de aarde een platte schijf: het <b>horizonvlak</b>, omgeven door een <b>hemelkoepel</b>. Recht boven je: <b>zenit</b>, recht onder je: <b>nadir</b>. Daarnaast de windrichtingen.',
  'Overdag beschrijft de zon een <b>dagboog</b> (op in het oosten, onder in het westen). Het hoogste punt is de <b>culminatie</b>; bij ons (noordelijk halfrond) staat de zon dan in het <b>zuiden</b>. In de zomer is de dagboog hoger en langer.',
  '<b>Sterren</b> hebben een "vaste" plaats aan de hemelkoepel op een tijdschaal van jaren, maar niet over millennia (o.a. door precessie). Sterren vormen samen <b>sterrenbeelden</b>.',
@@ -277,13 +334,13 @@ const TOPICS=[
  'Kleinere objecten: <b>meteoor</b> (lichtspoor van een brokje dat verbrandt in de atmosfeer), <b>komeet</b> (ijs en stof met staart), <b>planetoïde</b>. <b>Deepsky-objecten</b> (codes uit de Messiercatalogus): M31 = Andromedastelsel, M1 = Krabnevel (supernovarest), M42 = Orionnevel (gebied waar sterren geboren worden).',
  'In het <b>noorden</b>: <b>Kleine Beer</b> met de <b>Poolster (Polaris)</b> en de <b>Grote Beer</b>. Alle sterren lijken in <b>tegenwijzerzin</b> rond Polaris te draaien (door de aardrotatie). In het <b>zuiden</b>: planeten, de maan en de sterrenbeelden van de <b>zodiak</b> (langs de ecliptica). Op het zuidelijk halfrond: het <b>Zuiderkruis</b>.',
  '<b>Astrologie</b> (bijgeloof op basis van de zodiak) is <b>niet</b> hetzelfde als <b>astronomie</b> (de wetenschap).']},
-{id:'pb',tag:'§6.2',title:'Plaatsbepaling',sum:[
+{id:'pb',tag:'H6 · §6.2',title:'Plaatsbepaling',sum:[
  '<b>Geografische coördinaten</b>: <b>breedtegraad</b> = hoek tussen het evenaarsvlak en de normaal in het plaatselijke punt (noord/zuid, 0°–90°). <b>Lengtegraad</b> = hoek tussen het vlak van de <b>nulmeridiaan</b> en de plaatselijke meridiaan (oost/west, 0°–180°).',
  'Met de Poolster: de <b>hoogte van de Poolster boven de horizon = je breedtegraad</b>. Vroeger gemeten met een <b>sextant</b> ("poolshoogte nemen").',
  '<b>GNSS</b> (Global Navigation Satellite Systems): <b>GPS</b> (VS), <b>Galileo</b> (EU), <b>GLONASS</b> (Rusland), <b>Beidou</b> (China). Ontvangers werken vaak met meerdere systemen.',
  'Werking: de satelliet zendt zijn status, positie en baan en het <b>exacte tijdstip</b> (atoomklok) uit. De ontvanger meet het tijdstip van ontvangst (kwartsklok); uit het <b>tijdsverschil</b> volgt de afstand. Je hebt minstens <b>4 satellieten</b> nodig: 3 voor de positie + 1 om de klokfout van de ontvanger weg te werken.',
  '<b>Horizontale coördinaten</b> van een hemellichaam: <b>azimut</b> (richting langs de horizon) en <b>hoogte</b> (hoek boven de horizon). Nadeel: ze hangen af van <b>plaats en tijd</b> van de waarnemer.']},
-{id:'sr',tag:'§6.5',title:'Straling als informatiedrager',sum:[
+{id:'sr',tag:'H6 · §6.5',title:'Straling als informatiedrager',sum:[
  'Hemellichamen zenden straling uit in verschillende <b>spectraalbanden</b> van het elektromagnetisch spectrum; elke soort straling geeft andere informatie.',
  '<b>Reflectie</b>: welke golflengten een object weerkaatst zegt iets over zijn samenstelling. De aarde (70% water) weerkaatst vooral blauw licht.',
  '<b>Fraunhoferlijnen</b>: donkere absorptielijnen in een spectrum. Elk element (H, He, Ca, Fe…) heeft zijn eigen lijnenpatroon → zo bepalen we de <b>chemische samenstelling</b>.',
@@ -550,13 +607,13 @@ cloze('sr','Vul de tekst aan.','Donkere lijnen in een spectrum heten [Fraunhofer
 const SVG_ZON='<svg viewBox="0 0 320 320" role="img" aria-label="Doorsnede van de zon met genummerde lagen" class="diag">'+
  '<circle cx="160" cy="160" r="150" class="d-c1"/><circle cx="160" cy="160" r="128" class="d-c2"/><circle cx="160" cy="160" r="110" class="d-c3"/>'+
  '<circle cx="160" cy="160" r="96" class="d-c4"/><circle cx="160" cy="160" r="66" class="d-c5"/><circle cx="160" cy="160" r="34" class="d-c6"/>'+
- [[160,160,'1'],[160,110,'2'],[206,94,'3'],[257,125,'4'],[275,191,'5'],[249,266,'6']].map(p=>'<g><circle cx="'+p[0]+'" cy="'+p[1]+'" r="9" class="d-dot"/><text x="'+p[0]+'" y="'+(p[1]+4)+'" class="d-num">'+p[2]+'</text></g>').join('')+
+ [[160,160,'1'],[160,110,'2'],[206,94,'3'],[257,125,'4'],[275,191,'5'],[249,266,'6']].map(p=>'<g><circle cx="'+p[0]+'" cy="'+p[1]+'" r="12" class="d-dot"/><text x="'+p[0]+'" y="'+(p[1]+5)+'" class="d-num">'+p[2]+'</text></g>').join('')+
  '</svg>';
 diagram('zo','Benoem de genummerde lagen van de zon (1 = centrum).',SVG_ZON,[['1','Kern'],['2','Stralingszone'],['3','Convectiezone'],['4','Fotosfeer'],['5','Chromosfeer'],['6','Corona']],'Van binnen naar buiten: kern, stralingszone, convectiezone, fotosfeer, chromosfeer, corona.');
 const SVG_BAAN='<svg viewBox="0 0 340 260" role="img" aria-label="Elliptische baan van de aarde rond de zon met punten A en B" class="diag">'+
  '<ellipse cx="170" cy="130" rx="150" ry="120" class="d-orbit"/><circle cx="260" cy="130" r="15" class="d-sun"/><text x="260" y="165" class="d-lbl">zon</text>'+
  '<circle cx="320" cy="130" r="8" class="d-earth"/><circle cx="20" cy="130" r="8" class="d-earth"/>'+
- '<g><circle cx="320" cy="104" r="9" class="d-dot"/><text x="320" y="108" class="d-num">A</text></g><g><circle cx="20" cy="104" r="9" class="d-dot"/><text x="20" y="108" class="d-num">B</text></g>'+
+ '<g><circle cx="320" cy="104" r="12" class="d-dot"/><text x="320" y="109" class="d-num">A</text></g><g><circle cx="20" cy="104" r="12" class="d-dot"/><text x="20" y="109" class="d-num">B</text></g>'+
  '</svg>';
 diagram('pl','De baan is overdreven elliptisch getekend. Benoem de punten A en B.',SVG_BAAN,[['A','Perihelium (begin januari)'],['B','Aphelium (begin juli)']],'De zon staat in een brandpunt, niet in het midden. A ligt het dichtst bij de zon: het perihelium, begin januari. B ligt het verst: het aphelium, begin juli.');
 const SVG_HR='<svg viewBox="0 0 340 260" role="img" aria-label="Schematisch Hertzsprung-Russelldiagram met genummerde gebieden" class="diag">'+
@@ -564,7 +621,7 @@ const SVG_HR='<svg viewBox="0 0 340 260" role="img" aria-label="Schematisch Hert
  '<text x="182" y="248" class="d-lbl">temperatuur / spectraalklasse</text><text x="18" y="125" class="d-lbl" transform="rotate(-90 18 125)">lichtkracht</text>'+
  '<path d="M60 40 Q160 120 300 215" class="d-band"/>'+
  '<ellipse cx="250" cy="85" rx="40" ry="20" class="d-zone"/><ellipse cx="190" cy="32" rx="95" ry="13" class="d-zone"/><ellipse cx="95" cy="200" rx="32" ry="14" class="d-zone"/>'+
- [[175,128,'1'],[250,85,'2'],[190,32,'3'],[95,200,'4'],[52,244,'5'],[312,244,'6']].map(p=>'<g><circle cx="'+p[0]+'" cy="'+p[1]+'" r="9" class="d-dot"/><text x="'+p[0]+'" y="'+(p[1]+4)+'" class="d-num">'+p[2]+'</text></g>').join('')+
+ [[175,128,'1'],[250,85,'2'],[190,32,'3'],[95,200,'4'],[52,244,'5'],[312,244,'6']].map(p=>'<g><circle cx="'+p[0]+'" cy="'+p[1]+'" r="12" class="d-dot"/><text x="'+p[0]+'" y="'+(p[1]+5)+'" class="d-num">'+p[2]+'</text></g>').join('')+
  '</svg>';
 diagram('st','Schematisch HR-diagram. Benoem de genummerde gebieden en uiteinden van de assen.',SVG_HR,[['1','Hoofdreeks (ca. 90% van de sterren)'],['2','Reuzen (rode reuzen)'],['3','Superreuzen'],['4','Witte dwergen'],['5','Hete, blauwe kant'],['6','Koele, rode kant']],'Links = heet en blauw, rechts = koel en rood. Boven = lichtsterk. Witte dwergen zijn heet maar klein, dus lichtzwak (linksonder). Reuzen zijn koel maar enorm groot, dus lichtsterk (rechtsboven).');
 
@@ -707,6 +764,9 @@ const isDue=id=>P[id]&&P[id].seen&&P[id].due<=today();
 function stat(ids){const c=[0,0,0,0];let due=0;ids.forEach(id=>{c[lvlOf(id)]++;if(isDue(id))due++});return {c,n:ids.length,due,m:c[3]}}
 const idsOf=(t,k)=>Qs.filter(q=>(!t||q.t===t)&&(!k||KIND[k](q))).map(q=>q.id);
 function weakIds(){return Qs.filter(q=>{const p=P[q.id];return p&&(p.cwFlag||(p.wrong>0&&p.lvl<2))}).map(q=>q.id)}
+const FINE=window.matchMedia&&matchMedia('(pointer:fine)').matches;
+const live=h=>{const r=document.getElementById('live');if(r){r.textContent='';setTimeout(()=>{r.textContent=h},30)}};
+const mark=ok=>'<span aria-hidden="true">'+(ok?'✓':'✗')+'</span>';
 function lvlBar(c,n){return '<div class="lbar" role="img" aria-label="'+LV.map((l,i)=>c[i]+' '+l.toLowerCase()).join(', ')+'">'+[3,2,1].map(i=>c[i]?'<i class="l'+i+'" style="width:'+(c[i]/n*100)+'%"></i>':'').join('')+'</div>'}
 const legend=c=>'<div class="legend">'+[3,2,1,0].map(i=>'<span><i class="l'+i+'"></i>'+c[i]+' '+LV[i].toLowerCase()+'</span>').join('')+'</div>';
 
@@ -733,35 +793,41 @@ function wChoice(q,ctx){
     btns.push(b);root.appendChild(b)});
   return {root,ready:()=>sel!==null,
     getRes:()=>({ok:sel.ok,user:sel.text,why:sel.ok?[]:[q.type==='tf'?'Je koos "'+sel.text+'", maar de stelling is '+(q.val?'juist':'onjuist')+'.':((q.why||[])[sel.i-1]||'Dit antwoord klopt niet.')]}),
-    reveal(){locked=true;btns.forEach((b,i)=>{b.disabled=true;b.classList.remove('sel');if(opts[i].ok)b.classList.add('good');else if(opts[i]===sel)b.classList.add('bad')})},
+    reveal(){locked=true;btns.forEach((b,i)=>{b.disabled=true;b.classList.remove('sel');const k=b.querySelector('.key');
+      if(opts[i].ok){b.classList.add('good');k.innerHTML=mark(true);b.insertAdjacentHTML('beforeend','<span class="sr-only"> (juist antwoord)</span>')}
+      else if(opts[i]===sel){b.classList.add('bad');k.innerHTML=mark(false);b.insertAdjacentHTML('beforeend','<span class="sr-only"> (jouw keuze, fout)</span>')}})},
     key(n){if(btns[n-1])btns[n-1].click()},focus(){}};
 }
 function wMulti(q,ctx){
   const opts=shuffle([...q.good.map(t=>({text:t,ok:true})),...q.bad.map((t,bi)=>({text:t,ok:false,bi}))]);
-  const root=h('div','opts');root.appendChild(h('div','hintline',ctx.exam?'Kies alle juiste antwoorden.':'Er zijn '+q.good.length+' juiste antwoorden.'));
+  const root=h('div','opts');const base=ctx.exam?'Kies alle juiste antwoorden':'Er zijn '+q.good.length+' juiste antwoorden';
+  const hl=h('div','hintline',base+'.');root.appendChild(hl);
   let locked=false;const btns=[];
   opts.forEach((o,i)=>{const b=h('button','opt','<span class="key">'+(i+1)+'</span><span class="txt">'+esc(o.text)+'</span>');b.type='button';o.on=false;
     b.setAttribute('aria-pressed','false');
-    b.onclick=()=>{if(locked)return;o.on=!o.on;b.classList.toggle('sel',o.on);b.setAttribute('aria-pressed',o.on);ctx.changed()};
+    b.onclick=()=>{if(locked)return;o.on=!o.on;b.classList.toggle('sel',o.on);b.setAttribute('aria-pressed',o.on);hl.textContent=base+' · '+opts.filter(x=>x.on).length+' gekozen';ctx.changed()};
     btns.push(b);root.appendChild(b)});
   return {root,ready:()=>opts.some(o=>o.on),
     getRes:()=>({ok:opts.every(o=>o.on===o.ok),user:opts.filter(o=>o.on).map(o=>o.text).join(', ')||'(niets)',why:[...opts.filter(o=>o.on&&!o.ok).map(o=>'Je koos "'+o.text+'": '+((q.why||[])[o.bi]||'dit hoort er niet bij.')),...opts.filter(o=>!o.on&&o.ok).map(o=>'Je miste "'+o.text+'", dat hoort er wel bij.')]}),
-    reveal(){locked=true;btns.forEach((b,i)=>{b.disabled=true;b.classList.remove('sel');const o=opts[i];if(o.ok&&o.on)b.classList.add('good');else if(o.ok&&!o.on)b.classList.add('missed');else if(!o.ok&&o.on)b.classList.add('bad')})},
+    reveal(){locked=true;btns.forEach((b,i)=>{b.disabled=true;b.classList.remove('sel');const o=opts[i];const k=b.querySelector('.key');
+      const tag=(c,m,t)=>{b.classList.add(c);k.innerHTML=m;b.insertAdjacentHTML('beforeend','<span class="sr-only"> ('+t+')</span>')};
+      if(o.ok&&o.on)tag('good',mark(true),'juist gekozen');else if(o.ok&&!o.on){tag('missed','<span aria-hidden="true">!</span>','gemist');b.querySelector('.txt').insertAdjacentHTML('beforeend','<span class="missedtag">gemist</span>')}else if(!o.ok&&o.on)tag('bad',mark(false),'fout gekozen')})},
     key(n){if(btns[n-1])btns[n-1].click()},focus(){}};
 }
 function wFill(q,ctx){
   const root=h('div','fillrow');const inp=h('input');inp.type='text';inp.id='fill-in';inp.autocomplete='off';inp.autocapitalize='off';inp.spellcheck=false;inp.placeholder='Typ je antwoord';
+  inp.setAttribute('enterkeyhint','done');inp.setAttribute('autocorrect','off');
   inp.setAttribute('aria-label','Antwoord');root.appendChild(inp);
   inp.addEventListener('input',()=>ctx.changed());
   inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();ctx.confirmNow()}});
   return {root,ready:()=>inp.value.trim()!=='',
     getRes(){const r=accepts(inp.value,q.acc);
       return {ok:r.ok,user:inp.value.trim(),note:r.close?'Bijna perfect geschreven. Juiste spelling: '+q.show+'.':'',why:r.ok?[]:['Je typte "'+inp.value.trim()+'". Dat is niet het gevraagde antwoord.']}},
-    reveal(res){inp.disabled=true;inp.classList.add(res.ok?'good':'bad')},key(){},focus(){inp.focus()}};
+    reveal(res){inp.disabled=true;inp.classList.add(res.ok?'good':'bad')},key(){},focus(){if(FINE)inp.focus()}};
 }
 function wMatch(q,ctx){
   const rights=shuffle(q.pairs.map(p=>p[1]));
-  const root=h('div','matchrows');const sels=[];
+  const root=h('div','matchrows'+(q.svg?' svgm':''));const sels=[];
   q.pairs.forEach((p,i)=>{
     const row=h('div','mrow');const l=h('div','l',esc(p[0]));
     const s=h('select');s.id='m-'+i;s.setAttribute('aria-label',p[0]);
@@ -777,17 +843,23 @@ function wMatch(q,ctx){
 function wOrder(q,ctx){
   let cur=shuffle(q.items.map((t,i)=>({t,i})));
   if(cur.every((o,k)=>o.i===k))cur.reverse();
-  const root=h('div','order');root.appendChild(h('div','hintline','Zet in de juiste volgorde met de pijltjes (1 = eerst).'));
-  const list=h('ol','olist');root.appendChild(list);let locked=false;
+  const root=h('div','order');root.appendChild(h('div','hintline','Tik op een stap en daarna op de plaats waar ze moet komen, of gebruik de pijltjes (1 = eerst).'));
+  const list=h('ol','olist');root.appendChild(list);let locked=false,pick=null;
   function draw(focusI,dir){list.innerHTML='';cur.forEach((o,k)=>{
-    const li=h('li','oitem'+(locked?(o.i===k?' good':' bad'):''));
-    li.innerHTML='<span class="key">'+(k+1)+'</span><span class="txt">'+esc(o.t)+(locked&&o.i!==k?'<span class="fixpos">Hoort op plaats '+(o.i+1)+'</span>':'')+'</span>';
+    const li=h('li','oitem'+(locked?(o.i===k?' good':' bad'):'')+(pick===k?' picked':''));
+    li.innerHTML='<span class="key">'+(locked?mark(o.i===k):k+1)+'</span>';
+    const t=h(locked?'span':'button','txt',esc(o.t)+(locked&&o.i!==k?'<span class="fixpos">Hoort op plaats '+(o.i+1)+'</span>':'')+(pick===k?'<span class="pickhint">Tik nu op de plaats waar deze stap moet komen</span>':''));
+    if(!locked){t.type='button';t.setAttribute('aria-label',(pick===k?'Geselecteerd: ':pick!==null?'Zet hier: ':'Kies: ')+o.t+', plaats '+(k+1));
+      t.onclick=()=>{if(pick===null){pick=k;draw();list.children[k].querySelector('.txt').focus();return}
+        if(pick===k){pick=null;draw();return}
+        const [m]=cur.splice(pick,1);cur.splice(k,0,m);pick=null;draw();list.children[k].querySelector('.txt').focus();live(m.t+' staat nu op plaats '+(k+1))}}
+    li.appendChild(t);
     if(!locked){
       const up=h('button','btn small mv','↑');up.type='button';up.disabled=k===0;up.setAttribute('aria-label','Omhoog: '+o.t);
       const dn=h('button','btn small mv','↓');dn.type='button';dn.disabled=k===cur.length-1;dn.setAttribute('aria-label','Omlaag: '+o.t);
-      up.onclick=()=>{[cur[k-1],cur[k]]=[cur[k],cur[k-1]];draw(o.i,'up')};
-      dn.onclick=()=>{[cur[k+1],cur[k]]=[cur[k],cur[k+1]];draw(o.i,'dn')};
-      li.append(up,dn);
+      up.onclick=()=>{pick=null;[cur[k-1],cur[k]]=[cur[k],cur[k-1]];draw(o.i,'up');live(o.t+' staat nu op plaats '+k)};
+      dn.onclick=()=>{pick=null;[cur[k+1],cur[k]]=[cur[k],cur[k+1]];draw(o.i,'dn');live(o.t+' staat nu op plaats '+(k+2))};
+      const mv=h('span','mvs');mv.append(up,dn);li.appendChild(mv);
       if(focusI===o.i)setTimeout(()=>{const b=dir==='up'?up:dn;(b.disabled?(dir==='up'?dn:up):b).focus()},0);
     }
     list.appendChild(li)})}
@@ -806,7 +878,7 @@ function hintBox(q){
 }
 function wNum(q,ctx){
   const root=h('div','numq');const row=h('div','fillrow numrow');const inp=h('input');inp.type='text';inp.inputMode='decimal';inp.autocomplete='off';inp.id='num-in';inp.placeholder='Getal';
-  inp.setAttribute('aria-label','Antwoord'+(q.unit?' in '+q.unit:''));row.appendChild(inp);
+  inp.setAttribute('aria-label','Antwoord'+(q.unit?' in '+q.unit:''));inp.setAttribute('enterkeyhint','done');row.appendChild(inp);
   if(q.unit)row.appendChild(h('span','unit',esc(q.unit)));
   const msg=h('div','hintline');const hb=ctx.exam?{box:h('div'),used:()=>0}:hintBox(q);
   root.append(row,msg,hb.box);
@@ -815,12 +887,13 @@ function wNum(q,ctx){
   return {root,ready:()=>!isNaN(parseNum(inp.value)),
     getRes(){const v=parseNum(inp.value);const ok=Math.abs(v-q.ans)<=q.tol+1e-9;
       return {ok,hint:hb.used()>0,user:inp.value.trim()+(q.unit?' '+q.unit:''),why:ok?[]:['Je antwoord '+fmtNum(v)+' ligt te ver van '+fmtNum(q.ans)+(q.tol?' (we aanvaarden een kleine afrondingsfout)':'')+'. Bekijk hieronder hoe je het berekent.']}},
-    reveal(res){inp.disabled=true;inp.classList.add(res.ok?'good':'bad');hb.box.querySelectorAll('button').forEach(b=>b.disabled=true)},key(){},focus(){inp.focus()}};
+    reveal(res){inp.disabled=true;inp.classList.add(res.ok?'good':'bad');hb.box.querySelectorAll('button').forEach(b=>b.disabled=true)},key(){},focus(){if(FINE)inp.focus()}};
 }
 function wCloze(q,ctx){
   const parts=clozeParts(q.text);const root=h('p','cloze');const inps=[];
   parts.forEach(p=>{if(typeof p==='string'){root.appendChild(document.createTextNode(p));return}
     const i=h('input');i.type='text';i.autocomplete='off';i.autocapitalize='off';i.spellcheck=false;i.setAttribute('aria-label','Invulvak '+(inps.length+1));
+    i.setAttribute('autocorrect','off');i.setAttribute('enterkeyhint',inps.length<parts.filter(x=>typeof x!=='string').length-1?'next':'done');
     i.style.width=Math.max(7,Math.min(18,p.show.length+3))+'ch';
     i.addEventListener('input',()=>ctx.changed());
     i.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const k=inps.indexOf(i);if(k<inps.length-1)inps[k+1].focus();else ctx.confirmNow()}});
@@ -831,7 +904,7 @@ function wCloze(q,ctx){
       return {ok,score:ctx.exam?good/res.length:undefined,user:inps.map(i=>i.value.trim()).join(' / '),
         note:ok&&res.some(r=>r.close)?'Bijna perfect geschreven. Kijk de spelling na in het juiste antwoord.':'',
         why:ok?[]:inps.map((i,k)=>res[k].ok?null:'Invulvak '+(k+1)+': je typte "'+i.value.trim()+'", juist is "'+i._p.show+'".').filter(Boolean)}},
-    reveal(){inps.forEach((i,k)=>{i.disabled=true;i.classList.add(res[k].ok?'good':'bad');if(!res[k].ok){const f=h('span','fixin',esc(i._p.show));i.after(f)}})},key(){},focus(){if(inps[0])inps[0].focus()}};
+    reveal(){inps.forEach((i,k)=>{i.disabled=true;i.classList.add(res[k].ok?'good':'bad');if(!res[k].ok){const f=h('span','fixin','<span class="sr-only">juist: </span>'+esc(i._p.show));i.after(f)}})},key(){},focus(){if(inps[0]&&FINE)inps[0].focus()}};
 }
 /* Kernwoordcontrole: woordbegin, "=woord" = heel woord; woorden uit de vraag tellen niet. */
 function kwHit(text,kws,qtext){
@@ -846,23 +919,28 @@ function negHits(text,neg){const T=words(text);const has=k=>T.includes(' '+words
 function wOpen(q,ctx){
   const root=h('div','openq');
   const ta=h('textarea');ta.rows=5;ta.id='open-in';ta.placeholder='Schrijf je antwoord in eigen woorden en leg uit waarom.';ta.setAttribute('aria-label','Antwoord');
-  const box=h('div','selfcheck');root.append(ta,box);
-  ta.addEventListener('input',()=>ctx.changed());
+  const cnt=h('div','hintline','Schrijf minstens een paar zinnen.');
+  const box=h('div','selfcheck');root.append(ta,cnt,box);
+  const MIN=15;
+  ta.addEventListener('input',()=>{const n=MIN-ta.value.trim().length;cnt.textContent=n>0?'Nog '+n+' teken'+(n>1?'s':'')+'.':'Klaar? Vergelijk met het modelantwoord (Ctrl+Enter).';ctx.changed()});
+  ta.addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();ctx.confirmNow()}});
   let checks=[];
-  return {root,label:'Vergelijk met modelantwoord',ready:()=>ta.value.trim().length>=15,
+  return {root,label:'Vergelijk met modelantwoord',ready:()=>ta.value.trim().length>=MIN,
     step(){
-      ta.disabled=true;
-      box.innerHTML='<div class="fb neutral"><div class="h">Beoordeel jezelf</div><div><b>Modelantwoord:</b> '+esc(q.model)+'</div><div><b>Vink elk kernpunt aan dat in jouw antwoord staat</b> (in eigen woorden mag):</div></div>';
+      ta.disabled=true;cnt.remove();
+      const det=q.points.map((p,i)=>kwHit(ta.value,(q.kw||[])[i]||[],q.q));
+      box.innerHTML='<div class="fb neutral"><div class="h">Kijk je antwoord zelf na</div><div><b>Modelantwoord:</b> '+esc(q.model)+'</div><div><b>Vink elk kernpunt aan dat in jouw antwoord staat</b> (in eigen woorden mag):</div></div>';
       const f=box.firstChild;const ul=h('ul','kp self');checks=q.points.map((p,i)=>{
-        const li=h('li');const id='kp-'+i;li.innerHTML='<input type="checkbox" id="'+id+'"><label for="'+id+'">'+esc(p)+'</label><span class="det"></span>';ul.appendChild(li);return li});
+        const li=h('li');const id='kp-'+i;li.innerHTML='<input type="checkbox" id="'+id+'"><label for="'+id+'">'+esc(p)+'</label><span class="det" aria-live="polite"></span>';ul.appendChild(li);
+        const cb=li.querySelector('input');cb.onchange=()=>{li.querySelector('.det').textContent=cb.checked&&!det[i]?'Geen kernwoord gevonden in je antwoord. Staat dit er echt?':''};
+        return li});
       f.appendChild(ul);
-      const row=h('div','actions-row');const ok=h('button','btn primary','Bevestig mijn beoordeling');ok.type='button';row.appendChild(ok);f.appendChild(row);
-      checks[0].querySelector('input').focus();
+      const row=h('div','actions-row');const ok=h('button','btn primary','Klaar met nakijken');ok.type='button';row.appendChild(ok);f.appendChild(row);
+      checks[0].querySelector('input').focus({preventScroll:true});box.scrollIntoView({block:'start',behavior:'smooth'});
       ok.onclick=()=>{
         const mine=checks.map(li=>li.querySelector('input').checked);
-        const det=q.points.map((p,i)=>kwHit(ta.value,(q.kw||[])[i]||[],q.q));
         checks.forEach((li,i)=>{li.querySelector('input').disabled=true;li.className=mine[i]?'hit':'miss';
-          li.querySelector('.det').textContent=mine[i]&&!det[i]?'Geen kernwoord gevonden. Staat dit er echt?':!mine[i]&&det[i]?'Kernwoord gevonden. Misschien had je dit toch.':''});
+          li.querySelector('.det').textContent=mine[i]&&!det[i]?'Geen kernwoord gevonden. Staat dit er echt?':!mine[i]&&det[i]?'Er staat wel een kernwoord van dit punt in je antwoord.':''});
         const warn=negHits(ta.value,q.neg);
         if(warn.length)f.appendChild(h('div','warnline',warn.map(esc).join('<br>')));
         row.remove();
@@ -923,26 +1001,31 @@ function showQ(){
   app.innerHTML='';
   const exam=S.mode==='exam';
   const top=h('div','topbar');
-  const stop=h('button','btn small','Stoppen');stop.type='button';stop.onclick=()=>{exam&&S.log.length?finish(true):(S.log.length?finish(true):home())};
-  const bar=h('div','bar','<i style="width:'+Math.round(S.done/S.total*100)+'%"></i>');
-  const n=h('div','n',(exam?(S.done+1)+' / '+S.total:S.done+' / '+S.total+' klaar'));
+  const stop=h('button','btn small','Stoppen');stop.type='button';let armed=false;
+  stop.onclick=()=>{if(exam&&!armed){armed=true;stop.textContent='Toets echt stoppen?';setTimeout(()=>{armed=false;stop.textContent='Stoppen'},4000);return}
+    S.log.length?finish(true):home()};
+  const left=S.queue.length;
+  const bar=h('div','bar','<i style="width:'+Math.round(S.done/(S.done+left)*100)+'%"></i>');
+  const n=h('div','n',(exam?(S.done+1)+' / '+S.total:S.done+' klaar · nog '+left));
   top.append(stop,bar,n);
   const card=h('div','panel qcard');
   const p=P[item.id];
   const meta=h('div','meta','<span class="chip a">'+esc(TB[q.t].title)+'</span><span class="chip">'+TYPE[q.type]+'</span>'+(exam?'<span class="chip">'+(S.sim?'Examen':'Toets')+'</span>':(p&&p.seen?'<span class="chip">'+LV[p.lvl]+'</span>':'<span class="chip">Nieuw</span>')));
-  const qt=h('h2','qtext',esc(q.q));
-  const fbBox=h('div');
+  const qt=h('h2','qtext',esc(q.q));qt.tabIndex=-1;
+  const fbBox=h('div');fbBox.setAttribute('role','status');
   const actions=h('div','actions-row');
   let locked=false,conf=null,confRow=null;
   const ctx={exam,
-    changed:()=>{if(conf)conf.disabled=!w.ready();if(confRow)confRow.querySelectorAll('button').forEach(b=>b.disabled=!w.ready())},
+    changed:()=>{if(conf)conf.disabled=!w.ready();if(confRow){confRow.querySelectorAll('button').forEach(b=>b.disabled=!w.ready());confRow.querySelector('.confhint').textContent=w.ready()?'':'Kies eerst een antwoord.'}},
     submit:res=>{if(locked)return;locked=true;handle(res)},
     confirmNow:()=>{if(conf&&!conf.disabled)conf.click()}};
   const w=makeWidget(q,ctx);
   if(CONF.includes(q.type)){
-    confRow=h('div','confrow');confRow.appendChild(h('span','conflabel','Hoe zeker ben je?'));
-    [['zeker','Zeker'],['twijfel','Twijfel'],['gok','Gok']].forEach(([k,l])=>{const b=h('button','btn'+(k==='zeker'?' primary':''),l);b.type='button';b.disabled=true;
-      b.onclick=()=>{if(locked||!w.ready())return;locked=true;const r=w.getRes();r.conf=k;handle(r)};confRow.appendChild(b)});
+    confRow=h('div','confrow');confRow.appendChild(h('div','conflabel',(exam?'Bevestig':'Controleer')+': hoe zeker ben je?'));
+    const g=h('div','confbtns');
+    [['gok','Gok'],['twijfel','Twijfel'],['zeker','Zeker']].forEach(([k,l])=>{const b=h('button','btn',l);b.type='button';b.disabled=true;
+      b.onclick=()=>{if(locked||!w.ready())return;locked=true;const r=w.getRes();r.conf=k;handle(r)};g.appendChild(b)});
+    confRow.append(g,h('div','confhint hintline','Kies eerst een antwoord.'));
     actions.appendChild(confRow);
   }else{
     conf=h('button','btn primary',w.label||(exam?'Bevestig':'Controleer'));conf.type='button';conf.disabled=!w.ready();
@@ -953,8 +1036,9 @@ function showQ(){
   app.append(top,card);
   CUR={w,q,item};
   if(w.focus)w.focus();
+  if(!card.contains(document.activeElement))qt.focus({preventScroll:true});
   function handle(res){
-    if(conf)conf.disabled=true;if(confRow)confRow.remove();
+    if(conf){conf.remove();conf=null}if(confRow)confRow.remove();
     const D=today();
     const p=P[item.id]||(P[item.id]={lvl:0,due:D,seen:0,wrong:0,okDay:-1});
     const first=S.first[item.id]===undefined;
@@ -964,23 +1048,27 @@ function showQ(){
       S.first[item.id]=res.ok;
       if(res.conf){const c=CAL[res.conf]||(CAL[res.conf]=[0,0]);c[1]++;if(res.ok)c[0]++;const s=S.conf[res.conf]||(S.conf[res.conf]=[0,0]);s[1]++;if(res.ok)s[0]++}
       if(res.ok&&!res.hint){
-        if(p.okDay!==D){const was=p.lvl;p.lvl=Math.min(3,p.lvl+1);p.okDay=D;const gap=was===3?INT[4]:INT[p.lvl];p.due=D+gap;
+        if(p.okDay!==D){const was=p.lvl;if(was<3)S.up=(S.up||0)+1;p.lvl=Math.min(3,p.lvl+1);p.okDay=D;const gap=was===3?INT[4]:INT[p.lvl];p.due=D+gap;
           lvlMsg=(p.lvl===3?'Beheerst.':'Niveau: '+LV[p.lvl].toLowerCase()+'.')+' Deze vraag komt over '+gap+' dag'+(gap>1?'en':'')+' terug'+(p.lvl<3?'; dan meteen juist en hij gaat een niveau hoger.':'.')}
         else lvlMsg='Vandaag al eens juist: pas op een volgende dag gaat hij een niveau hoger.';
         p.cwFlag=false;
       }else if(res.ok){p.due=D+1;lvlMsg='Juist met hint: telt nog niet voor een hoger niveau.'}
-      else{p.lvl=Math.max(0,p.lvl-1);p.prevLvl=p.lvl;p.due=D;p.wrong++;if(res.conf==='zeker')p.cwFlag=true}
+      else{if(p.lvl>0)S.down=(S.down||0)+1;p.lvl=Math.max(0,p.lvl-1);p.due=D;p.wrong++;if(res.conf==='zeker')p.cwFlag=true}
     }
     S.log.push({id:item.id,ok:res.ok,score:res.score,user:res.user,why:res.why||[],conf:res.conf});
     save();
     if(exam){S.queue.shift();S.done++;showQ();return}
     w.reveal(res);
     const cw=!res.ok&&res.conf==='zeker';
-    const fb=h('div','fb '+(res.ok?'good':'bad'));
-    fb.innerHTML='<div class="h">'+(res.ok?'Juist.':res.score>0?'Gedeeltelijk juist.':'Niet juist.')+'</div>'+
-      (cw?'<div class="cw">Je was zeker, maar het was fout. Lees de uitleg goed: zo\'n fout onthoud je net goed als je ze nu verbetert. Deze vraag krijgt voorrang bij de volgende herhaling.</div>':'')+
-      (res.ok&&!res.note||q.type==='open'?'':'<div class="ans"><b>Juiste antwoord:</b> '+correctHTML(q)+'</div>')+
-      (!res.ok&&res.why&&res.why.length?'<div class="why"><b>Waarom je fout zat:</b><ul>'+res.why.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>':'')+
+    const part=!res.ok&&res.score>0;
+    /* rangschikken, koppelen en invulteksten tonen de verbetering al in de vraag zelf; niet herhalen */
+    const inWidget=['order','match','cloze','open'].includes(q.type);
+    const showWhy=!res.ok&&res.why&&res.why.length&&(q.type==='mc'||q.type==='multi'||q.type==='fill'||q.type==='num');
+    const fb=h('div','fb '+(res.ok?'good':part?'part':'bad'));
+    fb.innerHTML='<div class="h">'+mark(res.ok)+' '+(res.ok?'Juist.':part?'Gedeeltelijk juist.':'Niet juist.')+'</div>'+
+      (cw?'<div class="cw">Je was zeker, maar dit was fout: deze vraag krijgt voorrang.</div>':'')+
+      ((res.ok&&!res.note)||inWidget||q.type==='multi'?'':'<div class="ans"><b>Juiste antwoord:</b> '+correctHTML(q)+'</div>')+
+      (showWhy?'<div class="why"><b>Waarom je fout zat:</b><ul>'+res.why.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>':'')+
       (res.note?'<div>'+esc(res.note)+'</div>':'')+
       '<div class="ex">'+(res.ok?'':'<b>Uitleg:</b> ')+esc(q.ex)+'</div>'+
       (!res.ok?'<details class="lees"><summary>Lees na: '+esc(TB[q.t].title)+'</summary><ul>'+TB[q.t].sum.map(s=>'<li>'+s+'</li>').join('')+'</ul></details>':'')+
@@ -993,7 +1081,10 @@ function showQ(){
       if(res.ok||q.type==='open')S.done++;
       else requeue(item);
       showQ()};
-    actions.appendChild(nx);nx.focus();
+    actions.appendChild(nx);nx.focus({preventScroll:true});
+    /* het antwoord met de kleuren bovenaan in beeld; de knop Volgende kleeft onderaan op een gsm */
+    const tgt=q.type==='open'?fbBox:w.root;const r=tgt.getBoundingClientRect();
+    if(r.top<0||r.top>window.innerHeight*0.5)window.scrollBy({top:r.top-12,behavior:'smooth'});
   }
 }
 document.addEventListener('keydown',e=>{
@@ -1002,10 +1093,14 @@ document.addEventListener('keydown',e=>{
   if(/^[1-9]$/.test(e.key)&&CUR.w.key)CUR.w.key(+e.key);
 });
 
-function calLine(c){const ks=[['zeker','zeker'],['twijfel','twijfel'],['gok','gok']].filter(([k])=>c[k]&&c[k][1]);
+function calLine(c){const ks=[['zeker','Zeker'],['twijfel','Twijfel'],['gok','Gok']].filter(([k])=>c[k]&&c[k][1]);
   if(!ks.length)return '';
-  return '<p class="muted">Hoe goed schat je jezelf in? '+ks.map(([k,l])=>'bij "'+l+'" '+Math.round(c[k][0]/c[k][1]*100)+'% juist ('+c[k][1]+')').join(', ')+'.'+
-    (c.zeker&&c.zeker[1]>=5&&c.zeker[0]/c.zeker[1]<.85?' Je bent soms te zeker: lees vragen die je "zeker" weet extra goed.':'')+'</p>'}
+  return '<div class="cal"><span class="muted">Juist als je zei:</span>'+ks.map(([k,l])=>'<span class="calstat"><b>'+Math.round(c[k][0]/c[k][1]*100)+'%</b> '+l+' <span class="muted">('+c[k][1]+')</span></span>').join('')+
+    (c.zeker&&c.zeker[1]>=5&&c.zeker[0]/c.zeker[1]<.85?'<span class="muted">Je bent soms te zeker: lees ook "makkelijke" vragen goed.</span>':'')+'</div>'}
+function dueOn(d,ids){return (ids||idsOf()).filter(id=>P[id]&&P[id].seen&&P[id].due<=d).length}
+function nextLine(){const D=today();const t=dueOn(D+1)-dueOn(D),w=dueOn(D+3);
+  return t||w?'Morgen '+(t?'staan er '+t+' nieuwe herhalingen klaar':'is er niets nieuws te herhalen')+(w>t?' · binnen 3 dagen '+w:'')+'.':''}
+const rounds=n=>n>ROUND?' (ca. '+Math.ceil(n/ROUND)+' rondes)':'';
 function finish(early){
   CUR=null;window.scrollTo(0,0);app.innerHTML='';
   const exam=S.mode==='exam';
@@ -1014,7 +1109,8 @@ function finish(early){
     const log=S.log;const n=log.length;const pts=log.reduce((s,l)=>s+(l.score!==undefined?l.score:(l.ok?1:0)),0);
     const pct=n?Math.round(pts/n*100):0;const mins=Math.round((Date.now()-S.t0)/60000);
     const head=h('div','panel hero');
-    head.innerHTML='<div class="eyebrow">'+(S.sim?'Examensimulatie':'Toetsresultaat')+'</div><div class="score"><div class="big">'+fmtNum(Math.round(pts*10)/10)+' <small>/ '+n+'</small></div><div class="big">'+pct+'<small>%</small></div><div class="big">'+(n?fmtNum(Math.round(pts/n*200)/10):'0')+'<small> / 20</small></div></div>'+
+    head.innerHTML='<div class="eyebrow">'+(S.sim?'Examensimulatie':'Toetsresultaat')+'</div><div class="score"><div class="big">'+(n?fmtNum(Math.round(pts/n*200)/10):'0')+'<small> / 20</small></div><div class="big">'+pct+'<small>%</small></div></div>'+
+      '<p class="muted">'+fmtNum(Math.round(pts*10)/10)+' punten op '+n+' vragen'+(early?' (vroeger gestopt)':'')+'.</p>'+
       '<p class="muted">'+mins+' min. Open vragen en rangschik- en invulteksten tellen met deelpunten; open vragen beoordeelde je zelf.</p>'+
       '<p>'+(pct>=85?'Sterk. Zorg dat de fouten hieronder de volgende keer wel zitten.':pct>=65?'Goed op weg. De gemiste vragen staan klaar in "Vandaag herhalen".':'Er is nog werk. De gemiste vragen staan klaar in "Vandaag herhalen"; lees eerst de theorie van de onderwerpen hieronder.')+'</p>';
     const per={};log.forEach(l=>{const t=QB[l.id].t;const o=per[t]||(per[t]=[0,0]);o[0]+=l.score!==undefined?l.score:(l.ok?1:0);o[1]++});
@@ -1035,10 +1131,12 @@ function finish(early){
   }else{
     const total=Object.keys(S.first).length;const first=Object.values(S.first).filter(Boolean).length;
     const head=h('div','panel hero');
-    head.innerHTML='<div class="eyebrow">Ronde klaar</div><div class="score"><div class="big">'+first+' <small>/ '+total+' meteen juist</small></div><div class="big">'+st.m+' <small>/ '+st.n+' beheerst</small></div></div>'+lvlBar(st.c,st.n)+legend(st.c)+calLine(S.conf);
+    const mv=(S.up||S.down)?'<p><b>Deze ronde:</b> '+(S.up||0)+' vraag'+((S.up||0)===1?'':'en')+' een niveau hoger'+(S.down?', '+S.down+' een niveau terug':'')+'.</p>':'';
+    const nl=nextLine();
+    head.innerHTML='<div class="eyebrow">Ronde klaar</div><div class="score"><div class="big">'+first+' <small>/ '+total+' meteen juist</small></div><div class="big">'+st.m+' <small>/ '+st.n+' beheerst</small></div></div>'+mv+lvlBar(st.c,st.n)+legend(st.c)+(nl?'<p class="muted">'+nl+'</p>':'')+calLine(S.conf);
     const acts=h('div','actions-row');
     const dueN=S.scope.filter(isDue).length;const openN=S.scope.filter(id=>!(P[id]&&P[id].seen)).length;
-    const nb=h('button','btn primary',dueN?'Volgende ronde ('+dueN+' te herhalen)':openN?'Volgende ronde ('+openN+' nieuw)':'Extra oefenronde');
+    const nb=h('button','btn primary',dueN?'Volgende ronde · nog '+dueN+' te herhalen'+rounds(dueN):openN?'Volgende ronde · '+openN+' nieuwe vragen':'Extra oefenronde');
     nb.onclick=()=>startLearn(S.scope,S.label,S.smode);
     const bk=h('button','btn','Overzicht');bk.onclick=home;
     acts.append(nb,bk);head.appendChild(acts);app.appendChild(head);
@@ -1046,7 +1144,7 @@ function finish(early){
     if(missed.length){
       app.appendChild(h('h3',null,'Hier ging het fout'));
       const rev=h('div','rev');
-      missed.forEach(id=>rev.appendChild(reviewItem({id,ok:false,user:null})));
+      missed.forEach(id=>{const l=S.log.find(x=>x.id===id&&!x.ok);rev.appendChild(reviewItem(l||{id,ok:false,user:null}))});
       app.appendChild(rev);
     }
   }
@@ -1066,11 +1164,12 @@ function theory(tid){
   window.scrollTo(0,0);app.innerHTML='';CUR=null;
   const t=TB[tid];
   const top=h('div','topbar');const back=h('button','btn small','Overzicht');back.onclick=home;top.appendChild(back);
+  const go=h('button','btn small primary','Oefen dit onderwerp');go.onclick=()=>startLearn(idsOf(tid),t.title);top.appendChild(go);
   const p=h('div','panel theory');
   p.innerHTML='<div class="eyebrow">'+esc(t.tag)+'</div><h2>'+esc(t.title)+'</h2><ul>'+t.sum.map(s=>'<li>'+s+'</li>').join('')+'</ul>';
   const acts=h('div','actions-row');
-  const go=h('button','btn primary','Oefen dit onderwerp ('+cnt[tid]+' vragen)');go.onclick=()=>startLearn(idsOf(tid),t.title);
-  acts.appendChild(go);p.appendChild(acts);
+  const go2=h('button','btn primary','Oefen dit onderwerp ('+cnt[tid]+' vragen)');go2.onclick=go.onclick;
+  acts.appendChild(go2);p.appendChild(acts);
   app.append(top,p);
 }
 function exportP(){
@@ -1085,47 +1184,52 @@ function home(){
   S=null;CUR=null;window.scrollTo(0,0);app.innerHTML='';
   const all=idsOf();const st=stat(all);
   const back=h('a','back','← Alle vakken');back.href='../#aardrijkskunde';app.appendChild(back);
-  const hero=h('div','panel hero');
-  const tcount={};Qs.forEach(q=>{const k=q.type==='tf'?'mc':q.type;tcount[k]=(tcount[k]||0)+1});
-  const TNAME={open:'open vragen',num:'rekenvragen (telkens andere getallen)',cloze:'invulteksten',fill:'invulvragen',order:'rangschikvragen',match:'koppel- en schemavragen',multi:'meerdere juist',mc:'meerkeuze / juist-onjuist'};
-  hero.innerHTML='<div class="eyebrow">Aardrijkskunde · Kosmografie · Hoofdstuk 1 tot 6</div><h1>Structuur van het heelal en het zonnestelsel</h1><p>'+all.length+' vragen over alle slides. Heel specifieke getallen staan in de vraag, de rest moet je kennen. Een vraag is pas <b>beheerst</b> als je hem op drie verschillende dagen meteen juist had: kom dus elke dag even terug. Een fout zet hem een niveau terug.</p><div class="types">'+Object.keys(TNAME).filter(k=>tcount[k]).map(k=>'<span class="chip">'+tcount[k]+' '+TNAME[k]+'</span>').join('')+'</div>';
+
+  /* 1. kop: kort, zodat de volgende stap op het eerste gsm-scherm staat */
+  const hero=h('div','hero');
+  hero.innerHTML='<div class="eyebrow">Aardrijkskunde · Hoofdstuk 1 tot 6</div><h1>Kosmografie: heelal en zonnestelsel</h1><p>'+all.length+' vragen over alle slides · kom elke dag even terug.</p>';
   app.appendChild(hero);
 
+  /* 2. nu doen: één duidelijke hoofdknop */
+  const now=h('div','panel now');
+  const started=st.n-st.c[0]>0;
+  const msg=st.due?'<b>'+st.due+' vragen</b> staan klaar om te herhalen'+rounds(st.due)+'.':!started?'Begin met de eerste ronde van '+ROUND+' vragen.':st.c[0]?'Niets te herhalen vandaag. '+(nextLine()||'')+' Leer intussen nieuwe vragen.':'Niets te herhalen vandaag. '+(nextLine()||'');
+  now.innerHTML='<div class="eyebrow">Nu doen</div><p class="nowmsg">'+msg+'</p>';
+  const main=h('button','btn primary big-btn',st.due?'Herhaal vandaag ('+Math.min(st.due,ROUND)+' vragen)':st.c[0]?(started?'Leer nieuwe vragen':'Start'):'Extra oefenronde');
+  main.onclick=()=>st.due?startLearn(all,'Herhalen','review'):startLearn(all,'Alle onderwerpen');
+  now.appendChild(main);
+  if(st.due&&st.c[0]){const alt=h('button','btn linkish','of leer eerst nieuwe vragen');alt.onclick=()=>startLearn(all.filter(id=>!(P[id]&&P[id].seen)),'Nieuwe vragen');now.appendChild(alt)}
+  app.appendChild(now);
+
+  /* 3. voortgang met uitleg van de niveaus */
   const m=h('div','panel mastery');
-  m.innerHTML='<div class="mastery-top"><div class="big">'+st.m+' <small>/ '+st.n+' beheerst</small></div><div class="muted">'+(st.due?'<b>'+st.due+'</b> vandaag te herhalen':'Niets te herhalen vandaag')+'</div></div>'+lvlBar(st.c,st.n)+legend(st.c);
-  const acts=h('div','row');
-  const a0=h('button','btn primary','Vandaag herhalen ('+st.due+')');a0.onclick=()=>startLearn(all,'Herhalen','review');
-  const a1=h('button','btn'+(st.due?'':' primary'),st.c[0]?'Verder leren':'Extra oefenen');a1.onclick=()=>startLearn(all,'Alle onderwerpen');
-  const a4=h('button','btn','Zonder meerkeuze');a4.onclick=()=>startLearn(idsOf('','nomc'),'Zonder meerkeuze');
-  const a5=h('button','btn','Alleen open vragen');a5.onclick=()=>startLearn(idsOf('','open'),'Open vragen');
+  m.innerHTML='<div class="mastery-top"><div class="big">'+st.m+' <small>/ '+st.n+' beheerst</small></div></div>'+lvlBar(st.c,st.n)+legend(st.c)+
+    '<p class="muted small">Elke dag dat je een vraag meteen juist hebt, gaat ze één stap hoger: nieuw → bekend → vaardig → beheerst. Fout = één stap terug.</p>'+calLine(CAL);
+  const ways=h('div','ways');ways.appendChild(h('div','waylabel','Andere manieren van oefenen'));
+  const wr=h('div','row');
+  const a4=h('button','btn small','Zonder meerkeuze');a4.onclick=()=>startLearn(idsOf('','nomc'),'Zonder meerkeuze');
+  const a5=h('button','btn small','Alleen open vragen');a5.onclick=()=>startLearn(idsOf('','open'),'Open vragen');
   const wk=weakIds();
-  const a2=h('button','btn','Zwakke punten ('+wk.length+')');a2.disabled=!wk.length;a2.onclick=()=>startLearn(wk,'Zwakke punten');
-  if(st.due)acts.append(a0);acts.append(a1,a4,a5,a2);m.appendChild(acts);
-  m.insertAdjacentHTML('beforeend',calLine(CAL));
-  const tools=h('div','row tools');
-  const e1=h('button','btn small','Voortgang bewaren (bestand)');e1.onclick=exportP;
-  const fi=h('input');fi.type='file';fi.accept='.json,application/json';fi.hidden=true;fi.id='imp';
-  const e2=h('button','btn small','Voortgang terugzetten');e2.onclick=()=>fi.click();
-  const msg=h('span','muted small');fi.onchange=()=>{if(fi.files[0])importP(fi.files[0],msg)};
-  const a3=h('button','btn small','Voortgang wissen');let armed=false,tm;
-  a3.onclick=()=>{if(!armed){armed=true;a3.textContent='Zeker weten? Klik nogmaals';tm=setTimeout(()=>{armed=false;a3.textContent='Voortgang wissen'},4000)}else{clearTimeout(tm);P={};CAL={};save();home()}};
-  tools.append(e1,e2,fi,a3,msg);m.appendChild(tools);
+  const a2=h('button','btn small','Zwakke punten ('+wk.length+')');a2.disabled=!wk.length;a2.onclick=()=>startLearn(wk,'Zwakke punten');
+  wr.append(a4,a5,a2);ways.appendChild(wr);m.appendChild(ways);
   app.appendChild(m);
 
+  /* 4. toetsen */
   const ex=h('div','panel');
-  ex.innerHTML='<h3>Toetsen</h3><p class="muted" style="margin:4px 0 14px">Geen uitleg tijdens het maken; score op 20, score per onderwerp en uitleg achteraf. Fouten komen automatisch bij "Vandaag herhalen".</p>';
+  ex.innerHTML='<h3>Toetsen</h3><p class="muted" style="margin:4px 0 14px">Geen uitleg tijdens het maken; score op 20 en uitleg achteraf. Fouten komen vanzelf bij het herhalen.</p>';
   const sim=h('div','simrow','<div><b>Examensimulatie</b><div class="muted">20 vragen zoals op een toets: 5 open, 4 rekenen, rangschikken, invullen en meerkeuze door elkaar.</div></div>');
-  const sb=h('button','btn primary','Start simulatie');sb.onclick=startSim;sim.appendChild(sb);ex.appendChild(sim);
+  const sb=h('button','btn','Start simulatie');sb.onclick=startSim;sim.appendChild(sb);ex.appendChild(sim);
   const grid=h('div','exam');
   const f1=h('div','field','<label for="ex-scope">Onderwerp</label>');
   const s1=h('select');s1.id='ex-scope';s1.innerHTML='<option value="">Alles</option>'+TOPICS.map(t=>'<option value="'+t.id+'">'+esc(t.title)+'</option>').join('');f1.appendChild(s1);
   const f3=h('div','field','<label for="ex-kind">Soort vragen</label>');
-  const s3=h('select');s3.id='ex-kind';s3.innerHTML='<option value="">Alle soorten door elkaar</option><option value="nomc">Zonder meerkeuze</option><option value="open">Alleen open vragen</option><option value="mc">Alleen meerkeuze</option>';f3.appendChild(s3);
+  const s3=h('select');s3.id='ex-kind';s3.innerHTML='<option value="">Alles door elkaar</option><option value="nomc">Zonder meerkeuze</option><option value="open">Alleen open</option><option value="mc">Alleen meerkeuze</option>';f3.appendChild(s3);
   const f2=h('div','field','<label for="ex-n">Aantal vragen</label>');
   const s2=h('select');s2.id='ex-n';s2.innerHTML='<option value="10">10</option><option value="20" selected>20</option><option value="40">40</option><option value="999">Alle</option>';f2.appendChild(s2);
   const go=h('button','btn','Start toets');go.onclick=()=>{const ids=idsOf(s1.value,s3.value);if(!ids.length)return;startExam(ids,Math.min(+s2.value,ids.length),s1.value?TB[s1.value].title:'Alle onderwerpen')};
   grid.append(f1,f3,f2,go);ex.appendChild(grid);app.appendChild(ex);
 
+  /* 5. per onderwerp */
   app.appendChild(h('h3',null,'Per onderwerp'));
   const tg=h('div','topics');
   TOPICS.forEach(t=>{
@@ -1134,10 +1238,27 @@ function home(){
     c.innerHTML='<div><div class="tag">'+esc(t.tag)+'</div><h3>'+esc(t.title)+'</h3></div><div><div class="count"><span>'+s.m+' / '+s.n+' beheerst</span><span>'+(s.due?s.due+' te herhalen':'')+'</span></div>'+lvlBar(s.c,s.n)+'</div>';
     const ac=h('div','actions');
     const b1=h('button','btn small','Theorie');b1.onclick=()=>theory(t.id);
-    const b2=h('button','btn small primary',s.due?'Herhalen':'Oefenen');b2.onclick=()=>startLearn(ids,t.title);
+    const b2=h('button','btn small',s.due?'Herhaal':'Oefen');b2.onclick=()=>startLearn(ids,t.title);
     ac.append(b1,b2);c.appendChild(ac);tg.appendChild(c);
   });
   app.appendChild(tg);
+
+  /* 6. voortgang bewaren of wissen, weggestopt */
+  const tools=h('details','panel tools');
+  tools.innerHTML='<summary>Voortgang op een ander toestel zetten of wissen</summary><p class="muted small">Je voortgang staat alleen in deze browser. Bewaar ze als bestand om ze op een ander toestel terug te zetten.</p>';
+  const row=h('div','row');
+  const e1=h('button','btn small','Voortgang bewaren (bestand)');e1.onclick=exportP;
+  const fi=h('input');fi.type='file';fi.accept='.json,application/json';fi.hidden=true;fi.id='imp';
+  const e2=h('button','btn small','Voortgang terugzetten');e2.onclick=()=>fi.click();
+  const msgl=h('span','muted small');fi.onchange=()=>{if(fi.files[0])importP(fi.files[0],msgl)};
+  const a3=h('button','btn small','Voortgang wissen');let armed=false,tm;
+  a3.onclick=()=>{if(!armed){armed=true;a3.textContent='Zeker weten? Klik nogmaals';tm=setTimeout(()=>{armed=false;a3.textContent='Voortgang wissen'},4000)}else{clearTimeout(tm);P={};CAL={};save();home()}};
+  row.append(e1,e2,fi,a3,msgl);tools.appendChild(row);
+  const tcount={};Qs.forEach(q=>{const k=q.type==='tf'?'mc':q.type;tcount[k]=(tcount[k]||0)+1});
+  const TNAME={open:'open',num:'rekenen',cloze:'invulteksten',fill:'invullen',order:'rangschikken',match:'koppelen en schema\'s',multi:'meerdere juist',mc:'meerkeuze en juist/onjuist'};
+  const types=h('details','panel tools','<summary>Welke soorten vragen zitten erin?</summary><div class="types">'+Object.keys(TNAME).filter(k=>tcount[k]).map(k=>'<span class="chip">'+tcount[k]+' '+TNAME[k]+'</span>').join('')+'</div><p class="muted small">Heel specifieke getallen staan in de vraag zelf; de rest moet je kennen. Rekenvragen krijgen telkens andere getallen.</p>');
+  app.append(types,tools);
+  const lr=document.getElementById('live')||h('div','sr-only');lr.id='live';lr.setAttribute('aria-live','polite');document.body.appendChild(lr);
 }
 home();
 </script>
