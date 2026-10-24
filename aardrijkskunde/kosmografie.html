@@ -1,0 +1,941 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kosmografie · QuizMore</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/* Layout: één smalle werkkolom. Overzicht met onderwerpkaarten, daarna een vraag per scherm met directe uitleg. */
+:root{
+  --bg:#F2F5F7; --surface:#FFFFFF; --surface2:#E7EDF1; --ink:#14232D; --muted:#566873; --line:#D3DDE3;
+  --accent:#0B7A75; --accent-ink:#FFFFFF; --accent-soft:#D9EFEC;
+  --good:#1B7F47; --good-soft:#DDF1E4; --bad:#BE3326; --bad-soft:#F9E1DE; --warn:#9A6200; --warn-soft:#FBEFD3;
+  --font-display:'Bricolage Grotesque','Segoe UI',system-ui,sans-serif;
+  --font-body:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1A21; --surface:#16252E; --surface2:#1D303B; --ink:#E6EEF2; --muted:#93A7B2; --line:#2A404D;
+    --accent:#3CC3BB; --accent-ink:#072320; --accent-soft:#12383A;
+    --good:#4CC17F; --good-soft:#12341F; --bad:#F0776A; --bad-soft:#3B1A17; --warn:#E9B04A; --warn-soft:#3A2C0E;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1A21; --surface:#16252E; --surface2:#1D303B; --ink:#E6EEF2; --muted:#93A7B2; --line:#2A404D;
+  --accent:#3CC3BB; --accent-ink:#072320; --accent-soft:#12383A;
+  --good:#4CC17F; --good-soft:#12341F; --bad:#F0776A; --bad-soft:#3B1A17; --warn:#E9B04A; --warn-soft:#3A2C0E;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.5;
+  padding-block:24px 56px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:820px;margin:0 auto;display:flex;flex-direction:column;gap:20px;min-width:0}
+h1,h2,h3{font-family:var(--font-display);font-weight:700;line-height:1.15;margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(28px,5.5vw,40px)}
+h2{font-size:clamp(20px,3.6vw,25px)}
+h3{font-size:18px}
+p{margin:0}
+.eyebrow{font-family:var(--font-mono);font-size:12px;letter-spacing:.09em;text-transform:uppercase;color:var(--accent)}
+.muted{color:var(--muted)}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+.btn{appearance:none;border:1.5px solid var(--line);background:var(--surface);border-radius:8px;padding:10px 16px;font-weight:600;cursor:pointer;min-height:44px;transition:background .15s,border-color .15s}
+.btn:hover:not(:disabled){border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover:not(:disabled){filter:brightness(1.08)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.small{min-height:36px;padding:6px 12px;font-size:14px}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px;min-width:0}
+.hero{display:flex;flex-direction:column;gap:10px}
+.hero p{max-width:62ch;color:var(--muted)}
+
+.mastery{display:flex;flex-direction:column;gap:14px}
+.mastery-top{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:baseline;justify-content:space-between}
+.big{font-family:var(--font-display);font-weight:700;font-size:34px;font-variant-numeric:tabular-nums;line-height:1}
+.big small{font-size:18px;color:var(--muted);font-weight:600}
+.bar{height:10px;border-radius:6px;background:var(--surface2);overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--accent);border-radius:6px;transition:width .4s}
+.bar.thin{height:6px}
+
+.exam{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:12px;align-items:end}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label{font-family:var(--font-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+select,input[type=text]{background:var(--surface);border:1.5px solid var(--line);border-radius:8px;padding:9px 10px;min-height:44px;width:100%;min-width:0}
+
+.topics{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:14px}
+.topic{display:flex;flex-direction:column;gap:12px;justify-content:space-between}
+.topic .tag{font-family:var(--font-mono);font-size:12px;color:var(--muted);letter-spacing:.05em}
+.topic .count{font-variant-numeric:tabular-nums;font-size:14px;color:var(--muted);display:flex;justify-content:space-between}
+.topic.done{border-color:var(--good)}
+.topic .actions{display:flex;gap:8px;flex-wrap:wrap}
+.topic .actions .btn{flex:1 1 auto}
+
+/* sessie */
+.topbar{display:flex;align-items:center;gap:14px}
+.topbar .bar{flex:1}
+.topbar .n{font-family:var(--font-mono);font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.qcard{display:flex;flex-direction:column;gap:18px}
+.meta{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-family:var(--font-mono);font-size:12px;letter-spacing:.04em;padding:3px 9px;border-radius:999px;background:var(--surface2);color:var(--muted)}
+.chip.a{background:var(--accent-soft);color:var(--accent)}
+.qtext{font-family:var(--font-display);font-weight:600;font-size:clamp(19px,3.4vw,23px);line-height:1.3}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{appearance:none;text-align:left;display:flex;gap:12px;align-items:flex-start;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:12px 14px;cursor:pointer;min-height:48px;width:100%}
+.opt:hover:not(:disabled){border-color:var(--accent)}
+.opt .key{flex:none;font-family:var(--font-mono);font-size:12px;width:24px;height:24px;border-radius:6px;background:var(--surface2);color:var(--muted);display:grid;place-items:center;margin-top:1px}
+.opt .txt{min-width:0;overflow-wrap:anywhere}
+.opt.sel{border-color:var(--accent);background:var(--accent-soft)}
+.opt.good{border-color:var(--good);background:var(--good-soft)}
+.opt.bad{border-color:var(--bad);background:var(--bad-soft)}
+.opt.missed{border-color:var(--good);border-style:dashed}
+.opt:disabled{cursor:default;color:inherit}
+.hintline{font-size:14px;color:var(--muted)}
+.fillrow{display:flex;gap:10px;flex-wrap:wrap}
+.fillrow input{flex:1 1 220px}
+input.good,select.good{border-color:var(--good);background:var(--good-soft)}
+input.bad,select.bad{border-color:var(--bad);background:var(--bad-soft)}
+.matchrows{display:flex;flex-direction:column;gap:10px}
+.mrow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:10px;align-items:center}
+.mrow .l{font-weight:600;overflow-wrap:anywhere}
+.mrow .fix{grid-column:1/-1;font-size:14px;color:var(--good)}
+@media (max-width:520px){.mrow{grid-template-columns:1fr}}
+.fb{border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;border:1.5px solid}
+.fb.good{background:var(--good-soft);border-color:var(--good)}
+.fb.bad{background:var(--bad-soft);border-color:var(--bad)}
+.fb .h{font-weight:700}
+.fb.good .h{color:var(--good)} .fb.bad .h{color:var(--bad)}
+.fb .ans{overflow-wrap:anywhere}
+.fb ul{margin:0;padding-left:18px}
+.fb .ex{color:var(--ink)}
+.actions-row{display:flex;gap:10px;flex-wrap:wrap}
+.why{display:flex;flex-direction:column;gap:4px}
+.why ul{margin:0;padding-left:18px}
+.fb .yours{color:var(--muted)}
+
+/* theorie en resultaat */
+.theory ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:8px}
+.theory li{max-width:68ch}
+.theory b{font-weight:600}
+.score{display:flex;flex-wrap:wrap;gap:12px 28px;align-items:baseline}
+.rev{display:flex;flex-direction:column;gap:10px}
+details.r{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:0}
+details.r>summary{cursor:pointer;padding:12px 14px;display:flex;gap:10px;align-items:flex-start;list-style:none}
+details.r>summary::-webkit-details-marker{display:none}
+details.r .mark{flex:none;font-weight:700;width:20px}
+details.r.ok .mark{color:var(--good)} details.r.no .mark{color:var(--bad)}
+details.r .body{padding:0 14px 14px 44px;display:flex;flex-direction:column;gap:6px;font-size:15px}
+details.r .body ul{margin:0;padding-left:18px}
+.back{align-self:flex-start;font-size:14px;font-weight:600;color:var(--accent);text-decoration:none}
+.back:hover{text-decoration:underline}
+.foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+
+/* extra vraagsoorten: open, rangschikken, rekenen, invultekst, schema */
+textarea{font:inherit;color:inherit;background:var(--surface);border:1.5px solid var(--line);border-radius:8px;padding:10px 12px;width:100%;min-height:120px;resize:vertical}
+textarea:disabled{opacity:.85}
+.openq{display:flex;flex-direction:column;gap:14px}
+.fb.neutral{background:var(--surface2);border-color:var(--line)}
+.fb.neutral .h{color:var(--ink)}
+ul.kp{list-style:none;padding-left:0;margin:6px 0 0;display:flex;flex-direction:column;gap:4px}
+ul.kp li{display:flex;gap:8px}
+ul.kp li span{flex:none;font-weight:700}
+ul.kp li.hit span{color:var(--good)}
+ul.kp li.miss span{color:var(--bad)}
+.olist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.oitem{display:flex;gap:8px;align-items:center;background:var(--surface);border:1.5px solid var(--line);border-radius:10px;padding:8px 10px;min-height:52px}
+.oitem .key{flex:none;font-family:var(--font-mono);font-size:12px;width:24px;height:24px;border-radius:6px;background:var(--surface2);color:var(--muted);display:grid;place-items:center}
+.oitem .txt{flex:1;min-width:0;overflow-wrap:anywhere;display:flex;flex-direction:column;gap:2px}
+.oitem .mv{flex:none;min-width:40px;min-height:40px;padding:4px 0;font-size:16px}
+.oitem.good{border-color:var(--good);background:var(--good-soft)}
+.oitem.bad{border-color:var(--bad);background:var(--bad-soft)}
+.fixpos{font-size:13px;font-weight:600;color:var(--bad)}
+.numrow{align-items:center}
+.numrow input{flex:0 1 200px}
+.unit{font-weight:600;color:var(--muted)}
+.cloze{line-height:2.5;font-size:17px;max-width:68ch}
+.cloze input{background:var(--surface);border:1.5px solid var(--line);border-radius:6px;padding:3px 8px;min-height:36px;margin:0 3px;max-width:100%}
+.diagq{display:flex;flex-direction:column;gap:16px}
+.diagbox{background:var(--surface2);border-radius:10px;padding:12px}
+.diag{width:100%;max-width:360px;height:auto;display:block;margin:0 auto}
+.d-c1{fill:#F7E3B5;stroke:#C9A04A}.d-c2{fill:#F4A97A;stroke:#C46B38}.d-c3{fill:#FFE27A;stroke:#C9A400}
+.d-c4{fill:#F59A3C;stroke:#B9651A}.d-c5{fill:#F2C14E;stroke:#B98A15}.d-c6{fill:#FFF6D6;stroke:#C9A400}
+.d-dot{fill:var(--surface);stroke:var(--ink);stroke-width:1.5}
+.d-num{font-family:var(--font-mono);font-size:11px;font-weight:500;fill:var(--ink);text-anchor:middle}
+.d-lbl{font-size:12px;fill:var(--muted);text-anchor:middle}
+.d-orbit{fill:none;stroke:var(--muted);stroke-width:1.5;stroke-dasharray:5 4}
+.d-sun{fill:#F2B01E}.d-earth{fill:#2E7DD7}
+.d-ax{stroke:var(--ink);stroke-width:1.5}
+.d-band{fill:none;stroke:var(--accent);stroke-width:16;stroke-linecap:round;opacity:.35}
+.d-zone{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1}
+.types{display:flex;flex-wrap:wrap;gap:6px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script>
+/* ============ VRAGEN ============ */
+/* Heel specifieke getallen (exacte afstanden, temperaturen, limieten) staan in de vraag zelf. De kern moet je kennen. */
+const TOPICS=[
+{id:'pl',tag:'Hoofdstuk 1',title:'De aarde in het heelal',sum:[
+ '<b>Aardrevolutie</b>: de aarde draait in 1 jaar rond de zon, in een <b>ellips</b> met de zon in één <b>brandpunt</b>. Het vlak van die baan is het <b>eclipticavlak</b>; de schijnbare baan van de zon tussen de sterren heet de <b>ecliptica</b>.',
+ '<b>Perihelium</b>: punt van de baan het dichtst bij de zon (begin januari). <b>Aphelium</b>: het verst van de zon (begin juli). Bij het perihelium gaat de aarde sneller, daardoor zijn de seizoenen niet even lang: op het noordelijk halfrond duren lente en zomer samen enkele dagen langer dan herfst en winter.',
+ '<b>Aardrotatie</b>: de aarde draait in 1 dag om haar <b>rotatie-as</b>, van <b>west naar oost</b> (tegenwijzerzin gezien boven de noordpool). De as helt ca. <b>23,5°</b> (inclinatie) t.o.v. de loodlijn op het eclipticavlak: de oorzaak van de seizoenen.',
+ '<b>Precessie</b>: de rotatie-as beschrijft een <b>tolbeweging</b> rond de loodlijn op het eclipticavlak, met een periode van ca. <b>26 000 jaar</b>. Gevolg: de hemelpool en dus de poolster verandert, en de sterrenbeelden verschuiven t.o.v. de seizoenen.',
+ '<b>Afstandseenheden</b>: binnen het zonnestelsel km en de <b>astronomische eenheid</b> (1 AE ≈ 150 miljoen km = gemiddelde afstand aarde-zon). Buiten het zonnestelsel het <b>lichtjaar</b>: de afstand die licht aflegt in 1 jaar (ca. 9,46 × 10¹² km, c ≈ 300 000 km/s). Ook lichtminuten (zon: 8,3) en lichtseconden (maan: 1,28).',
+ '<b>Structuur</b> van klein naar groot: <b>planetenstelsel</b> (planeten rond 1 centrale ster, bv. het zonnestelsel) → <b>sterrenstelsel</b> (sterren, planeten, gas en stof, wellicht donkere materie, bijeengehouden door onderlinge zwaartekracht, bv. de Melkweg) → <b>cluster</b> (30 tot 1000 sterrenstelsels, bv. de Lokale Groep) → nog grotere gehelen.']},
+{id:'st',tag:'Hoofdstuk 2',title:'Sterren',sum:[
+ '<b>Schijnbare magnitude</b> (m): hoe helder een ster <i>lijkt</i>. Hipparchus (200 v.C.) deelde sterren in van 1 (helderst) tot 6 (zwakst). Hoe <b>lager</b> het getal, hoe <b>helderder</b>; heel heldere objecten krijgen negatieve waarden (zon: −26,7). Het is een <b>logaritmische schaal</b>: 1 magnitude verschil = factor 2,512; 5 magnitudes = factor 100.',
+ '"Schijnbaar" omdat de waargenomen helderheid afhangt van <b>afstand</b> én van de <b>uitgestraalde energie</b>. <b>Wet van de kwadratische afname</b>: ontvangen straling is omgekeerd evenredig met het kwadraat van de afstand (2× zo ver = 4× zo zwak).',
+ '<b>Absolute magnitude</b> (M): de magnitude die een ster zou hebben op <b>10 parsec</b> (32,6 lj). Ze vergelijkt dus de echte lichtkracht. Formule: m − M = 5·log(d) − 5. Is m = M, dan staat de ster op 10 pc; is m &gt; M, dan staat ze verder.',
+ '<b>Spectraalklasse</b>: indeling volgens kleur en spectrum. <b>Rood</b> = koud oppervlak en lage massa; <b>blauw</b> = heet oppervlak en hoge massa. In het <b>Hertzsprung-Russelldiagram</b> (spectraalklasse/temperatuur tegen absolute magnitude) ligt ca. <b>90%</b> van de sterren op de <b>hoofdreeks</b>.',
+ '<b>Protoster</b>: in een <b>moleculaire wolk</b> (vooral H) trekken dichte knopen samen door zwaartekracht; compressie verhoogt de temperatuur in de kern en de materie wordt plasma. Genoeg massa → <b>kernfusie</b> van waterstof tot helium = <b>ster</b> (jetfase blaast omliggend gas en stof weg). Te weinig massa → geen fusie → <b>bruine dwerg</b>.',
+ 'De grootte van een ster is een <b>evenwicht</b> tussen de uitwaartse kracht van de kernfusie en de inwaartse zwaartekracht.',
+ '<b>0,6 tot 8 M☉</b>: H op → ster krimpt, T stijgt → fusie He → C in de kern, H → He verhuist naar de schil → ster zwelt op, oppervlak koelt af → <b>rode reus</b>. He op → te weinig massa voor nieuwe fusie → buitenste lagen worden een <b>planetaire nevel</b>, de kern wordt een <b>witte dwerg</b> → na afkoeling <b>zwarte dwerg</b>.',
+ '<b>Meer dan 8 M☉</b>: opeenvolgende fusies (C, Ne, O, Si tot Fe) → <b>superreus</b>. Fusie voorbij <b>ijzer</b> levert geen energie → kern implodeert → schokgolf → <b>supernova</b>, die elementen verspreidt en nieuwe stervorming kan uitlokken. Restant: <b>neutronenster</b> (8–20 M☉) of <b>zwart gat</b> (&gt; 20 M☉).',
+ '<b>Witte dwerg</b>: zo groot als de aarde, max. 1,4 M☉ (Chandrasekhar-limiet), elektronen houden het instorten tegen. <b>Neutronenster</b>: ca. 10 km, elektronen en protonen versmelten tot neutronen, extreem dicht. <b>Zwart gat</b>: alle massa in een <b>singulariteit</b>; licht kan niet ontsnappen binnen de <b>waarnemingshorizon</b>.']},
+{id:'oz',tag:'§3.1',title:'Ontstaan van het zonnestelsel',sum:[
+ 'Startpunt: een <b>moleculaire wolk</b> (vooral H₂), asymmetrisch en onstabiel. Een externe trigger laat ze plaatselijk samentrekken tot een <b>protostellaire wolk</b>.',
+ 'Ca. <b>4,6 miljard jaar</b> geleden: een <b>supernova</b> van een nabije ster. De schokgolf doet de wolk samentrekken en voegt <b>zwaardere elementen</b> toe. De wolk roteert, vormt een vortex en platt af tot een <b>accretieschijf</b>.',
+ 'Bijna alle massa (99,9%) gaat naar het centrum. Door compressiewarmte stijgt de temperatuur tot miljoenen kelvin → kernfusie → <b>geboorte van de zon</b>. De rest vormt de <b>protoplanetaire schijf</b>.',
+ 'Dicht bij de zon is het heet: enkel <b>silicaten en metalen</b> zijn vast, vluchtige gassen worden weggeblazen door zonneactiviteit → weinig massa. Voorbij de <b>frost line</b> (voorbij Mars) condenseren vluchtige stoffen (H₂O, H₂, He…), voorbij Saturnus ook CH₄ en NH₃ → veel meer massa.',
+ 'Stofdeeltjes klitten samen tot keien en stenen; na ca. 1 miljoen jaar objecten &gt; 1 km: <b>planetesimalen</b>. Door botsingen groeien ze; wie groot genoeg wordt om tot een bol samen te trekken is een <b>protoplaneet</b>, die zijn baan vrijmaakt (ringen in de schijf). Wat niet verder groeide, bleef over als <b>kometen en planetoïden</b>.',
+ 'Vóór de frost line: kleine <b>terrestrische (rotsachtige) planeten</b>: Mercurius, Venus, Aarde, Mars. Voorbij de frost line: grote <b>gas- en ijsreuzen</b>.']},
+{id:'sz',tag:'§3.2',title:'Structuur van het zonnestelsel',sum:[
+ 'Van binnen naar buiten: <b>binnenzonnestelsel</b> → <b>buitenzonnestelsel</b> → <b>Kuipergordel</b> → <b>Oortwolk</b>.',
+ '<b>Binnenzonnestelsel</b>: zon tot en met de planetoïdengordel (ca. 3,3 AE). Rotsachtige planeten en planetoïden, vooral lege ruimte. De <b>planetoïdengordel</b> (miljoenen planetoïden) kon nooit tot een planeet samentrekken door de nabijheid van <b>Jupiter</b>; samen veel minder massa dan de aarde en ver uit elkaar.',
+ '<b>Buitenzonnestelsel</b>: van Jupiter (ca. 5 AE) tot Neptunus (ca. 30 AE). Voorbij de frost line → <b>gas- en ijsreuzen</b>.',
+ '<b>Kuipergordel</b>: ca. 30 tot 50 AE, <b>donutvorm</b>, veel vluchtige stoffen. Bevat <b>dwergplaneten</b> (Pluto, Eris, Makemake…), honderdduizenden planetoïden en miljarden kometen.',
+ '<b>Oortwolk</b>: <b>theoretische</b> zone (niet waargenomen) die verklaart waarom er nog altijd kometen zijn. Binnenste deel donutvormig, buitenste deel <b>bolvormig</b>, tot ca. 100 000 AE. Gevuld met restanten van de schijf die door <b>Jupiter en Saturnus</b> naar buiten geslingerd zijn en gevangen objecten van andere sterren.']},
+{id:'zo',tag:'§3.2',title:'De zon',sum:[
+ 'Samenstelling: vooral <b>waterstof</b> (ca. 73% van de massa, 92% van de atomen) en <b>helium</b> (ca. 25% van de massa).',
+ 'Cijfers: 1 AE ver (8,3 lichtminuten); diameter ca. <b>109×</b> die van de aarde; massa ca. 333 000× de aarde; oppervlak ca. <b>5 800 K</b>, kern ca. <b>15 miljoen K</b>. Gemiddelde dichtheid kleiner dan die van de aarde.',
+ '<b>Differentiële rotatie</b>: evenaar ca. 25 dagen, polen ca. 35 dagen. Daardoor raken magnetische veldlijnen verstrengeld → zonnevlekken en solar flares.',
+ '<b>Opbouw</b> (schillen, van binnen naar buiten): <b>kern</b> (kernfusie) → <b>stralingszone</b> (energie als gammastraling, duizenden jaren onderweg) → <b>convectiezone</b> (koeler, energie via convectie) → <b>fotosfeer</b> (zichtbare, dunne laag, granulatie) → <b>chromosfeer</b> (ijl, vooral rood licht, spiculen) → <b>corona</b> (zeer ijl, miljoenen km dik, tot ca. 3 miljoen K, enkel zichtbaar bij een zonsverduistering).',
+ '<b>Zonnevlekken</b>: koelere (dus donkere) plekken in de fotosfeer door een sterk magnetisch veld. <b>Solar flares</b>: explosies van elektromagnetische straling bij verstrengelde veldlijnen. <b>Protuberansen</b>: lussen van plasma die magnetische veldlijnen volgen.',
+ '<b>Zonnewind</b>: continue stroom geladen deeltjes uit de corona (hoge T dus hoge kinetische energie, zwakkere aantrekking ver van de kern). <b>CME</b>: grote bellen plasma die uit de corona worden weggeslingerd.',
+ '<b>Zonnecyclus</b>: elke <b>11 jaar</b> polt de zon om. Na ca. 5,5 jaar zonnemaximum (veel vlekken, flares, CME\'s).',
+ '<b>Poollicht</b> (aurora borealis/australis): geladen deeltjes worden door het magnetisch veld van de aarde naar de <b>polen</b> geleid, exciteren atmosferische deeltjes die licht uitzenden bij het terugvallen. <b>Zuurstof</b>: groen of rood, <b>stikstof</b>: blauw.']},
+{id:'mw',tag:'Hoofdstuk 4',title:'Het Melkwegstelsel',sum:[
+ '<b>Sterrenstelsel</b>: tot miljarden sterren bijeengehouden door zwaartekracht, met een <b>centraal zwart gat</b>, nevels en stof, en donkere materie.',
+ '<b>Classificatie van Hubble</b>: <b>elliptisch</b> (E, cijfer = mate van afplatting), <b>spiraalstelsel</b> (S, bolvormige kern, letter = hoe ver de armen van de kern staan), <b>balkspiraalstelsel</b> (SB, kern is een balk) en <b>onregelmatig</b> (chaotisch).',
+ 'Vorm van de Melkweg: we zitten erin, dus moeilijk. Maar de <b>band</b> aan de hemel toont een <b>platte</b> structuur (geen ellipsoïde) en de <b>snelheden en bewegingsrichtingen</b> van sterren tonen een spiraalbeweging → <b>balkspiraalstelsel</b> met 4 armen.',
+ 'Cijfers: ca. <b>13,5 miljard jaar</b> oud, diameter ca. <b>100 000 lj</b>, dikte van ca. 1 000 lj (armen) tot 10 000 lj (kern). De zon ligt in de <b>Orionarm</b>, ca. 27 000 lj van de kern, en doet ca. 225 miljoen jaar over één omloop (<b>differentiële rotatie</b>).',
+ '<b>Bolvormige sterrenhopen</b> rond de schijf: tienduizenden tot miljoenen <b>oude</b> sterren; vormen met losse sterren de <b>galactische halo</b>. <b>Open sterrenhopen</b> in de schijf: <b>jonge</b> sterren die samen ontstaan zijn en nog uit elkaar bewegen.',
+ '<b>Satellietsterrenstelsels</b> draaien rond de Melkweg, bv. de <b>Magelhaense Wolken</b>.',
+ '<b>Donkere materie</b>: theoretisch concept, <b>geen interactie met elektromagnetische straling</b> (onzichtbaar), nodig om de <b>zwaartekrachtseffecten</b> te verklaren, diffuus verspreid, ca. <b>85%</b> van alle materie.']},
+{id:'ok',tag:'Hoofdstuk 5',title:'De oerknal',sum:[
+ '<b>Roodverschuiving</b>: het spectrum van verre sterrenstelsels is naar rood verschoven → ze bewegen <b>van ons weg</b>.',
+ '<b>Georges Lemaître</b>: als stelsels uit elkaar gaan, wordt het heelal groter, dus was het vroeger kleiner → in het begin één punt, het <b>oeratoom</b>, dat "ontplofte".',
+ '<b>Bewijs 1 – Edwin Hubble</b>: hoe verder een stelsel, hoe sneller het weg beweegt: een <b>lineair verband</b> tussen afstand en snelheid. Tijd terugdraaien brengt alles terug tot één punt.',
+ '<b>Bewijs 2 – nucleosynthese</b>: het oerknalmodel voorspelt een bepaalde verhouding van lichte kernen (²H, ³He, ⁴He, ⁷Li). Die verhouding zien we ook in verre (oude) stelsels en in stelsels met weinig latere kernfusie.',
+ '<b>Bewijs 3 – kosmische achtergrondstraling (CMB)</b>: de eerste <b>380 000 jaar</b> waren protonen, neutronen en elektronen los → straling kon niet ontsnappen (ondoorzichtig heelal). Toen <b>atomen</b> ontstonden, kon straling ontsnappen. Die "echo" is door de uitdijing uitgerekt tot <b>microgolven</b> (ca. 3 K) en werd in <b>1965</b> waargenomen → oerknal algemeen aanvaard.']},
+{id:'wn',tag:'§6.1',title:'Waarnemingen van op aarde',sum:[
+ 'Voor een waarnemer lijkt de aarde een platte schijf: het <b>horizonvlak</b>, omgeven door een <b>hemelkoepel</b>. Recht boven je: <b>zenit</b>, recht onder je: <b>nadir</b>. Daarnaast de windrichtingen.',
+ 'Overdag beschrijft de zon een <b>dagboog</b> (op in het oosten, onder in het westen). Het hoogste punt is de <b>culminatie</b>; bij ons (noordelijk halfrond) staat de zon dan in het <b>zuiden</b>. In de zomer is de dagboog hoger en langer.',
+ '<b>Sterren</b> hebben een "vaste" plaats aan de hemelkoepel op een tijdschaal van jaren, maar niet over millennia (o.a. door precessie). Sterren vormen samen <b>sterrenbeelden</b>.',
+ '<b>Planeten</b> verplaatsen zich t.o.v. de sterren en blijven dicht bij de <b>ecliptica</b>. <b>Natuurlijke satellieten</b>: manen, bv. de 4 grote manen van Jupiter (Io, Europa, Ganymedes, Callisto). <b>Kunstmatige satellieten</b>: bv. Starlink.',
+ 'Kleinere objecten: <b>meteoor</b> (lichtspoor van een brokje dat verbrandt in de atmosfeer), <b>komeet</b> (ijs en stof met staart), <b>planetoïde</b>. <b>Deepsky-objecten</b> (codes uit de Messiercatalogus): M31 = Andromedastelsel, M1 = Krabnevel (supernovarest), M42 = Orionnevel (gebied waar sterren geboren worden).',
+ 'In het <b>noorden</b>: <b>Kleine Beer</b> met de <b>Poolster (Polaris)</b> en de <b>Grote Beer</b>. Alle sterren lijken in <b>tegenwijzerzin</b> rond Polaris te draaien (door de aardrotatie). In het <b>zuiden</b>: planeten, de maan en de sterrenbeelden van de <b>zodiak</b> (langs de ecliptica). Op het zuidelijk halfrond: het <b>Zuiderkruis</b>.',
+ '<b>Astrologie</b> (bijgeloof op basis van de zodiak) is <b>niet</b> hetzelfde als <b>astronomie</b> (de wetenschap).']},
+{id:'pb',tag:'§6.2',title:'Plaatsbepaling',sum:[
+ '<b>Geografische coördinaten</b>: <b>breedtegraad</b> = hoek tussen het evenaarsvlak en de normaal in het plaatselijke punt (noord/zuid, 0°–90°). <b>Lengtegraad</b> = hoek tussen het vlak van de <b>nulmeridiaan</b> en de plaatselijke meridiaan (oost/west, 0°–180°).',
+ 'Met de Poolster: de <b>hoogte van de Poolster boven de horizon = je breedtegraad</b>. Vroeger gemeten met een <b>sextant</b> ("poolshoogte nemen").',
+ '<b>GNSS</b> (Global Navigation Satellite Systems): <b>GPS</b> (VS), <b>Galileo</b> (EU), <b>GLONASS</b> (Rusland), <b>Beidou</b> (China). Ontvangers werken vaak met meerdere systemen.',
+ 'Werking: de satelliet zendt zijn status, positie en baan en het <b>exacte tijdstip</b> (atoomklok) uit. De ontvanger meet het tijdstip van ontvangst (kwartsklok); uit het <b>tijdsverschil</b> volgt de afstand. Je hebt minstens <b>4 satellieten</b> nodig: 3 voor de positie + 1 om de klokfout van de ontvanger weg te werken.',
+ '<b>Horizontale coördinaten</b> van een hemellichaam: <b>azimut</b> (richting langs de horizon) en <b>hoogte</b> (hoek boven de horizon). Nadeel: ze hangen af van <b>plaats en tijd</b> van de waarnemer.']},
+{id:'sr',tag:'§6.5',title:'Straling als informatiedrager',sum:[
+ 'Hemellichamen zenden straling uit in verschillende <b>spectraalbanden</b> van het elektromagnetisch spectrum; elke soort straling geeft andere informatie.',
+ '<b>Reflectie</b>: welke golflengten een object weerkaatst zegt iets over zijn samenstelling. De aarde (70% water) weerkaatst vooral blauw licht.',
+ '<b>Fraunhoferlijnen</b>: donkere absorptielijnen in een spectrum. Elk element (H, He, Ca, Fe…) heeft zijn eigen lijnenpatroon → zo bepalen we de <b>chemische samenstelling</b>.',
+ '<b>Kleur → oppervlaktetemperatuur</b>: blauw = heet, rood = koel.',
+ '<b>Dopplereffect</b>: beweegt een object van ons weg, dan schuiven de lijnen naar rood (<b>roodverschuiving</b>); komt het naar ons toe, dan naar blauw (<b>blauwverschuiving</b>). De grootte van de verschuiving is een maat voor de <b>snelheid</b>.',
+ 'Beelden van niet-zichtbare straling: een <b>CCD-chip</b> met pixels meet per pixel een grijswaarde → omgezet in getallen → met een <b>kleurcode</b> omgezet in een kleurenbeeld (valse kleuren).']}
+];
+
+const Qs=[];
+const mc=(t,q,ans,wrong,ex,why)=>Qs.push({t,type:'mc',q,opts:[ans,...wrong],ex,why});
+const tf=(t,q,val,ex)=>Qs.push({t,type:'tf',q,val,ex});
+const fill=(t,q,acc,ex,show)=>Qs.push({t,type:'fill',q,acc,ex,show:show||acc[0]});
+const multi=(t,q,good,bad,ex,why)=>Qs.push({t,type:'multi',q,good,bad,ex,why});
+const match=(t,q,pairs,ex)=>Qs.push({t,type:'match',q,pairs,ex});
+const open=(t,q,model,points,ex)=>Qs.push({t,type:'open',q,model,points,ex});
+
+/* --- H1 De aarde in het heelal --- */
+mc('pl','Welke vorm heeft de baan van de aarde rond de zon?','Een ellips met de zon in één brandpunt',['Een perfecte cirkel met de zon in het midden','Een ellips met de zon precies in het midden','Een spiraal die langzaam naar de zon toe gaat'],'Kepler: planeetbanen zijn ellipsen met de zon in één van de twee brandpunten. Daardoor verandert de afstand aarde-zon in de loop van het jaar.',['Dan zou de afstand tot de zon het hele jaar gelijk zijn; er is wel een perihelium en aphelium.','Het midden van een ellips is geen brandpunt; de zon staat uit het midden.','De baan is stabiel; de aarde valt niet naar de zon.']);
+match('pl','Koppel elke beweging van de aarde aan de juiste beschrijving.',[['Aardrevolutie','Omloop rond de zon in 1 jaar'],['Aardrotatie','Draaiing om de eigen as in 1 dag'],['Precessie','Tolbeweging van de as in ca. 26 000 jaar']],'Revolutie = rond de zon (jaar), rotatie = om de as (dag), precessie = de as zelf beschrijft een kegel (tolbeweging).');
+fill('pl','Hoe heet het punt in de aardbaan waar de aarde het dichtst bij de zon staat?',['perihelium','perihelion'],'Peri = dichtbij, helios = zon. Het verste punt is het aphelium.','perihelium');
+fill('pl','Hoe heet het punt in de aardbaan waar de aarde het verst van de zon staat?',['aphelium','aphelion'],'Ap(o) = weg van, helios = zon. De aarde staat daar begin juli.','aphelium');
+tf('pl','Het is zomer op het noordelijk halfrond omdat de aarde dan het dichtst bij de zon staat.',false,'Fout: begin juli staat de aarde juist het <i>verst</i> van de zon (aphelium). De seizoenen komen door de <b>helling van de aardas</b> (ca. 23,5°): in juni helt het noordelijk halfrond naar de zon toe, dus de zon staat hoger en de dagen zijn langer.'.replace(/<[^>]+>/g,''));
+open('pl','De seizoenen zijn niet even lang: lente + zomer duren op het noordelijk halfrond enkele dagen langer dan herfst + winter. Verklaar dit.','De aardbaan is een ellips. In juli (zomer bij ons) staat de aarde bij het aphelium, het verst van de zon, en beweegt ze trager in haar baan. Daardoor duurt dat stuk van de baan langer. In januari (perihelium) beweegt ze sneller, dus herfst en winter zijn korter.',['Baan is een ellips (perihelium/aphelium)','Bij het aphelium (juli) beweegt de aarde trager','Trager = langer over dat deel van de baan = langere zomer'],'Hoe dichter bij de zon, hoe sneller een planeet beweegt (2e wet van Kepler).');
+mc('pl','Hoe groot is ongeveer de helling (inclinatie) van de aardas?','Ca. 23,5°',['Ca. 0°','Ca. 45°','Ca. 90°'],'De as helt ca. 23,5° t.o.v. de loodlijn op het eclipticavlak. Dat is de oorzaak van de seizoenen.',['Bij 0° zouden er geen seizoenen zijn.','45° is veel te veel; de keerkringen liggen op 23,5°.','Bij 90° zou de aarde "op haar zij" liggen, zoals Uranus.']);
+mc('pl','In welke richting draait de aarde om haar as?','Van west naar oost',['Van oost naar west','Van noord naar zuid','Afwisselend, afhankelijk van het seizoen'],'De aarde draait van west naar oost (tegenwijzerzin gezien boven de noordpool). Daarom zien we de zon en sterren juist in het oosten opkomen en in het westen ondergaan.',['Dat is de schijnbare beweging van de zon aan de hemel, niet de draairichting van de aarde.','De aarde draait rond een as door de polen, dus niet in noord-zuidrichting.','De draairichting is altijd hetzelfde.']);
+mc('pl','Wat is precessie?','Een tolbeweging van de aardas rond de loodlijn op het eclipticavlak',['Het schommelen van de afstand aarde-zon','De draaiing van de aarde om haar as','De beweging van de maan rond de aarde'],'De as beschrijft langzaam een kegel, zoals een tol die wiebelt, in ca. 26 000 jaar.',['Dat komt door de elliptische baan, niet door precessie.','Dat is de aardrotatie.','Dat is de omloop van de maan.']);
+fill('pl','Hoe lang duurt één volledige precessiebeweging van de aardas ongeveer? (in jaar)',['26000','ca26000','25800','25772','26000jaar'],'Ongeveer 26 000 jaar.','ca. 26 000 jaar');
+open('pl','Noem een gevolg van de precessie dat we aan de hemel kunnen zien en leg uit waarom.','Omdat de aardas langzaam van richting verandert, wijst ze over millennia naar een ander punt aan de hemel. Daardoor is Polaris niet altijd de poolster (over ca. 12 000 jaar is dat Vega). Ook verschuiven de sterrenbeelden van de zodiak t.o.v. de seizoenen; sterren staan dus niet "vast" op een tijdschaal van millennia.',['De richting van de aardas verandert','De poolster verandert (Polaris is niet altijd de poolster)','of: sterrenbeelden/zodiak verschuiven t.o.v. de seizoenen'],'Precessie verandert de oriëntatie van de as, niet de helling.');
+mc('pl','Wat is een astronomische eenheid (AE)?','De gemiddelde afstand tussen de aarde en de zon',['De afstand die licht in één jaar aflegt','De afstand tussen de aarde en de maan','De diameter van het zonnestelsel'],'1 AE ≈ 150 miljoen km (precies 149 597 871 km). Handig binnen het zonnestelsel.',['Dat is een lichtjaar.','Dat is ca. 384 400 km, veel minder dan 1 AE.','Het zonnestelsel is vele tientallen tot duizenden AE groot.']);
+fill('pl','1 AE is precies 149 597 871 km. Afgerond hoeveel miljoen km is dat?',['150','150miljoen','150000000','150miljoenkm'],'Afgerond 150 miljoen km.','150 miljoen km');
+mc('pl','Wat is een lichtjaar?','Een afstand: hoe ver licht in één jaar reist',['Een tijdseenheid: de tijd die licht nodig heeft om de zon te bereiken','De helderheid van een ster na één jaar','De tijd die de aarde nodig heeft om rond de zon te gaan'],'Ondanks het woord "jaar" is een lichtjaar een afstand: ca. 9,46 × 10¹² km. Gebruikt buiten het zonnestelsel.',['Het is geen tijdseenheid, en zonlicht doet er maar 8,3 minuten over.','Een lichtjaar zegt niets over helderheid.','Dat is gewoon een jaar.']);
+open('pl','De lichtsnelheid is 299 792 458 m/s. Leg uit hoe je daarmee de lengte van 1 lichtjaar in km berekent (je hoeft het niet exact uit te rekenen).','Afstand = snelheid × tijd. Je zet de lichtsnelheid om naar km/s (ca. 300 000 km/s) en vermenigvuldigt met het aantal seconden in een jaar (365,25 × 24 × 60 × 60 ≈ 31,6 miljoen s). Dat geeft ca. 9,46 × 10¹² km.',['afstand = snelheid × tijd','tijd = 1 jaar omgezet naar seconden','resultaat ca. 9,46 × 10¹² km'],'Zo werken ook lichtminuten en lichtseconden: zon 8,3 lichtminuten, maan 1,28 lichtseconden.');
+mc('pl','De zon staat op ongeveer 8,3 lichtminuten. Wat betekent dat?','Het licht dat we nu zien, vertrok ongeveer 8 minuten geleden van de zon',['De zon draait in 8 minuten om haar as','We zien de zon pas 8 minuten na zonsopgang','Licht legt per minuut 8,3 km af'],'Een lichtminuut is de afstand die licht in 1 minuut aflegt. We kijken dus altijd een beetje in het verleden.',['Een lichtminuut is een afstand, geen draaitijd.','Het gaat om de reistijd van het licht, niet om zonsopgang.','Licht gaat ca. 300 000 km per seconde.']);
+multi('pl','Welke eenheden gebruik je voor afstanden <i>binnen</i> het zonnestelsel? Kies alle juiste.'.replace(/<[^>]+>/g,''),['Kilometer','Astronomische eenheid (AE)','Lichtminuten of lichtseconden'],['Parsec','Megalichtjaar'],'Binnen het zonnestelsel: km, AE en eventueel lichtminuten/-seconden. Parsec en lichtjaar zijn voor afstanden tussen sterren.',['Een parsec (3,26 lj) is veel te groot voor het zonnestelsel.','Een megalichtjaar gebruik je voor afstanden tussen sterrenstelsels.']);
+mc('pl','Proxima Centauri, de dichtstbijzijnde ster na de zon, staat op 4,246 lj. Welke eenheid is hier het meest geschikt en waarom?','Lichtjaar, omdat afstanden buiten het zonnestelsel enorm groot zijn',['AE, omdat het om een ster gaat','Kilometer, want dat is het nauwkeurigst','Lichtseconde, want licht is snel'],'In km of AE krijg je onhandig grote getallen (4,246 lj ≈ 40 biljoen km).',['In AE wordt dat ca. 270 000 AE: onhandig groot.','In km wordt het een getal met 13 cijfers.','4,246 lj is ruim 130 miljoen lichtseconden.']);
+mc('pl','Hoe kun je de afstand tot een nabije ster bepalen?','Met de parallax: de schijnbare verschuiving van de ster wanneer de aarde aan de andere kant van haar baan staat',['Door een radarsignaal naar de ster te sturen en te wachten op de echo','Door te meten hoe groot de ster aan de hemel lijkt','Door de kleur van de ster te bekijken'],'Kijk je vanuit twee punten (zomer en winter, 2 AE uit elkaar), dan verschuift een nabije ster t.o.v. verre achtergrondsterren. Uit die hoek volgt met driehoeksmeting de afstand. Hoe kleiner de hoek, hoe verder de ster.',['Een radarecho naar Proxima Centauri zou meer dan 8 jaar duren en veel te zwak zijn.','Sterren zijn zo ver dat ze als puntjes verschijnen.','De kleur geeft de temperatuur, niet de afstand.']);
+match('pl','Koppel elk niveau van de structuur van het heelal aan een voorbeeld.',[['Planetenstelsel','Het zonnestelsel'],['Sterrenstelsel','De Melkweg'],['Cluster','De Lokale Groep']],'Van klein naar groot: planetenstelsel → sterrenstelsel → cluster → nog grotere gehelen.');
+mc('pl','Wat is een planetenstelsel?','Twee of meer planeten die door de zwaartekracht van één centrale ster bijeengehouden worden',['Een groep sterren die elkaar aantrekken','Een groep van 30 tot 1000 sterrenstelsels','Alle planeten in het heelal samen'],'Een planetenstelsel is de kleinste groep hemellichamen, bv. ons zonnestelsel.',['Dat is een sterrenstelsel.','Dat is een cluster.','Dat is geen gebruikte definitie.']);
+mc('pl','Wat is een cluster?','Een groep van ca. 30 tot 1000 sterrenstelsels die elkaar via de zwaartekracht beïnvloeden',['Een groep planeten rond één ster','Een gaswolk waarin sterren ontstaan','Een groep sterren binnen de Melkweg'],'Ook sterrenstelsels trekken elkaar aan. Onze cluster heet de Lokale Groep.',['Dat is een planetenstelsel.','Dat is een nevel of moleculaire wolk.','Dat is een sterrenhoop, geen cluster van stelsels.']);
+tf('pl','Een sterrenstelsel bevat naast sterren ook planeten, gas- en stofwolken en wellicht donkere materie.',true,'Juist. De onderdelen worden bijeengehouden door hun onderlinge zwaartekracht.');
+mc('pl','Rangschik van klein naar groot.','Planetenstelsel – sterrenstelsel – cluster',['Sterrenstelsel – planetenstelsel – cluster','Cluster – sterrenstelsel – planetenstelsel','Planetenstelsel – cluster – sterrenstelsel'],'Een sterrenstelsel bevat (vele) planetenstelsels; een cluster bevat vele sterrenstelsels.',['Een planetenstelsel is kleiner dan een sterrenstelsel.','Dat is van groot naar klein.','Een cluster bestaat uit sterrenstelsels, dus is groter.']);
+
+/* --- H2 Sterren --- */
+mc('st','Hipparchus deelde sterren in volgens schijnbare magnitude op een schaal van 1 tot 6. Welke sterren kregen magnitude 1?','De helderste sterren',['De zwakste sterren','De dichtstbijzijnde sterren','De grootste sterren'],'Hoe lager de magnitude, hoe helderder. Magnitude 6 was net zichtbaar met het blote oog.',['Die kregen magnitude 6.','Hipparchus kon geen afstanden meten; hij keek naar de helderheid.','Hij kon de grootte niet meten; hij keek naar de helderheid.']);
+tf('st','Een ster met magnitude 2 lijkt helderder dan een ster met magnitude 5.',true,'Juist: lager getal = helderder.');
+mc('st','Waarom kan een magnitude ook negatief zijn?','Omdat heel heldere objecten helderder zijn dan magnitude 0 en de schaal gewoon doorloopt',['Omdat het object achter de aarde staat','Omdat het object geen licht uitstraalt','Omdat het om een planeet gaat'],'De schaal werd met moderne metingen verfijnd en loopt verder naar beneden voor heldere objecten, bv. de zon: −26,7.',['De positie bepaalt het teken niet.','Wat geen licht uitzendt of weerkaatst, is niet te zien.','Ook sterren (Sirius: −1,44) kunnen negatief zijn.']);
+mc('st','Een magnitudeverschil van 1 komt overeen met een helderheidsverschil van factor 2,512. Hoeveel keer helderder is een ster van magnitude 1 dan een van magnitude 6?','100 keer',['5 keer','12,5 keer','2,512 keer'],'Het is een logaritmische schaal: 2,512⁵ ≈ 100. Vijf magnitudes verschil = factor 100.',['Je moet vermenigvuldigen, niet optellen: 2,512 × 2,512 × … (5 keer).','5 × 2,512 = 12,5 is fout: de factoren worden vermenigvuldigd, niet opgeteld.','Dat is het verschil voor 1 magnitude, niet voor 5.']);
+mc('st','Waarom heet het "schijnbare" magnitude?','Omdat de waargenomen helderheid ook afhangt van de afstand tot de ster',['Omdat de metingen niet nauwkeurig zijn','Omdat sterren eigenlijk niet bestaan','Omdat ze alleen \'s nachts gemeten wordt'],'Een zwakke ster dichtbij kan even helder lijken als een felle ster ver weg.',['Moderne metingen zijn wel nauwkeurig.','Het gaat over de waarneming, niet over het bestaan.','Het tijdstip is niet de reden.']);
+fill('st','De James Webb-telescoop ziet objecten tot magnitude 34 (in infrarood). Is dat erg helder of erg zwak? (typ: helder of zwak)',['zwak','ergzwak','heelzwak'],'Hoog getal = zwak. Magnitude 34 is extreem zwak, miljarden keren zwakker dan wat je met het blote oog ziet (ca. 6).');
+mc('st','Volgens de wet van de kwadratische afname: als je een ster op 2 keer zo grote afstand zet, hoeveel licht ontvang je dan nog?','Een vierde (¼)',['De helft (½)','Evenveel','Een achtste (⅛)'],'Ontvangen straling is omgekeerd evenredig met het kwadraat van de afstand: 1/2² = 1/4. Het licht verspreidt zich over een 4× zo groot oppervlak.',['Dat zou een gewoon omgekeerd evenredig verband zijn, maar het is kwadratisch.','Hoe verder, hoe zwakker.','Dat zou kubisch zijn (1/2³).']);
+open('st','Waarom heb je de absolute magnitude nodig als je wil weten welke ster echt het meeste licht uitstraalt?','De schijnbare magnitude hangt af van twee dingen: de afstand en de hoeveelheid energie die de ster uitstraalt. Een ster kan helder lijken omdat ze gewoon dichtbij staat. De absolute magnitude zet alle sterren (denkbeeldig) op dezelfde afstand van 10 parsec, zodat je enkel de echte lichtkracht vergelijkt.',['Schijnbare magnitude hangt ook af van de afstand','Absolute magnitude = magnitude op een vaste afstand (10 pc)','Zo vergelijk je de echte uitgestraalde energie'],'Zonder vaste afstand vergelijk je appels met peren.');
+mc('st','Wat is de absolute magnitude van een ster?','De magnitude die de ster zou hebben op een afstand van 10 parsec',['De magnitude gemeten vanaf de aarde','De magnitude op 1 AE afstand','De hoogste magnitude die een ster ooit bereikt'],'10 pc = 32,6 lichtjaar. Zo kun je de echte lichtkracht vergelijken.',['Dat is de schijnbare magnitude.','De afstand is 10 parsec, niet 1 AE.','Het is een vaste referentieafstand, geen maximum.']);
+fill('st','Hoeveel parsec is de referentieafstand voor de absolute magnitude?',['10','10pc','10parsec','tien'],'10 parsec, of 32,6 lichtjaar.','10 parsec');
+mc('st','Gegeven: Zon m = −26,9 en M = 4,8; Sirius m = −1,44 en M = 1,41; Betelgeuze m = 0,45 en M = −5,14; GJ 75 m = 5,63 en M = 5,63. Welke ster zendt het meeste licht uit?','Betelgeuze',['De zon','Sirius','GJ 75'],'Kijk naar de absolute magnitude: de laagste M (−5,14) is de grootste echte lichtkracht. De zon lijkt alleen zo fel omdat ze zo dichtbij is.',['De zon heeft de laagste schijnbare magnitude, maar dat komt door haar kleine afstand. Haar M (4,8) is niet de laagste.','Sirius lijkt helder, maar M = 1,41 is hoger dan die van Betelgeuze.','GJ 75 heeft de hoogste M en is dus de zwakste ster.']);
+mc('st','Zelfde tabel. GJ 75 heeft m = 5,63 en M = 5,63. Wat besluit je?','GJ 75 staat op precies 10 parsec',['GJ 75 staat dichter dan 10 parsec','GJ 75 staat verder dan 10 parsec','GJ 75 is even helder als de zon'],'Als m = M lijkt de ster even helder als op 10 pc, dus staat ze op 10 pc. (m − M = 0 = 5·log(d) − 5 → d = 10.)',['Dan zou de ster helderder lijken dan op 10 pc (m < M).','Dan zou de ster zwakker lijken dan op 10 pc (m > M).','Haar magnitudes verschillen sterk van die van de zon.']);
+mc('st','Betelgeuze heeft m = 0,45 en M = −5,14. Wat zegt dat over haar afstand?','Ze staat verder dan 10 parsec',['Ze staat dichter dan 10 parsec','Ze staat precies op 10 parsec','Daar kun je niets over zeggen'],'m > M: ze lijkt zwakker dan ze op 10 pc zou zijn, dus staat ze verder weg (ca. 170 pc).',['Dan zou ze helderder lijken dan haar absolute magnitude (m < M), zoals de zon.','Dan zouden m en M gelijk zijn.','Het verschil m − M zegt juist iets over de afstand.']);
+mc('st','Waarop is de spectraalklasse van een ster gebaseerd?','Op de kleur en het spectrum van de uitgezonden elektromagnetische straling',['Op de afstand tot de aarde','Op de leeftijd van de ster','Op het aantal planeten rond de ster'],'Kleur en spectrum hangen samen met de oppervlaktetemperatuur.',['Afstand speelt een rol bij de magnitude, niet bij de spectraalklasse.','Leeftijd wordt niet rechtstreeks uit de kleur gelezen.','Planeten hebben niets met de spectraalklasse te maken.']);
+match('st','Koppel de kleur van een ster aan haar eigenschappen.',[['Rode ster','Koud oppervlak, lage massa'],['Blauwe ster','Heet oppervlak, hoge massa'],['Gele ster (zoals de zon)','Middelmatige temperatuur en massa']],'Hoe heter, hoe blauwer. Hoe massiever, hoe heter en blauwer (op de hoofdreeks).');
+tf('st','Een rode ster heeft een warmer oppervlak dan een blauwe ster.',false,'Omgekeerd: rood = koeler, blauw = heter. Denk aan een gasvlam of een gloeiend stuk ijzer.');
+mc('st','Wat zet het Hertzsprung-Russelldiagram tegen elkaar uit?','Spectraalklasse (temperatuur) en absolute magnitude (lichtkracht)',['Afstand en schijnbare magnitude','Massa en leeftijd','Diameter en afstand'],'Het HR-diagram toont het verband tussen temperatuur/kleur en echte lichtkracht. 90% van de sterren ligt op de hoofdreeks.',['Schijnbare magnitude zegt te weinig, want ze hangt van de afstand af.','Dat zijn niet de assen van het diagram.','Dat zijn niet de assen van het diagram.']);
+fill('st','Op welke diagonale band in het HR-diagram ligt ongeveer 90% van de sterren?',['hoofdreeks','dehoofdreeks'],'De hoofdreeks: sterren die waterstof tot helium fuseren in hun kern, zoals de zon.');
+mc('st','Waar ontstaan sterren?','In moleculaire wolken, die vooral uit waterstof bestaan',['In zwarte gaten','In de corona van andere sterren','In planetoïdengordels'],'Dichte knopen in de wolk trekken door zwaartekracht samen tot een bol: een protoster.',['Uit een zwart gat ontsnapt niets.','De corona is een laag van een ster, geen kraamkamer.','Daar is veel te weinig materie.']);
+open('st','Beschrijf hoe een protoster ontstaat, vanaf de moleculaire wolk.','In een moleculaire wolk (vooral H) trekken dichte knopen samen door de zwaartekracht. Er is genoeg gravitatie om tot een bol samen te trekken. Door de compressie stijgt de temperatuur in de kern (tot tienduizenden kelvin) en valt de materie uiteen in plasma. Zo ontstaat een protoster.',['Moleculaire wolk (vooral H)','Samentrekken door zwaartekracht tot een bol','Compressie → temperatuur stijgt → plasma'],'Een protoster is nog geen echte ster: er is nog geen kernfusie.');
+mc('st','Wanneer wordt een protoster een echte ster?','Als ze genoeg massa heeft om kernfusie van waterstof tot helium te starten',['Zodra ze begint te draaien','Als ze een planeet heeft','Als ze rood kleurt'],'Meer massa → meer compressie → hogere temperatuur → deeltjes botsen hard genoeg voor kernfusie.',['Draaien is geen voorwaarde voor fusie.','Planeten bepalen niet of iets een ster is.','Kleur is geen criterium.']);
+fill('st','Hoe heet een protoster die te weinig massa heeft om kernfusie te starten?',['bruinedwerg','bruinedwergen','eenbruinedwerg'],'Een bruine dwerg: geen kernfusie, ze trekt gewoon samen en koelt af.','bruine dwerg');
+open('st','Waarom stort een ster niet in elkaar door haar eigen zwaartekracht, en waarom zwelt ze ook niet eindeloos op?','De grootte van een ster is een evenwicht tussen twee krachten: de uitwaartse kracht (stralingsdruk) van de kernfusie en de inwaartse zwaartekracht van de massa van de ster. Zolang die in evenwicht zijn, blijft de ster stabiel.',['Uitwaartse kracht door kernfusie','Inwaartse zwaartekracht (gravitatie)','Evenwicht tussen beide bepaalt de grootte'],'Raakt de brandstof op, dan wint de zwaartekracht en krimpt de ster: dat start de volgende fase.');
+tf('st','In de jetfase wordt het stof en gas rond een jonge ster weggeblazen in de vorm van een schijf.',true,'Juist. Zodra de ster energie produceert, blaast ze omliggend materiaal weg.');
+mc('st','Wat gebeurt er bij een ster van 0,6 tot 8 zonsmassa\'s als de waterstof in de kern op is?','De ster krimpt, de kern wordt heter en heliumfusie (He → C) start; de ster zwelt op tot rode reus',['De ster explodeert meteen als supernova','De ster wordt meteen een zwart gat','De ster dooft uit en wordt een bruine dwerg'],'Zonder fusie wint de zwaartekracht → krimp → compressiewarmte → nieuwe fusie in de kern, waterstoffusie verhuist naar de schil → ster wordt groter, oppervlak koelt af en kleurt rood.',['Een supernova is voor sterren zwaarder dan 8 M☉.','Een zwart gat ontstaat pas boven ca. 20 M☉.','Een bruine dwerg is een mislukte ster, geen eindfase.']);
+open('st','Een rode reus is enorm groot, maar haar oppervlak is koeler dan dat van de zon. Leg uit hoe dat kan.','De fusie van waterstof tot helium verhuist naar de lagen rond de kern. Door die fusiekracht zwelt de ster op en liggen de buitenste lagen veel verder van de kern. Daardoor koelt het oppervlak af en schuift de kleur op naar rood.',['H → He fusie verhuist naar de buitenlagen','De ster zwelt op: buitenlagen ver van de kern','Oppervlak koelt af → rood'],'Groot en helder (veel oppervlak), maar per m² koeler.');
+mc('st','Wat gebeurt er met een ster zoals de zon (tussen 0,6 en 8 M☉) als ook het helium op is?','Buitenste lagen vormen een planetaire nevel, de kern trekt samen tot een witte dwerg',['Ze wordt een neutronenster','Ze explodeert als supernova','Ze start ijzerfusie'],'Er is te weinig massa om heet genoeg te worden voor een volgende fusie. De witte dwerg koelt daarna af tot een zwarte dwerg.',['Een neutronenster ontstaat na een supernova van een ster van 8–20 M☉.','Daarvoor is te weinig massa.','Zo\'n ster komt niet verder dan koolstof.']);
+fill('st','Hoe heet een witte dwerg nadat hij volledig is afgekoeld?',['zwartedwerg','eenzwartedwerg'],'Een zwarte dwerg: hij straalt geen licht meer uit.','zwarte dwerg');
+mc('st','Waardoor wordt een ster van meer dan 8 M☉ een superreus?','Ze kan na elkaar steeds zwaardere elementen fuseren (C, Ne, O, Si … tot Fe) en blijft enorm groeien',['Ze slorpt naburige sterren op','Ze stopt met kernfusie','Ze botst met een andere ster'],'Door haar grote massa wordt het telkens heet genoeg voor een volgende fusie.',['Opslorpen van sterren is niet het mechanisme.','Juist doordat de fusie doorgaat, groeit ze.','Een botsing is niet nodig.']);
+mc('st','Waarom eindigt de reeks kernfusies in een zware ster bij ijzer (Fe)?','Fusie van elementen zwaarder dan ijzer levert geen energie meer op, dus de kern wordt instabiel',['IJzer is een vast metaal en kan niet smelten','IJzer is het zwaarste element dat bestaat','Er is geen ijzer in sterren'],'Zonder energie uit fusie houdt niets de zwaartekracht nog tegen: de kern implodeert.',['Het gaat om kernfusie, niet om smelten.','Er bestaan veel zwaardere elementen (goud, uranium…).','Zware sterren maken net ijzer aan.']);
+open('st','Beschrijf hoe een supernova ontstaat bij een ster zwaarder dan 8 M☉.','Na de fusiereeks tot ijzer zijn geen fusies meer mogelijk. De kern is instabiel en implodeert door de zwaartekracht. De schokgolven van die implosie leiden tot een enorme explosie: de supernova.',['Geen fusie meer voorbij ijzer','Kern implodeert door de zwaartekracht','Schokgolf → explosie = supernova'],'Eerst naar binnen (implosie), dan naar buiten (explosie).');
+multi('st','Wat zijn gevolgen van een supernova? Kies alle juiste.',['Gevormde elementen worden in het heelal verspreid','Nieuwe stervorming in nabije nevels kan getriggerd worden','Er blijft een neutronenster of zwart gat over'],['Er ontstaat een witte dwerg','De ster wordt een rode reus'],'Zware elementen in jouw lichaam en in de aarde komen uit vroegere supernova\'s. Ook ons zonnestelsel ontstond na een supernova.',['Een witte dwerg is de eindfase van lichtere sterren zonder supernova.','De rodereus- of superreusfase komt vóór de supernova.']);
+match('st','Koppel de beginmassa van een ster aan haar eindstadium.',[['Te weinig voor kernfusie','Bruine dwerg'],['0,6 tot 8 M☉','Witte dwerg (later zwarte dwerg)'],['8 tot 20 M☉','Neutronenster'],['Meer dan 20 M☉','Zwart gat']],'Hoe zwaarder de ster, hoe compacter het restant.');
+mc('st','Een witte dwerg kan maximaal 1,4 M☉ zwaar zijn (Chandrasekhar-limiet). Hoe groot is een witte dwerg ongeveer?','Ongeveer zo groot als de aarde',['Zo groot als de zon','Ca. 10 km','Zo groot als een rode reus'],'Bijna een zonsmassa samengeperst tot de grootte van de aarde: extreem dicht.',['Hij is veel kleiner dan de zon.','Ca. 10 km is een neutronenster.','Een rode reus is enorm groot.']);
+mc('st','Wat houdt een witte dwerg tegen om verder in te storten?','De kinetische energie (beweging) van de elektronen',['Kernfusie in de kern','De kracht binnen de neutronen','Zijn snelle rotatie'],'Bij een neutronenster is dat niet meer genoeg: daar houdt de kracht binnen de neutronen het tegen.',['Een witte dwerg heeft geen kernfusie meer.','Dat is bij een neutronenster.','Rotatie is niet de reden.']);
+mc('st','Hoe ontstaat een neutronenster?','De zwaartekracht is zo groot dat elektronen en protonen versmelten tot neutronen',['Neutronen worden uit de ruimte aangetrokken','Waterstof fuseert tot neutronen','Een witte dwerg verliest al zijn elektronen door zonnewind'],'Zo ontstaat een bol van neutronen met een extreem hoge dichtheid, slechts ca. 10 km groot (1,4 tot 2,1 M☉).',['De neutronen ontstaan in de ster zelf.','Fusie levert helium en zwaardere elementen, geen neutronensterren.','Zonnewind heeft daar niets mee te maken.']);
+fill('st','Hoe heet het punt (oneindig klein) waarin alle massa van een zwart gat samengetrokken is?',['singulariteit','desingulariteit','singulariteiten'],'De singulariteit.','singulariteit');
+mc('st','Wat is de waarnemingshorizon van een zwart gat?','De grens waarbinnen zelfs licht niet meer kan ontsnappen',['De plaats waar het zwart gat het helderst is','De ring van sterren rond het zwart gat','De afstand waarop je het zwart gat met een telescoop ziet'],'Wat binnen die grens zit, kunnen we niet waarnemen: er komt geen licht meer uit.',['Een zwart gat zelf zendt geen licht uit.','Het is een denkbeeldige grens, geen ring sterren.','Het gaat om ontsnappen van licht, niet om telescopen.']);
+tf('st','Bij een zwart gat is de zwaartekracht zelfs te sterk voor de kracht binnen de neutronen.',true,'Juist. Daardoor stort alles in tot een singulariteit.');
+
+/* --- 3.1 Ontstaan zonnestelsel --- */
+mc('oz','Waaruit ontstond ons zonnestelsel?','Uit een moleculaire wolk, vooral uit waterstof (H₂)',['Uit een stuk van de Melkweg dat afbrak','Uit een botsing van twee planeten','Uit een zwart gat'],'De wolk was asymmetrisch en onstabiel, waardoor er interne bewegingen mogelijk waren.',['Het zonnestelsel ontstond uit gas en stof, niet uit een afgebroken stuk.','Planeten ontstonden pas later.','Uit een zwart gat ontsnapt niets.']);
+mc('oz','Wat zette ca. 4,6 miljard jaar geleden het samentrekken van de wolk in gang?','De schokgolf van een supernova van een nabije ster',['Een botsing met de Andromedanevel','De zwaartekracht van Jupiter','De zonnewind'],'De schokgolf deed de protostellaire wolk samentrekken en voegde ook zwaardere elementen van de oude ster toe.',['Andromeda is ver weg en botst pas over miljarden jaren met de Melkweg.','Jupiter bestond toen nog niet.','De zon (en dus zonnewind) bestond toen nog niet.']);
+fill('oz','Hoeveel miljard jaar geleden ontstond het zonnestelsel ongeveer?',['46','4,6','4.6','46miljard','4,6miljard'],'Ca. 4,6 miljard jaar geleden.','4,6 miljard jaar');
+open('oz','Waarom bevat ons zonnestelsel ook zware elementen (zoals ijzer en zuurstof), terwijl de oorspronkelijke wolk vooral waterstof was?','De supernova die het samentrekken triggerde, voegde zwaardere elementen toe aan de wolk. Die elementen waren gevormd door kernfusie in de oude ster en bij de supernova verspreid.',['Een supernova van een nabije ster','Die ster had zware elementen gemaakt door kernfusie','Ze kwamen bij de explosie in de wolk terecht'],'Je bestaat letterlijk uit sterrenstof.');
+mc('oz','Hoe ontstaat de accretieschijf?','De samentrekkende wolk gaat roteren, vormt een vortex en plat af tot een schijf van gas en stof',['Door botsingen tussen planeten','Doordat de zon materiaal uitstoot','Doordat de Melkweg de wolk platdrukt'],'Een draaiende wolk die samentrekt, draait sneller en wordt plat, zoals pizzadeeg dat je ronddraait.',['Planeten bestonden nog niet.','Het gaat om materiaal dat naar binnen valt, niet om uitstoot.','De Melkweg drukt de wolk niet plat.']);
+mc('oz','Hoe werd de zon "geboren"?','Bijna alle massa ging naar het centrum; door compressiewarmte werd het heet genoeg voor kernfusie',['Door een blikseminslag in de wolk','Doordat een andere ster haar aanstak','Doordat planeten tegen elkaar botsten'],'Ca. 99,9% van de massa trok naar het centrum. Bij ca. 15 miljoen K konden atoomkernen fuseren.',['Er is geen bliksem nodig: compressie levert de warmte.','Sterren "steken" elkaar niet aan.','De planeten ontstonden pas later uit de rest van de schijf.']);
+open('oz','Waarom zijn de planeten dicht bij de zon klein en rotsachtig?','Dicht bij de zon was het heet. Alleen silicaten en metalen konden er vast zijn, en die vormden maar een kleine fractie van de schijf. Vluchtige stoffen werden door de zonneactiviteit naar buiten geblazen. Er was dus weinig materiaal om planeten uit te bouwen.',['Hoge temperatuur dicht bij de zon','Alleen silicaten en metalen vast (kleine fractie)','Gassen weggeblazen → weinig massa'],'Daarom ontstonden daar Mercurius, Venus, Aarde en Mars.');
+mc('oz','Wat is de frost line?','De grens (voorbij Mars) waarachter het koud genoeg is om vluchtige stoffen zoals water te laten condenseren',['De grens van de dampkring van de aarde','De baan van Pluto','De grens van de Oortwolk'],'Voorbij de frost line was er veel meer vast materiaal (ijs), dus veel meer massa voor planeten.',['Het gaat om de protoplanetaire schijf, niet om de dampkring.','Pluto ligt veel verder dan de frost line.','De Oortwolk ligt nog veel verder.']);
+multi('oz','Welke stoffen konden voorbij de frost line condenseren? Kies alle juiste.',['H₂O','H₂','He'],['Alleen ijzer','Alleen silicaten'],'Vluchtige stoffen zoals water, waterstof en helium. Voorbij Saturnus zelfs CH₄ (methaan) en NH₃ (ammoniak).',['IJzer kon ook al dichter bij de zon vast zijn.','Silicaten konden ook al dichter bij de zon vast zijn.']);
+mc('oz','Wat zijn planetesimalen?','Objecten groter dan ca. 1 km, ontstaan doordat stofdeeltjes samenklitten',['Kleine maantjes rond gasreuzen','Brokstukken van een ontplofte planeet','De kleinste planeten van het zonnestelsel'],'Eerst klitten stofdeeltjes samen tot keien en stenen; na ca. 1 miljoen jaar waren er objecten van meer dan 1 km.',['Manen zijn iets anders.','Er is geen planeet ontploft.','Planetesimalen zijn bouwstenen, geen planeten.']);
+mc('oz','Wanneer noem je een planetesimaal een protoplaneet?','Als hij zo veel massa heeft dat hij door zijn zwaartekracht tot een bol samentrekt',['Als hij een maan heeft','Als hij een atmosfeer heeft','Als hij groter is dan 1 km'],'Een protoplaneet maakt zijn baan rond de zon vrij van puin en stof, en snijdt zo ringen uit in de schijf.',['Manen zijn geen criterium.','Een atmosfeer is geen criterium.','Groter dan 1 km is al een planetesimaal.']);
+multi('oz','Wat bleef er over van planetesimalen die niet verder groeiden? Kies alle juiste.',['Kometen','Planetoïden'],['Sterren','Manen van de aarde','Zwarte gaten'],'Planetesimalen die niet uitgroeiden tot planeten bleven over als kometen en planetoïden.',['Sterren ontstaan niet uit planetesimalen.','De maan ontstond niet zo.','Zwarte gaten ontstaan uit zware sterren.']);
+multi('oz','Welke planeten zijn terrestrische (rotsachtige) planeten? Kies alle juiste.',['Mercurius','Venus','Aarde','Mars'],['Jupiter','Neptunus'],'Deze vier liggen vóór de frost line en bestaan vooral uit metalen en silicaten.',['Jupiter is een gasreus.','Neptunus is een ijsreus.']);
+mc('oz','Waarom konden voorbij de frost line grote gas- en ijsreuzen ontstaan?','Er was veel meer massa: naast metalen en silicaten ook bevroren vluchtige stoffen, en minder invloed van zonneactiviteit',['Omdat het daar warmer was','Omdat de zon daar meer materiaal naartoe stuurde','Omdat er daar geen zwaartekracht was'],'Meer bouwmateriaal → grotere planeten, die met hun zwaartekracht ook veel gas konden vasthouden.',['Het was er juist kouder.','De zon blies vluchtige stoffen weg, maar daar was haar invloed kleiner.','Zonder zwaartekracht zouden er geen planeten ontstaan.']);
+
+/* --- 3.2 Structuur zonnestelsel --- */
+mc('sz','Wat is de juiste volgorde, van binnen naar buiten?','Binnenzonnestelsel – buitenzonnestelsel – Kuipergordel – Oortwolk',['Binnenzonnestelsel – Kuipergordel – buitenzonnestelsel – Oortwolk','Binnenzonnestelsel – Oortwolk – buitenzonnestelsel – Kuipergordel','Oortwolk – binnenzonnestelsel – Kuipergordel – buitenzonnestelsel'],'De Kuipergordel ligt net voorbij Neptunus; de Oortwolk is het buitenste deel.',['De Kuipergordel ligt voorbij het buitenzonnestelsel (voorbij Neptunus).','De Oortwolk is het buitenste deel.','De Oortwolk ligt helemaal buiten.']);
+mc('sz','Tot waar loopt het binnenzonnestelsel?','Van de zon tot en met de planetoïdengordel (ca. 3,3 AE)',['Van de zon tot de aarde','Van de zon tot Neptunus','Van de zon tot Jupiter, inclusief Jupiter'],'Het binnenzonnestelsel bevat de rotsachtige planeten en de planetoïdengordel.',['Mars en de planetoïdengordel horen er ook bij.','Neptunus is de grens van het buitenzonnestelsel.','Jupiter is het begin van het buitenzonnestelsel.']);
+open('sz','Waarom is de planetoïdengordel nooit tot een planeet samengeklonterd?','Door de nabijheid van Jupiter. De sterke zwaartekracht van Jupiter verstoorde de banen van de planetoïden, waardoor ze nooit konden samentrekken tot één planeet.',['Jupiter ligt er vlakbij','Zijn zwaartekracht verstoort de planetoïden','Daardoor konden ze niet samenklonteren'],'De totale massa van de gordel is bovendien heel klein (ca. 1500× kleiner dan die van de aarde).');
+tf('sz','De gemiddelde afstand tussen twee planetoïden in de gordel is ca. 965 000 km. De planetoïdengordel is dus een dicht, gevaarlijk gebied voor ruimtesondes.',false,'Onjuist: de dichtheid is juist heel laag. Sondes vliegen er zonder problemen door. Films overdrijven dit sterk.');
+fill('sz','Welke planeet zorgde ervoor dat de planetoïdengordel nooit een planeet werd?',['jupiter'],'Jupiter, de zwaarste planeet, ligt net buiten de gordel.','Jupiter');
+mc('sz','Waaruit bestaat het buitenzonnestelsel (van Jupiter op ca. 5 AE tot Neptunus op ca. 30 AE)?','Gas- en ijsreuzen',['Rotsachtige planeten','Alleen dwergplaneten','Kometen in een bolvormige wolk'],'Het ligt voorbij de frost line, dus vluchtige stoffen konden condenseren en kristalliseren.',['Die liggen in het binnenzonnestelsel.','Dwergplaneten zitten vooral in de Kuipergordel.','Dat is de Oortwolk.']);
+mc('sz','Welke vorm heeft de Kuipergordel?','Een donutvorm',['Een bolvorm','Een rechte lijn','Een spiraal'],'De Kuipergordel ligt rond het buitenzonnestelsel van ca. 30 tot 50 AE.',['Bolvormig is het buitenste deel van de Oortwolk.','Het is geen lijn.','Spiraalvormig is de Melkweg.']);
+multi('sz','Wat vind je in de Kuipergordel? Kies alle juiste.',['Dwergplaneten zoals Pluto en Eris','Honderdduizenden planetoïden','Miljarden kometen'],['De gasreus Saturnus','De zon'],'Materie die niet kon samenklonteren tot planeten, met veel vluchtige stoffen.',['Saturnus hoort bij het buitenzonnestelsel.','De zon staat in het centrum.']);
+mc('sz','Waarom noemen we de Oortwolk "theoretisch"?','Ze is niet waargenomen; haar bestaan, vorm en afmetingen volgen uit modellen',['Omdat ze al verdwenen is','Omdat ze alleen in sciencefiction voorkomt','Omdat ze uit donkere materie bestaat'],'De objecten zijn te klein en te ver om te zien. Haar bestaan verklaart wel waarom er nog steeds kometen zijn.',['Ze bestaat volgens de modellen nog steeds.','Het is een wetenschappelijk model.','Ze bestaat uit ijs- en rotsobjecten.']);
+open('sz','Welk verschijnsel verklaart de Oortwolk, en waarom is daar een verklaring voor nodig?','Ze verklaart de blijvende aanwezigheid van kometen. Kometen verliezen bij elke passage langs de zon materiaal en zijn na een tijd "op". Dat er na 4,6 miljard jaar nog altijd nieuwe kometen opduiken, betekent dat er een grote voorraad ver weg moet zijn: de Oortwolk.',['Ze verklaart waarom er nog altijd kometen zijn','Kometen verliezen materiaal en verdwijnen','Er moet dus een voorraad ver weg zijn'],'Langperiodieke kometen komen uit de Oortwolk.');
+multi('sz','Waarmee is de Oortwolk gevuld? Kies alle juiste.',['Restanten van de protoplanetaire schijf, weggeslingerd door Jupiter en Saturnus','Gevangen objecten uit de schijven van andere sterren'],['Gasreuzen','Dwergsterren','Zonnewind'],'Grote planeten slingerden kleine objecten naar buiten; ook objecten van andere sterren werden gevangen.',['Gasreuzen liggen in het buitenzonnestelsel.','Er zitten geen sterren in.','Zonnewind is een stroom deeltjes, geen inhoud van de wolk.']);
+match('sz','Koppel elke zone aan de juiste afstand of vorm.',[['Planetoïdengordel','Tot ca. 3,3 AE'],['Buitenzonnestelsel','Ca. 5 tot 30 AE'],['Kuipergordel','Ca. 30 tot 50 AE, donutvorm'],['Oortwolk','Tot ca. 100 000 AE, buitenste deel bolvorm']],'Let op de orde van grootte: de Oortwolk is duizenden keren verder dan Neptunus.');
+
+/* --- 3.2 De zon --- */
+mc('zo','Uit welk element bestaat de zon voor het grootste deel?','Waterstof',['Helium','Zuurstof','IJzer'],'Ca. 73% van de massa (92% van de atomen) is waterstof; helium is ca. 25% van de massa.',['Helium is de tweede, ca. 25% van de massa.','Zuurstof is minder dan 1%.','IJzer is maar een fractie van een procent.']);
+mc('zo','Hoeveel keer groter is de diameter van de zon dan die van de aarde?','Ca. 109 keer',['Ca. 10 keer','Ca. 1 000 keer','Ca. 333 000 keer'],'De diameter is ca. 1,39 miljoen km = 109 × die van de aarde. 333 000 is de massa-verhouding.',['Veel te weinig.','Te veel.','Dat is hoeveel keer zwaarder de zon is, niet groter.']);
+match('zo','Koppel de temperaturen aan de juiste plaats in de zon.',[['Kern','Ca. 15 000 000 K'],['Fotosfeer (oppervlak)','Ca. 5 800 K'],['Corona','Tot ca. 3 000 000 K'],['Zonnevlek','Ca. 4 500 K']],'Opvallend: de corona is veel heter dan het oppervlak. Zonnevlekken zijn koeler dan de rest van de fotosfeer.');
+tf('zo','De zon heeft een kleinere gemiddelde dichtheid dan de aarde.',true,'Juist: de zon is ca. 1,4 × 10³ kg/m³, de aarde 5,4 × 10³ kg/m³. De zon is een bol van gas/plasma, de aarde bestaat uit gesteente en metaal.');
+mc('zo','Wat is de differentiële rotatie van de zon?','De evenaar draait sneller rond (ca. 25 dagen) dan de polen (ca. 35 dagen)',['De zon draait elk jaar in een andere richting','De kern draait niet, alleen het oppervlak','De zon draait niet, alleen de planeten'],'Dat kan omdat de zon geen vast lichaam is. Het gevolg: verstrengelde magnetische veldlijnen → zonnevlekken en flares.',['De draairichting verandert niet.','Ook de kern draait.','De zon draait wel om haar as.']);
+mc('zo','Wat is het gevolg van de differentiële rotatie?','Magnetische veldlijnen raken verstrengeld, wat zonnevlekken en solar flares veroorzaakt',['De seizoenen op aarde','Het ontstaan van de Oortwolk','Kernfusie in de kern'],'Doordat de evenaar sneller draait, worden veldlijnen opgewonden en verdraaid.',['De seizoenen komen door de helling van de aardas.','Dat heeft er niets mee te maken.','Kernfusie komt door de hoge temperatuur en druk.']);
+mc('zo','Wat is de juiste volgorde van de lagen van de zon, van binnen naar buiten?','Kern – stralingszone – convectiezone – fotosfeer – chromosfeer – corona',['Kern – convectiezone – stralingszone – fotosfeer – corona – chromosfeer','Kern – fotosfeer – stralingszone – convectiezone – chromosfeer – corona','Corona – chromosfeer – fotosfeer – convectiezone – stralingszone – kern'],'Ezelsbruggetje: eerst straling, dan convectie (binnen); dan foto-, chromo-, corona (atmosfeer).',['Straling komt vóór convectie, en de corona is de buitenste laag.','De fotosfeer is het oppervlak, dus ligt buiten de stralings- en convectiezone.','Dat is van buiten naar binnen.']);
+mc('zo','Waar gebeurt de kernfusie in de zon?','In de kern',['In de fotosfeer','In de corona','In de convectiezone'],'Alleen in de kern zijn temperatuur (ca. 15 miljoen K) en druk hoog genoeg.',['De fotosfeer is maar ca. 5 800 K.','De corona is heet maar veel te ijl.','Daar wordt energie alleen getransporteerd.']);
+match('zo','Koppel de zone aan de manier waarop de energie er getransporteerd wordt.',[['Stralingszone','Via gammastraling (duizenden jaren onderweg)'],['Convectiezone','Via convectie (stromingen van heet plasma)']],'In de convectiezone (lagere T, ca. 2 miljoen K) zitten elektronen bij de atomen en houden die de straling tegen, dus neemt convectie het over.');
+open('zo','Waarom gebeurt het energietransport in de buitenste zone onder het oppervlak via convectie en niet meer via straling?','In de convectiezone is de temperatuur lager. Daardoor blijven elektronen bij de atomen, en die atomen houden de straling tegen (absorberen ze). Straling geraakt er niet meer goed door, dus wordt de energie getransporteerd doordat heet plasma opstijgt en koeler plasma zakt: convectie.',['Lagere temperatuur','Elektronen bij atomen blokkeren de straling','Energie gaat via stroming van plasma (convectie)'],'Je ziet de bovenkant van die convectiecellen als granulatie op de fotosfeer.');
+mc('zo','Welke laag van de zon zien we als het "oppervlak"?','De fotosfeer',['De corona','De chromosfeer','De convectiezone'],'De fotosfeer is dun (ca. 400 km), ca. 5 800 K en toont granulatie.',['De corona is enkel zichtbaar bij een zonsverduistering.','De chromosfeer is ijl en vooral rood; je ziet ze normaal niet.','Die ligt onder het oppervlak.']);
+fill('zo','Hoe heet het korrelige patroon op de fotosfeer, veroorzaakt door de convectiecellen eronder?',['granulatie','granulen','granulatiepatroon'],'Granulatie: de bovenkant van opstijgende (licht) en zakkende (donker) plasmacellen.','granulatie');
+mc('zo','Wanneer kun je de corona met het blote oog zien?','Bij een totale zonsverduistering',['Elke dag bij zonsondergang','Alleen \'s nachts','Bij poollicht'],'De corona is zeer ijl en wordt normaal overstraald door de fotosfeer.',['Dan zie je de fotosfeer, die laag staat.','\'s Nachts staat de zon onder de horizon.','Poollicht is een verschijnsel in onze atmosfeer.']);
+mc('zo','Welke laag van de zon geeft vooral rood licht en heeft spiculen (straalvormige uitstoten)?','De chromosfeer',['De fotosfeer','De corona','De kern'],'Chromos = kleur. Spiculen zijn tot ca. 10 000 km hoog en leven ca. 15 minuten.',['De fotosfeer geeft het "gewone" witte licht.','De corona is wit-parelachtig en enkel zichtbaar bij verduistering.','De kern zien we niet.']);
+mc('zo','Waarom lijken zonnevlekken donker?','Ze zijn koeler (ca. 4 500 K) dan de omliggende fotosfeer, door een sterk magnetisch veld',['Er zitten gaten in de zon','Het zijn planeten die voor de zon schuiven','Er is daar geen plasma'],'Een zonnevlek straalt nog steeds fel, maar minder dan de omgeving, dus lijkt ze donker.',['Het zijn geen gaten.','Planeettransits zijn iets anders.','Er is wel plasma, alleen koeler.']);
+match('zo','Koppel elk zonneverschijnsel aan de beschrijving.',[['Solar flare','Explosie van elektromagnetische straling bij verstrengelde veldlijnen'],['Protuberans','Lus van plasma die magnetische veldlijnen volgt'],['CME','Grote bel plasma die uit de corona weggeslingerd wordt'],['Zonnewind','Continue stroom geladen deeltjes uit de corona']],'Flare = straling (licht, röntgen…). CME = materie (plasma). Zonnewind = continu, CME = uitbarsting.');
+open('zo','Waarom ontsnapt er continu plasma uit de corona (zonnewind)?','De corona is zeer heet, dus de deeltjes hebben een hoge kinetische energie (bewegen zeer snel). Bovendien liggen ze ver van de kern, dus is de aantrekkingskracht van de zon er kleiner. Samen zorgt dat ervoor dat deeltjes continu aan de zwaartekracht van de zon ontsnappen.',['Hoge temperatuur → hoge kinetische energie','Ver van de kern → kleinere aantrekkingskracht','Daardoor ontsnappen geladen deeltjes continu'],'De zonnewind bestaat uit elektronen, protonen en heliumkernen.');
+multi('zo','Uit welke deeltjes bestaat de zonnewind? Kies alle juiste.',['Elektronen','Protonen','Heliumkernen'],['Neutronen','Watermoleculen'],'Het zijn geladen deeltjes; daarom is de zonnewind magnetisch en reageert hij met het magnetisch veld van de aarde.',['Neutronen zijn niet geladen.','Water komt niet uit de corona.']);
+fill('zo','Om de hoeveel jaar polt de zon om (zonnecyclus)?',['11','11jaar','elf'],'Elke 11 jaar. Na ca. 5,5 jaar is er een zonnemaximum.','11 jaar');
+mc('zo','Wat merk je bij een zonnemaximum?','Veel zonnevlekken, solar flares en CME\'s',['De zon is dan het dichtst bij de aarde','De zon is dan koeler en zwakker','Er zijn dan geen zonnevlekken'],'Bij een zonnemaximum is de zon het actiefst, dus zie je ook vaker poollicht.',['Dat is het perihelium en heeft niets met de zonnecyclus te maken.','Het gaat om activiteit, niet om temperatuur.','Dat is eerder bij een zonneminimum.']);
+open('zo','Leg uit hoe poollicht ontstaat, en waarom we het vooral bij de polen zien.','Het magnetisch plasma van de zon (zonnewind, CME) botst met het magnetisch veld van de aarde en wordt langs de veldlijnen naar de polen afgevoerd. Daar exciteren de deeltjes de atomen in de atmosfeer (brengen ze in een hogere energietoestand). Als die terugvallen naar hun grondtoestand, zenden ze licht uit.',['Zonnewind/CME wordt door het magnetisch veld naar de polen geleid','Deeltjes exciteren atomen in de atmosfeer','Bij terugvallen naar de grondtoestand zenden ze licht uit'],'Noorderlicht = aurora borealis, zuiderlicht = aurora australis.');
+match('zo','Koppel het gas in de atmosfeer aan de kleur van het poollicht.',[['Zuurstof (O)','Groen of rood'],['Stikstof (N)','Blauw']],'Elk element zendt zijn eigen golflengten uit.');
+
+/* --- H4 Melkweg --- */
+multi('mw','Wat bevat een sterrenstelsel? Kies alle juiste.',['Tot miljarden sterren','Een centraal zwart gat','Nevels en stof','Donkere materie'],['Eén enkele ster met planeten','Alleen gas'],'Alles samengehouden door de zwaartekracht.',['Dat is een planetenstelsel.','Een sterrenstelsel bevat ook sterren, stof en meer.']);
+match('mw','Koppel het type uit de classificatie van Hubble aan de beschrijving.',[['Elliptisch stelsel','Ellipsoïde; cijfer = mate van afplatting'],['Spiraalstelsel','Bolvormige kern met armen; letter = afstand armen tot kern'],['Balkspiraalstelsel','Kern is een balk, met armen'],['Onregelmatig stelsel','Chaotische structuur, veel variatie']],'Hubble deelde stelsels in volgens hun vorm.');
+mc('mw','Wat geeft het cijfer aan bij een elliptisch stelsel (bv. E0, E7)?','De mate van afplatting',['Het aantal armen','De leeftijd in miljard jaar','De afstand tot de Melkweg'],'E0 is bijna rond, E7 sterk afgeplat.',['Elliptische stelsels hebben geen armen.','De leeftijd zit niet in de code.','De afstand zit niet in de code.']);
+mc('mw','Wat geeft de letter aan bij een spiraalstelsel (bv. Sa, Sb, Sc)?','Hoe ver de armen van de kern staan (hoe open de armen zijn)',['Het aantal sterren','De kleur van het stelsel','Het aantal zwarte gaten'],'Zelfde idee bij balkspiraalstelsels (SBa, SBb…).',['Het aantal sterren zit niet in de code.','De kleur zit niet in de code.','Dat zit niet in de code.']);
+fill('mw','Tot welk type uit de classificatie van Hubble behoort de Melkweg?',['balkspiraalstelsel','balkspiraal','balkspiraalsterrenstelsel','sb','gebarreerdspiraalstelsel'],'De Melkweg is een balkspiraalstelsel met 4 armen.','balkspiraalstelsel');
+open('mw','We zitten in de Melkweg, dus we kunnen haar niet van buitenaf fotograferen. Hoe weten we dan toch dat het een (balk)spiraalstelsel is en geen elliptisch stelsel?','De Melkweg verschijnt als een band aan de hemel: dat wijst op een platte structuur, dus geen ellipsoïde. Daarnaast tonen de snelheden en bewegingsrichtingen van sterren dat ze in een spiraalbeweging rond het centrum draaien.',['Band aan de hemel → platte structuur → geen ellipsoïde','Snelheden en bewegingsrichtingen van sterren','→ spiraalbeweging'],'Een elliptisch stelsel zou er van binnenuit in alle richtingen ongeveer gelijk uitzien.');
+mc('mw','Hoe groot is de diameter van de Melkweg ongeveer?','Ca. 100 000 lichtjaar',['Ca. 100 AE','Ca. 1 000 lichtjaar','Ca. 100 miljoen lichtjaar'],'Licht doet er 100 000 jaar over om de Melkweg over te steken.',['Dat is zelfs nog binnen ons zonnestelsel.','Dat is de dikte bij de armen.','Dat is groter dan onze hele cluster.']);
+mc('mw','Waar ligt de zon in de Melkweg?','In de Orionarm, ca. 27 000 lj van de kern',['In het centrum, bij het zwarte gat','Helemaal aan de rand, buiten de armen','In de galactische halo, boven de schijf'],'We zitten ongeveer halverwege tussen het centrum en de rand, in een spiraalarm.',['Het centrum is 27 000 lj van ons.','We zitten in een arm, niet aan de uiterste rand.','We zitten in de schijf.']);
+fill('mw','In welke spiraalarm van de Melkweg ligt de zon?',['orionarm','orion','orionarmen','deorionarm'],'De Orionarm.','Orionarm');
+tf('mw','Alle sterren in de Melkweg doen even lang over één omloop rond het centrum.',false,'Onjuist: de Melkweg heeft een differentiële rotatie. De zon doet ca. 225 miljoen jaar over één omloop.');
+mc('mw','Hoe oud is de Melkweg ongeveer?','Ca. 13,5 miljard jaar',['Ca. 4,6 miljard jaar','Ca. 225 miljoen jaar','Ca. 1 miljoen jaar'],'De Melkweg is bijna zo oud als het heelal (ca. 13,8 miljard jaar).',['Dat is de leeftijd van het zonnestelsel.','Dat is de omlooptijd van de zon rond het centrum.','Veel te jong.']);
+match('mw','Koppel het type sterrenhoop aan de kenmerken.',[['Bolvormige sterrenhoop','Rond de schijf, oude sterren, deel van de halo'],['Open sterrenhoop','In de schijf, jonge sterren die nog uit elkaar bewegen']],'Bolvormige hopen zijn tot ca. 12 miljard jaar oud; open hopen zijn sterren die samen ontstaan zijn.');
+fill('mw','Hoe heet het bolvormige gebied rond de schijf van de Melkweg, gevormd door bolvormige sterrenhopen en losse oude sterren?',['halo','galactischehalo','degalactischehalo'],'De galactische halo.','galactische halo');
+mc('mw','Wat zijn de Magelhaense Wolken?','Satellietsterrenstelsels die rond de Melkweg draaien',['Nevels in de Orionarm','Gaswolken in ons zonnestelsel','Andere namen voor de Oortwolk'],'Kleine sterrenstelsels, zichtbaar vanaf het zuidelijk halfrond.',['Het zijn volwaardige (kleine) sterrenstelsels.','Ze liggen ver buiten het zonnestelsel.','De Oortwolk hoort bij ons zonnestelsel.']);
+mc('mw','Waarom kunnen we donkere materie niet rechtstreeks zien?','Ze heeft geen interactie met elektromagnetische straling (ze zendt geen licht uit en weerkaatst het niet)',['Ze ligt achter het centrale zwarte gat','Ze is te klein voor onze telescopen','Ze bestaat alleen in de kern van sterren'],'We weten dat ze er (wellicht) is door haar zwaartekrachtseffecten.',['Ze ligt diffuus overal verspreid.','Grootte is niet het probleem: ze geeft geen straling.','Ze zit verspreid in en rond stelsels.']);
+open('mw','Waarom nemen wetenschappers aan dat donkere materie bestaat, hoewel niemand ze ooit gezien heeft?','Omdat er zwaartekrachtseffecten zijn die we niet kunnen verklaren met alleen de zichtbare materie. Zo draaien sterren aan de buitenkant van sterrenstelsels te snel: met alleen de zichtbare massa zouden ze weggeslingerd worden. Er moet dus extra, onzichtbare massa zijn.',['Zichtbare materie verklaart de zwaartekracht niet','bv. sterren aan de rand draaien te snel','→ er moet extra onzichtbare massa zijn'],'Volgens de huidige modellen is ca. 85% van alle materie donkere materie.');
+fill('mw','Hoeveel procent van alle materie in het heelal zou donkere materie zijn?',['85','85%','85procent'],'Ca. 85%. Gewone materie is dus maar een kleine minderheid.','ca. 85%');
+
+/* --- H5 Oerknal --- */
+mc('ok','Wat betekent het dat het licht van verre sterrenstelsels roodverschoven is?','Ze bewegen van ons weg',['Ze komen naar ons toe','Ze zijn erg koud','Ze bestaan uit rood gas'],'Door het dopplereffect worden golflengten langer (roder) als de bron weg beweegt.',['Dan zou het licht blauwverschoven zijn.','Het gaat om een verschuiving van de spectraallijnen, niet om de kleur door temperatuur.','Het gaat om een verschuiving van het hele spectrum.']);
+mc('ok','Welke redenering maakte Georges Lemaître?','Als stelsels uit elkaar gaan, was het heelal vroeger kleiner, dus begon alles in één punt (oeratoom)',['Het heelal is altijd even groot geweest','Het heelal draait rond de aarde','Sterrenstelsels ontstaan uit zwarte gaten'],'Lemaître draaide de uitdijing terug in de tijd: alles samen in een oeratoom, dat "ontplofte".',['Dat strookt niet met de roodverschuiving.','Dat is het oude geocentrische wereldbeeld.','Dat was niet zijn redenering.']);
+mc('ok','Wat ontdekte Edwin Hubble over sterrenstelsels?','Hoe verder een stelsel staat, hoe sneller het van ons weg beweegt (lineair verband)',['Alle stelsels bewegen even snel','Hoe dichter, hoe sneller','Stelsels staan stil'],'Dat lineaire verband tussen afstand en snelheid is een bewijs voor de oerknal: tijd terugdraaien brengt alles in één punt.',['De snelheid hangt af van de afstand.','Het is omgekeerd: verder = sneller.','Ze bewegen wel: ze zijn roodverschoven.']);
+open('ok','Waarom is de wet van Hubble (verder = sneller weg) een bewijs voor de oerknal?','Als alle stelsels uit elkaar bewegen en de snelheid evenredig is met de afstand, dan betekent dat: als je de tijd terugdraait, komen alle stelsels op hetzelfde moment samen in één punt. Het heelal is dus ooit begonnen vanuit een heel klein, dicht begin en dijt sindsdien uit.',['Alle stelsels bewegen uit elkaar','Lineair verband afstand-snelheid','Terugdraaien in de tijd → alles komt samen in één punt'],'Dat is precies wat het oerknalmodel voorspelt.');
+mc('ok','Wat is het bewijs van de nucleosynthese voor de oerknal?','Het model voorspelt een bepaalde verhouding van lichte kernen (²H, ³He, ⁴He, ⁷Li), en die verhouding wordt ook echt waargenomen',['Er zijn veel zware elementen zoals goud in het heelal','Alle sterren bevatten evenveel ijzer','Er is geen helium in het heelal'],'Die verhouding meten we in verre (oude) stelsels en in stelsels waar sinds de oerknal weinig kernfusie gebeurde.',['Zware elementen ontstaan in sterren en supernova\'s, niet bij de oerknal.','Dat is niet zo, en het is geen bewijs.','Er is veel helium, juist een deel uit de oerknal.']);
+multi('ok','Welke drie bewijzen voor de oerknal zag je? Kies alle juiste.',['De roodverschuiving / wet van Hubble','De nucleosynthese (verhouding lichte kernen)','De kosmische achtergrondstraling (CMB)'],['Het bestaan van zwarte gaten','De precessie van de aardas'],'Drie onafhankelijke bewijzen die allemaal kloppen met het model.',['Zwarte gaten bewijzen de oerknal niet.','Precessie gaat over de aarde, niet over het heelal.']);
+open('ok','Waarom was het heelal de eerste 380 000 jaar ondoorzichtig, en wat veranderde daarna?','In het begin waren protonen, neutronen en elektronen nog los van elkaar. Straling botste voortdurend tegen die losse (geladen) deeltjes en kon niet ontsnappen: het heelal was ondoorzichtig (opaak). Toen het genoeg afgekoeld was, vormden zich atomen. Vanaf dan kon de straling vrij bewegen en ontsnappen: het heelal werd doorzichtig.',['Losse protonen, neutronen en elektronen','Straling kon niet ontsnappen → ondoorzichtig','Atomen gevormd → straling ontsnapt → doorzichtig'],'Die eerste ontsnapte straling zien we vandaag nog als CMB.');
+fill('ok','Hoeveel jaar na de oerknal kon de eerste straling ontsnappen? (het getal is 380 000)',['380000','380000jaar'],'Na ca. 380 000 jaar: toen vormden zich de eerste atomen.','380 000 jaar');
+mc('ok','Waarom zien we de eerste straling van het heelal vandaag als microgolven, en niet als zichtbaar licht?','Door de uitdijing van het heelal is de straling uitgerekt tot langere golflengten',['Omdat de straling door stof geabsorbeerd werd','Omdat de straling van de zon komt','Omdat het heelal toen al heel koud was'],'Ze komt nu overeen met straling van een bron van ca. 3 K (−270 °C).',['Het gaat om uitrekking door uitdijing, niet om absorptie.','Ze komt uit alle richtingen, niet van de zon.','Het heelal was toen juist heet; de straling is later uitgerekt.']);
+fill('ok','In welk jaar werd de kosmische achtergrondstraling (CMB) voor het eerst waargenomen?',['1965'],'In 1965. Sindsdien is de oerknaltheorie algemeen aanvaard.');
+mc('ok','Waarvoor staat de afkorting CMB?','Kosmische (micro)golfachtergrondstraling',['Centraal Melkweg Black hole','Kometen Melkweg Baan','Chemische Materie Balans'],'Cosmic Microwave Background: de "echo" van de oerknal.',['Verzonnen afkorting.','Verzonnen afkorting.','Verzonnen afkorting.']);
+
+/* --- 6.1 Waarnemingen --- */
+match('wn','Koppel het begrip aan de definitie.',[['Zenit','Het punt recht boven de waarnemer'],['Nadir','Het punt recht onder de waarnemer'],['Horizonvlak','Het platte vlak waarop de waarnemer lijkt te staan'],['Hemelkoepel','De schijnbare bol waaraan de hemellichamen staan']],'Voor een waarnemer lijkt de aarde een platte schijf omgeven door een koepel.');
+mc('wn','Wat is de culminatie van de zon?','Het moment waarop de zon het hoogste punt van haar dagboog bereikt',['Het moment van zonsopgang','Het moment waarop de zon onder de horizon zakt','De langste dag van het jaar'],'Bij ons (noordelijk halfrond) staat de zon bij culminatie precies in het zuiden, rond de middag.',['Bij zonsopgang staat de zon laag in het oosten.','Dat is zonsondergang.','Dat is de zomerzonnewende.']);
+mc('wn','In welke richting staat de zon bij culminatie, gezien vanuit België?','In het zuiden',['In het noorden','In het oosten','Recht in het zenit'],'België ligt ten noorden van de kreeftskeerkring, dus de zon staat op haar hoogste punt altijd in het zuiden.',['Vanuit België staat de zon nooit in het noorden.','In het oosten komt ze op.','In het zenit kan ze enkel tussen de keerkringen staan.']);
+tf('wn','In de zomer is de dagboog van de zon hoger en langer dan in de winter.',true,'Juist: de zon komt dan meer naar het noordoosten op, staat hoger bij culminatie en gaat meer naar het noordwesten onder.');
+mc('wn','Waarom lijken alle sterren rond de Poolster te draaien?','Omdat de aarde om haar as draait en de as bijna naar de Poolster wijst',['Omdat de Poolster de andere sterren aantrekt','Omdat de Poolster in het centrum van de Melkweg staat','Omdat de sterren echt rond de Poolster draaien'],'Het is een schijnbare beweging: wij draaien, niet de sterren.',['De Poolster is daarvoor veel te ver van de andere sterren.','Het centrum van de Melkweg ligt in de richting van Boogschutter.','De beweging is schijnbaar, door de aardrotatie.']);
+mc('wn','In welke zin lijken de sterren rond de Poolster te draaien?','Tegenwijzerzin',['Wijzerzin','Ze staan stil','Afwisselend'],'Omdat de aarde van west naar oost draait, lijkt de hemel in tegenwijzerzin rond Polaris te draaien.',['Dat zou zo zijn als de aarde in de andere richting draaide.','Door de aardrotatie bewegen ze wel.','De richting is altijd dezelfde.']);
+mc('wn','Bij welk sterrenbeeld hoort de Poolster (Polaris)?','De Kleine Beer',['De Grote Beer','Orion','Het Zuiderkruis'],'Polaris is de laatste ster van de staart van de Kleine Beer. Je vindt hem via de Grote Beer.',['De Grote Beer helpt je de Poolster te vinden, maar Polaris hoort er niet bij.','Orion ligt niet bij de pool.','Het Zuiderkruis zie je alleen op het zuidelijk halfrond.']);
+tf('wn','Sterren hebben een vaste plaats aan de hemelkoepel, zelfs over duizenden jaren.',false,'Onjuist: op een tijdschaal van enkele jaren lijken ze vast, maar over millennia verschuiven ze (o.a. door precessie en hun eigen beweging).');
+mc('wn','Hoe onderscheid je een planeet van een ster aan de nachthemel, als je meerdere nachten kijkt?','Een planeet verplaatst zich t.o.v. de sterren',['Een planeet twinkelt veel meer','Een planeet staat altijd in het noorden','Een planeet is altijd rood'],'"Planeet" betekent zwerver. Planeten blijven daarbij dicht bij de ecliptica.',['Planeten twinkelen juist minder dan sterren.','Bij ons zie je de planeten in het zuiden, langs de ecliptica.','Alleen Mars is roodachtig.']);
+open('wn','Waarom zie je de planeten van ons zonnestelsel en de maan altijd ongeveer langs dezelfde band aan de hemel (de ecliptica)?','Omdat de planeten (en de maan) ongeveer in hetzelfde vlak rond de zon draaien als de aarde: het eclipticavlak. Ze ontstonden allemaal uit dezelfde platte protoplanetaire schijf. Van op aarde zie je dat vlak als een band aan de hemel.',['Planeten draaien ongeveer in het eclipticavlak','Ze ontstonden uit dezelfde platte schijf','Dat vlak zie je als een band (de ecliptica)'],'In België zie je die band in het zuiden, met daarin de sterrenbeelden van de zodiak.');
+multi('wn','Welke vier grote manen van Jupiter kun je met een verrekijker zien? Kies alle juiste.',['Io','Europa','Ganymedes','Callisto'],['Titan','Phobos'],'De Galileïsche manen, ontdekt door Galileo Galilei in 1610.',['Titan is een maan van Saturnus.','Phobos is een maan van Mars.']);
+match('wn','Koppel het object aan het type satelliet.',[['De maan','Natuurlijke satelliet'],['Starlink','Kunstmatige satelliet'],['Ganymedes','Natuurlijke satelliet'],['ISS','Kunstmatige satelliet']],'Natuurlijke satellieten zijn manen; kunstmatige zijn door mensen gelanceerd.');
+match('wn','Koppel het kleinere object aan de beschrijving.',[['Meteoor','Lichtspoor van een brokje dat verbrandt in de atmosfeer'],['Komeet','Brok ijs en stof die een staart krijgt bij de zon'],['Planetoïde','Rotsachtig object dat rond de zon draait, kleiner dan een planeet']],'Een "vallende ster" is geen ster maar een meteoor.');
+match('wn','Koppel de Messiercode aan het deepsky-object.',[['M31','Andromedastelsel (sterrenstelsel)'],['M1','Krabnevel (supernovarest)'],['M42','Orionnevel (gebied waar sterren geboren worden)']],'Messier stelde een catalogus op van "wazige" objecten, zodat ze niet met kometen verward zouden worden.');
+mc('wn','Wat is de Krabnevel (M1)?','Het restant van een supernova',['Een sterrenstelsel naast de Melkweg','Een komeet','Een gebied waar sterren geboren worden'],'Een uitdijende wolk gas van een ster die in het jaar 1054 ontplofte; in het midden zit een neutronenster.',['Dat is bv. M31, Andromeda.','Een komeet hoort bij ons zonnestelsel.','Dat is M42, de Orionnevel.']);
+fill('wn','Hoe heet het bekende sterrenbeeld dat je alleen op het zuidelijk halfrond ziet en dat zeelui gebruikten om het zuiden te vinden?',['zuiderkruis','hetzuiderkruis'],'Het Zuiderkruis.','Zuiderkruis');
+mc('wn','Wat zijn de sterrenbeelden van de zodiak (dierenriem)?','De sterrenbeelden langs de ecliptica, waar de zon in de loop van het jaar voor lijkt te staan',['De sterrenbeelden rond de Poolster','Alle sterrenbeelden van het zuidelijk halfrond','De sterrenbeelden die het helderst zijn'],'Omdat de zon, maan en planeten langs de ecliptica bewegen, zie je ze altijd voor deze sterrenbeelden.',['Die liggen in het noorden (circumpolaire sterren).','Het gaat om een band langs de ecliptica.','Helderheid is geen criterium.']);
+tf('wn','Astrologie en astronomie zijn twee namen voor dezelfde wetenschap.',false,'Onjuist: astronomie is de wetenschap van het heelal. Astrologie is bijgeloof dat beweert dat de stand van sterren je karakter of toekomst bepaalt.');
+
+/* --- 6.2 Plaatsbepaling --- */
+mc('pb','Wat is de breedtegraad van een plaats?','De hoek tussen het evenaarsvlak en de normaal (loodlijn) in die plaats, gemeten in het meridiaanvlak',['De hoek tussen de nulmeridiaan en de plaatselijke meridiaan','De afstand tot de noordpool in km','De hoogte boven de zeespiegel'],'Breedte: 0° aan de evenaar, 90° aan de polen (N of Z).',['Dat is de lengtegraad.','Het is een hoek, geen afstand.','Dat is de hoogte, geen coördinaat.']);
+mc('pb','Wat is de lengtegraad van een plaats?','De hoek tussen het vlak van de nulmeridiaan en de plaatselijke meridiaan',['De hoek tussen het evenaarsvlak en de normaal in die plaats','De hoek tussen de horizon en de Poolster','De afstand tot de evenaar'],'Lengte: van 0° (Greenwich) tot 180° oost of west.',['Dat is de breedtegraad.','Dat geeft je de breedtegraad.','Het is een hoek, geen afstand.']);
+mc('pb','Een zeeman meet dat de Poolster 51° boven de horizon staat. Wat weet hij nu?','Hij bevindt zich op ongeveer 51° noorderbreedte',['Hij bevindt zich op 51° oosterlengte','Het is 51 minuten na middernacht','Hij is 51 km van de kust'],'De hoogte van de Poolster boven de horizon = je breedtegraad. 51° NB is ongeveer België.',['De Poolster geeft je breedte, niet je lengte.','De Poolster staat de hele nacht ongeveer op dezelfde hoogte, dus geeft geen tijd.','Het is een hoek, geen afstand.']);
+open('pb','Waarom is de hoogte van de Poolster boven de horizon gelijk aan je breedtegraad? Gebruik de noordpool en de evenaar als voorbeelden.','De Poolster staat (bijna) in het verlengde van de aardas. Op de noordpool (90° NB) wijst de as recht omhoog, dus staat de Poolster in het zenit (90°). Op de evenaar (0°) staat de as evenwijdig met de horizon, dus staat de Poolster op de horizon (0°). Daartussen neemt de hoogte evenredig toe met je breedte.',['Poolster ligt in het verlengde van de aardas','Noordpool 90° NB → Poolster in het zenit (90°)','Evenaar 0° → Poolster op de horizon (0°)'],'Daarom kun je op het zuidelijk halfrond de Poolster niet zien.');
+fill('pb','Met welk instrument nam men vroeger "poolshoogte" op zee?',['sextant','desextant','eensextant'],'Een sextant meet de hoek tussen de horizon en een hemellichaam.','sextant');
+match('pb','Koppel het GNSS-systeem aan het land of de regio.',[['GPS','Verenigde Staten'],['Galileo','Europese Unie'],['GLONASS','Rusland'],['Beidou','China']],'GNSS = Global Navigation Satellite Systems. Moderne ontvangers gebruiken vaak meerdere systemen.');
+mc('pb','Wat zendt een GNSS-satelliet uit?','Haar status, haar positie en baan en het exacte tijdstip van uitzenden',['Een foto van jouw locatie','Alleen haar naam','Het weerbericht'],'De ontvanger vergelijkt het verzendtijdstip met het ontvangsttijdstip.',['De satelliet "ziet" jou niet.','Alleen de naam is niet genoeg om een afstand te berekenen.','Dat doen weersatellieten.']);
+mc('pb','Hoe bepaalt de ontvanger de afstand tot een GNSS-satelliet?','Uit het tijdsverschil tussen verzenden en ontvangen van het signaal',['Uit de sterkte van het signaal','Door een laser terug te sturen','Uit de kleur van het signaal'],'Afstand = lichtsnelheid × tijdsverschil. Daarom zijn heel nauwkeurige klokken nodig (atoomklok in de satelliet).',['Signaalsterkte is te onnauwkeurig.','De ontvanger stuurt niets terug.','Radiosignalen hebben geen kleur.']);
+open('pb','Je hebt in theorie maar 3 satellieten nodig om een positie te bepalen. Waarom heb je er in de praktijk minstens 4 nodig?','Elke satelliet heeft een zeer nauwkeurige atoomklok, maar de ontvanger (bv. je gsm) heeft maar een kwartsklok, die een klein beetje fout loopt. Omdat licht zo snel gaat, geeft een kleine tijdsfout al een grote afstandsfout. Met een 4e satelliet kan de ontvanger zijn eigen klokfout berekenen en wegwerken. Dus 3 + 1.',['3 satellieten voor de positie (driedimensionaal)','Ontvanger heeft een minder nauwkeurige kwartsklok','De 4e satelliet corrigeert die klokfout'],'Een tijdsfout van 1 microseconde geeft al 300 m afstandsfout.');
+mc('pb','In welk type klok werkt een GNSS-satelliet?','Een atoomklok',['Een kwartsklok','Een zonnewijzer','Een slingeruurwerk'],'Atoomklokken zijn uiterst nauwkeurig. De ontvanger heeft meestal een kwartsklok.',['De kwartsklok zit in de ontvanger.','Werkt niet in de ruimte.','Werkt niet in gewichtloosheid.']);
+match('pb','Koppel de horizontale coördinaat aan de betekenis.',[['Azimut','De richting langs de horizon (bv. gemeten vanaf het noorden)'],['Hoogte','De hoek tussen de horizon en het hemellichaam']],'Samen geven ze aan waar je moet kijken om een hemellichaam te zien.');
+mc('pb','Wat is het nadeel van horizontale coördinaten (azimut en hoogte)?','Ze hangen af van de plaats en het tijdstip van de waarnemer',['Ze zijn alleen bruikbaar voor de zon','Je hebt er een GPS voor nodig','Ze werken niet op het noordelijk halfrond'],'Door de aardrotatie veranderen ze voortdurend, en iemand anders op aarde meet andere waarden.',['Ze werken voor elk hemellichaam.','Een kompas en hoekmeter volstaan.','Ze werken overal.']);
+
+/* --- 6.5 Straling --- */
+mc('sr','Waarom kijken astronomen met telescopen in verschillende spectraalbanden (radio, infrarood, zichtbaar, röntgen…)?','Elke soort straling geeft andere informatie over een hemellichaam',['Omdat zichtbaar licht niet bestaat in de ruimte','Omdat het mooiere foto\'s geeft','Omdat elke telescoop maar één ster kan bekijken'],'Bv. infrarood ziet door stofwolken heen, röntgen toont zeer hete gebieden.',['Zichtbaar licht bestaat wel.','Het gaat om informatie, niet om esthetiek.','Dat is niet de reden.']);
+mc('sr','Waarom ziet de aarde er vanuit de ruimte vooral blauw uit?','Ze is voor ca. 70% bedekt met water, dat vooral blauw licht weerkaatst',['Omdat de aarde heet is','Omdat de aarde naar ons toe beweegt','Omdat de aarde van stikstof gemaakt is'],'Welke golflengten een object weerkaatst, zegt iets over de samenstelling.',['Blauw door temperatuur geldt voor sterren die zelf licht uitstralen.','Dat zou blauwverschuiving zijn, geen blauwe kleur.','Stikstof is niet de reden.']);
+mc('sr','Wat zijn Fraunhoferlijnen?','Donkere absorptielijnen in het spectrum, die tonen welke elementen aanwezig zijn',['Lijnen op de foto door een defecte camera','De banen van planeten','Grenzen tussen sterrenbeelden'],'Elk element absorbeert zijn eigen specifieke golflengten. Zo kennen we de samenstelling van sterren zonder er naartoe te gaan.',['Het zijn echte lijnen in het spectrum.','Niets met banen te maken.','Niets met sterrenbeelden te maken.']);
+open('sr','Hoe kunnen we weten dat er ijzer en calcium in de zon zitten, zonder er ooit geweest te zijn?','Door het spectrum van het zonlicht te bekijken. Daarin zitten donkere lijnen (Fraunhoferlijnen) op vaste golflengten. Elk element absorbeert zijn eigen specifieke golflengten, een soort vingerafdruk. Als we het patroon van ijzer en calcium terugvinden in het zonnespectrum, weten we dat die elementen in de zon aanwezig zijn.',['Spectrum van het zonlicht','Donkere absorptielijnen (Fraunhoferlijnen)','Elk element heeft zijn eigen patroon (vingerafdruk)'],'Zo werd helium zelfs eerst in de zon ontdekt (helios = zon) voor men het op aarde vond.');
+mc('sr','Wat vertelt de kleur van een ster over de ster?','De oppervlaktetemperatuur: blauw is heet, rood is koel',['De afstand: blauw is dichtbij, rood is ver','De leeftijd: blauw is oud, rood is jong','De grootte: blauw is groot, rood is klein'],'Hoe heter een object, hoe korter de golflengte waarbij het het meest straalt.',['Kleur zegt niets rechtstreeks over afstand.','Geen direct verband met de leeftijd.','Rode reuzen zijn enorm groot, dus kleur ≠ grootte.']);
+match('sr','Koppel de waarneming in het spectrum aan wat ze betekent.',[['Lijnen verschoven naar rood','Object beweegt van ons weg'],['Lijnen verschoven naar blauw','Object beweegt naar ons toe'],['Grote verschuiving','Hoge snelheid'],['Patroon van donkere lijnen','Chemische samenstelling']],'Dopplereffect: de richting van de verschuiving geeft de bewegingsrichting, de grootte geeft de snelheid.');
+mc('sr','Wat is het dopplereffect bij licht?','De verschuiving van de golflengte door de beweging van de bron t.o.v. de waarnemer',['Het buigen van licht rond een zwart gat','Het weerkaatsen van licht op water','Het ontstaan van licht bij kernfusie'],'Hetzelfde effect hoor je bij een sirene die voorbijrijdt (hoger als ze nadert, lager als ze weggaat).',['Dat is zwaartekrachtlenzing.','Dat is reflectie.','Dat is energieproductie, geen dopplereffect.']);
+tf('sr','Hoe groter de verschuiving van de spectraallijnen, hoe sneller het object beweegt.',true,'Juist: de grootte van de verschuiving is een maat voor de snelheid, de richting (rood of blauw) geeft de bewegingsrichting.');
+open('sr','Hoe wordt van straling die we niet kunnen zien (bv. radiostraling) toch een kleurenbeeld gemaakt?','Een detector met een CCD-chip, opgebouwd uit pixels, meet per pixel hoeveel straling er binnenkomt. Dat geeft een grijswaarde, die omgezet wordt in een getal. Die getallen worden dan met een kleurcode omgezet naar kleuren, zodat er een (valse) kleurenafbeelding ontstaat.',['CCD-chip met pixels meet de straling','Grijswaarden → getallen','Getallen → kleuren via een kleurcode (valse kleuren)'],'De kleuren op zo\'n beeld zijn dus gekozen, niet "echt".');
+tf('sr','De kleuren op een radio- of infraroodbeeld van een sterrenstelsel zijn de kleuren die je met je ogen zou zien als je er dichtbij was.',false,'Onjuist: het zijn valse kleuren. Getallen uit de meting worden met een gekozen kleurcode omgezet naar kleuren.');
+
+/* ============ EXTRA VRAAGSOORTEN ============ */
+const order=(t,q,items,ex)=>Qs.push({t,type:'order',q,items,ex});
+const num=(t,q,ans,tol,unit,ex)=>Qs.push({t,type:'num',q,ans,tol,unit,ex});
+const cloze=(t,q,text,ex)=>Qs.push({t,type:'cloze',q,text,ex});
+const diagram=(t,q,svg,pairs,ex)=>Qs.push({t,type:'match',q,pairs,ex,svg});
+
+/* Kernwoorden voor de open vragen, in dezelfde volgorde als de open vragen hierboven. Per kernpunt: woorden waarvan er minstens één moet voorkomen. */
+const OPENKW=[
+ [['ellips','perihelium','aphelium'],['trager','langzamer','traag','minder snel'],['langer','langere','meer tijd']],
+ [['as','richting'],['poolster','polaris','vega'],['sterrenbeeld','zodiak','verschuiv']],
+ [['snelheid','maal','vermenigvuldig','keer'],['seconde','365','jaar'],['9,46','946','10^12','10 12','biljoen']],
+ [['afstand'],['10 parsec','10 pc','dezelfde afstand','vaste afstand','zelfde afstand','10parsec'],['energie','lichtkracht','echt','uitstraalt','werkelijk']],
+ [['moleculair','wolk','waterstof'],['zwaartekracht','gravitatie','samentrek','trekt samen','samen te trekken'],['temperatuur','warmte','heet','plasma','compressie']],
+ [['fusie','straling','uitwaart','druk'],['zwaartekracht','gravitatie','inwaart'],['evenwicht','gelijk','balans']],
+ [['schil','buitenlagen','buitenste lagen','lagen','rond de kern'],['zwelt','groter','groeit','opzwel','verder'],['koelt','koeler','afkoel','rood']],
+ [['ijzer','fe','geen fusie','geen kernfusie'],['implod','implosie','instort','stort in','zwaartekracht'],['schokgolf','explo']],
+ [['supernova'],['fusie','gemaakt','gevormd','oude ster'],['wolk','toegevoegd','terecht','aangevuld']],
+ [['heet','warm','temperatuur'],['silica','metal'],['weggeblazen','geblazen','zonnewind','zonneactiviteit','weinig massa','weinig materiaal','weinig materie']],
+ [['jupiter'],['zwaartekracht','gravitatie','verstoor','aantrek'],['samenklont','samentrek','geen planeet','niet samen']],
+ [['komet','komeet'],['verlie','smelt','verdwijn','opgebruikt','verdamp'],['voorraad','reservoir','aanvoer','bron','nieuwe']],
+ [['lager','koeler','temperatuur'],['elektron','atoom','atomen','tegengehouden','absorb','blokk'],['convectie','stroming','stijgt','stromen']],
+ [['heet','temperatuur','kinetisch','snel'],['ver','afstand','aantrekking','zwaartekracht'],['ontsnap']],
+ [['magnetisch','veldlijn'],['excit','aangeslagen','atomen','atmosfeer','energie'],['terugval','grondtoestand','licht']],
+ [['band','plat'],['snelheid','beweg','richting'],['spiraal','draai']],
+ [['zwaartekracht','gravitatie'],['snel','rand','buitenkant','rotatie','draaien'],['massa','onzichtbaar','extra','meer']],
+ [['uit elkaar','weg','verwijder','uitdij'],['verder','sneller','lineair','evenredig'],['terug','punt','begin']],
+ [['los','vrij','proton','elektron'],['ontsnap','opaak','ondoorzichtig','botst'],['atomen','atoom']],
+ [['vlak','eclipticavlak'],['schijf','ontstaan','ontstonden'],['band','ecliptica','zuiden']],
+ [['as','aardas','verlengde'],['noordpool','zenit','90'],['evenaar','horizon']],
+ [['3','drie','positie'],['kwarts','klok','ontvanger'],['fout','corrig','tijd','4e','vierde']],
+ [['spectrum','spectra'],['lijn','absorp'],['element','vingerafdruk','patroon','eigen']],
+ [['ccd','pixel'],['grijs','getal','cijfer'],['kleur']]
+];
+Qs.filter(q=>q.type==='open').forEach((q,i)=>{q.kw=OPENKW[i]||[]});
+
+/* --- Rangschikken --- */
+order('pl','Rangschik van klein naar groot.',['Planetenstelsel (bv. het zonnestelsel)','Sterrenstelsel (bv. de Melkweg)','Cluster (bv. de Lokale Groep)','Nog grotere gehelen (superclusters)'],'Elk niveau bevat vele exemplaren van het vorige niveau.');
+order('pl','Rangschik deze afstanden van klein naar groot.',['Aarde – maan (1,28 lichtseconden)','Aarde – zon (8,3 lichtminuten)','Zon – Neptunus (ca. 30 AE)','Zon – Proxima Centauri (4,246 lj)','Diameter van de Melkweg (ca. 100 000 lj)'],'1 AE ≈ 8,3 lichtminuten, dus 30 AE ≈ 4 lichturen. Proxima staat al meer dan 4 lichtjaar ver.');
+order('st','Rangschik van helderst naar zwakst zoals we ze aan de hemel zien (schijnbare magnitude).',['Zon (m = −26,7)','Sirius (m = −1,44)','Betelgeuze (m = 0,45)','GJ 75 (m = 5,63)','Zwakste object voor JWST (m ≈ 34)'],'Lager getal = helderder. Negatieve waarden zijn het helderst.');
+order('st','Rangschik het leven van een ster als de zon (0,6 tot 8 M☉).',['Moleculaire wolk','Protoster','Ster op de hoofdreeks (H → He)','Rode reus (He → C in de kern)','Planetaire nevel + witte dwerg','Zwarte dwerg'],'Na de rode reus is er te weinig massa voor nieuwe fusies.');
+order('st','Rangschik het leven van een ster van meer dan 20 M☉.',['Protoster','Ster op de hoofdreeks','Superreus (fusies tot Fe)','Implosie van de kern','Supernova','Zwart gat'],'Eerst implodeert de kern, de schokgolf geeft de explosie. Boven 20 M☉ blijft een zwart gat over.');
+order('st','Rangschik de fusie-elementen in een zware ster in de volgorde waarin ze gevormd worden.',['Helium (uit H)','Koolstof (C)','Neon en zuurstof (Ne, O)','Silicium (Si)','IJzer (Fe)'],'Telkens zwaardere kernen. Na ijzer levert fusie geen energie meer.');
+order('st','Rangschik de restanten van groot naar klein.',['Witte dwerg (zo groot als de aarde)','Neutronenster (ca. 10 km)','Singulariteit van een zwart gat (punt)'],'Hoe zwaarder het restant, hoe sterker het samengedrukt wordt.');
+order('oz','Rangschik de stappen in het ontstaan van het zonnestelsel.',['Moleculaire wolk (vooral H₂)','Supernova in de buurt: schokgolf','Protostellaire wolk trekt samen en roteert','Accretieschijf','Geboorte van de zon (kernfusie)','Planetesimalen (> 1 km)','Protoplaneten','Planeten (terrestrisch binnen, reuzen buiten de frost line)'],'Elke stap volgt uit de vorige: samentrekken → draaien → plat worden → centrum ontsteekt → stof klit samen → planeten.');
+order('sz','Rangschik de zones van het zonnestelsel van binnen naar buiten.',['Terrestrische planeten','Planetoïdengordel','Gas- en ijsreuzen','Kuipergordel','Oortwolk'],'Binnenzonnestelsel tot ca. 3,3 AE, buitenzonnestelsel tot ca. 30 AE, Kuipergordel tot ca. 50 AE, Oortwolk tot ca. 100 000 AE.');
+order('zo','Rangschik de lagen van de zon van binnen naar buiten.',['Kern','Stralingszone','Convectiezone','Fotosfeer','Chromosfeer','Corona'],'Binnenin: straling, dan convectie. De atmosfeer: foto-, chromo-, corona.');
+order('zo','Rangschik van heetst naar koelst.',['Kern van de zon (ca. 15 miljoen K)','Corona (tot ca. 3 miljoen K)','Convectiezone (ca. 2 miljoen K)','Fotosfeer (ca. 5 800 K)','Zonnevlek (ca. 4 500 K)'],'Let op: de corona is heter dan de fotosfeer, ook al ligt ze verder van de kern.');
+order('ok','Rangschik de gebeurtenissen vanaf de oerknal.',['Oerknal vanuit een heel klein, dicht begin','Vorming van lichte kernen (²H, ³He, ⁴He, ⁷Li)','Ondoorzichtig heelal: losse protonen, neutronen en elektronen','Atomen ontstaan, straling ontsnapt (na ca. 380 000 jaar)','Die straling is uitgerekt tot microgolven: de CMB die we nu meten'],'De CMB is het oudste licht dat we kunnen zien.');
+order('pb','Rangschik hoe een GNSS-ontvanger je positie bepaalt.',['Satelliet zendt positie, baan en exact tijdstip uit (atoomklok)','Ontvanger noteert het tijdstip van ontvangst (kwartsklok)','Ontvanger berekent het tijdsverschil','Tijdsverschil × lichtsnelheid = afstand tot de satelliet','Met minstens 4 satellieten: positie + correctie klokfout'],'Afstanden tot meerdere satellieten snijden elkaar in één punt: jouw positie.');
+
+/* --- Rekenen --- */
+num('pl','De maan staat op ca. 384 400 km. Licht gaat ca. 300 000 km/s. Hoeveel seconden doet licht van de maan naar de aarde?',1.28,0.05,'s','384 400 ÷ 300 000 ≈ 1,28 s. Dat is de "1,28 lichtseconden" uit de cursus.');
+num('pl','De zon staat op ca. 150 000 000 km. Licht gaat ca. 300 000 km/s. Hoeveel seconden doet zonlicht erover?',500,6,'s','150 000 000 ÷ 300 000 = 500 s ≈ 8,3 minuten.');
+num('pl','Voyager 1 nam in 1990 een foto van de aarde op 6,4 miljard km. Hoeveel AE is dat? (1 AE ≈ 150 miljoen km)',42.7,1.5,'AE','6 400 miljoen ÷ 150 miljoen ≈ 42,7 AE: verder dan Pluto.');
+num('pl','Proxima Centauri staat op 4,246 lj. In welk jaar vertrok het licht dat je er in 2026 van ziet? (rond af)',2022,1,'','2026 − 4,246 ≈ 2021,75 → eind 2021/begin 2022. Je kijkt dus altijd naar het verleden.');
+num('st','Ster A heeft magnitude 2, ster B magnitude 5. Hoeveel keer helderder lijkt A dan B? (1 magnitude = factor 2,512)',15.85,0.6,'keer','3 magnitudes verschil: 2,512 × 2,512 × 2,512 ≈ 15,9. Vermenigvuldigen, niet optellen!');
+num('st','Je zet een lamp op 3 keer zo grote afstand. Hoeveel keer minder licht ontvang je?',9,0,'keer','Wet van de kwadratische afname: 3² = 9, dus 9 keer minder.');
+num('st','Een ster staat 2 keer zo ver als een identieke ster. Hoeveel procent van het licht van de dichte ster ontvang je nog van de verre?',25,0,'%','1/2² = 1/4 = 25%.');
+num('st','1 parsec = 3,26 lj. Hoeveel lichtjaar is de referentieafstand van 10 pc voor de absolute magnitude?',32.6,0.2,'lj','10 × 3,26 = 32,6 lj.');
+num('st','Gebruik m − M = 5·log(d) − 5. Een ster staat op d = 100 pc. Hoeveel is m − M?',5,0,'','5·log(100) − 5 = 5·2 − 5 = 5. De ster lijkt dus 5 magnitudes (100 keer) zwakker dan op 10 pc.');
+num('mw','De zon doet ca. 225 miljoen jaar over één omloop rond het centrum van de Melkweg en is ca. 4,6 miljard jaar oud. Hoeveel omlopen heeft ze ongeveer gemaakt?',20.4,1,'omlopen','4 600 ÷ 225 ≈ 20 omlopen.');
+num('mw','De Melkweg is ca. 100 000 lj groot. Hoeveel jaar doet licht erover om haar van rand tot rand over te steken?',100000,0,'jaar','Per definitie: 100 000 lichtjaar = 100 000 jaar reistijd voor licht.');
+num('pb','Een GNSS-signaal doet 0,07 s over de reis van satelliet naar ontvanger. Licht gaat ca. 300 000 km/s. Hoe ver staat de satelliet (in km)?',21000,150,'km','300 000 × 0,07 = 21 000 km. GNSS-satellieten draaien op ca. 20 000 à 23 000 km hoogte.');
+num('pb','De klok van je ontvanger loopt 1 microseconde (0,000 001 s) fout. Hoeveel meter fout geeft dat op de afstand? (c = 300 000 000 m/s)',300,5,'m','300 000 000 × 0,000 001 = 300 m. Daarom is de 4e satelliet nodig om de klokfout weg te werken.');
+num('pb','In Brussel (ca. 51° NB) meet je de hoogte van de Poolster. Hoeveel graden boven de horizon staat ze ongeveer?',51,0.5,'°','Hoogte Poolster = breedtegraad = ca. 51°.');
+
+/* --- Invulteksten --- */
+cloze('pl','Vul de tekst aan.','De aarde draait in een [ellips] rond de zon, met de zon in één [brandpunt]. Het punt het dichtst bij de zon is het [perihelium], het verste punt is het [aphelium/aphelion].','Begin januari perihelium, begin juli aphelium.');
+cloze('pl','Vul de tekst aan.','De aardas helt ca. [23,5/23.5/23,44/23,4/23] graden. De as maakt een tolbeweging, de [precessie], met een periode van ca. [26000/26 000/25800/25 800] jaar.','De helling geeft de seizoenen; de precessie verandert de poolster.');
+cloze('pl','Vul de tekst aan.','Binnen het zonnestelsel gebruik je de [astronomische eenheid/AE/au], de gemiddelde afstand aarde–zon (ca. [150] miljoen km). Daarbuiten gebruik je het [lichtjaar/lj], de afstand die licht aflegt in één jaar.','Een lichtjaar is een afstand, geen tijd.');
+cloze('st','Vul de tekst aan.','Hoe [lager/kleiner] de magnitude, hoe helderder de ster. Een verschil van 5 magnitudes is een factor [100]. De absolute magnitude is de magnitude op een afstand van [10] parsec.','De magnitudeschaal is logaritmisch.');
+cloze('st','Vul de tekst aan.','Een ster ontstaat in een [moleculaire wolk/moleculaire wolken], vooral uit waterstof. Heeft de protoster genoeg massa, dan start [kernfusie/fusie] van waterstof tot [helium]. Anders wordt ze een [bruine dwerg].','Massa beslist over ster of bruine dwerg.');
+cloze('st','Vul de tekst aan.','Een ster van 0,6 tot 8 M☉ wordt eerst een [rode reus]. Haar buitenste lagen vormen een [planetaire nevel] en de kern wordt een [witte dwerg], die afkoelt tot een [zwarte dwerg].','Geen supernova voor deze sterren.');
+cloze('st','Vul de tekst aan.','Zware sterren fuseren door tot [ijzer/Fe]. Daarna implodeert de kern en volgt een [supernova]. Bij 8 tot 20 M☉ blijft een [neutronenster] over, daarboven een [zwart gat].','Hoe zwaarder, hoe compacter het restant.');
+cloze('oz','Vul de tekst aan.','Voorbij de [frost line/frostline/sneeuwgrens/vorstgrens] konden vluchtige stoffen condenseren. Daar ontstonden de [gasreuzen/gas- en ijsreuzen/reuzenplaneten/gas en ijsreuzen]. Dichter bij de zon ontstonden de kleine [terrestrische/rotsachtige] planeten uit metalen en [silicaten].','Temperatuur bepaalde welk materiaal vast kon zijn.');
+cloze('sz','Vul de tekst aan.','De [Kuipergordel] (ca. 30–50 AE) is donutvormig en bevat dwergplaneten zoals [Pluto/Eris/Makemake/Orcus]. De theoretische [Oortwolk] verklaart waarom er nog altijd [kometen/komeet] zijn.','De Oortwolk is nooit rechtstreeks waargenomen.');
+cloze('zo','Vul de tekst aan.','De zon bestaat vooral uit [waterstof/H] en [helium/He]. Kernfusie gebeurt in de [kern]. Het zichtbare oppervlak heet de [fotosfeer].','Ca. 73% H en 25% He in massa.');
+cloze('zo','Vul de tekst aan.','Elke [11] jaar polt de zon om. Bij een zonne[maximum] zijn er veel zonnevlekken en flares. Poollicht van zuurstof is groen of rood, dat van [stikstof/N] is blauw.','Bij een zonnemaximum zie je vaker poollicht.');
+cloze('mw','Vul de tekst aan.','De Melkweg is een [balkspiraalstelsel/balkspiraal] met [4/vier] armen en een diameter van ca. [100000/100 000] lj. De zon ligt in de [Orionarm/orion] en doet ca. 225 miljoen jaar over een omloop.','Ca. 27 000 lj van de kern.');
+cloze('ok','Vul de tekst aan.','Het idee van het oeratoom kwam van [Lemaître/lemaitre]. [Hubble/Edwin Hubble] vond dat verdere stelsels sneller weg bewegen. De kosmische achtergrondstraling werd waargenomen in [1965].','Drie bewijzen: roodverschuiving, nucleosynthese, CMB.');
+cloze('wn','Vul de tekst aan.','Het punt recht boven je is het [zenit/zenith], recht onder je het [nadir]. Het hoogste punt van de dagboog van de zon heet de [culminatie]; in België staat de zon dan in het [zuiden].','Op het zuidelijk halfrond staat de zon bij culminatie in het noorden.');
+cloze('pb','Vul de tekst aan.','Het Europese navigatiesysteem heet [Galileo], het Amerikaanse [GPS], het Russische [GLONASS] en het Chinese [Beidou/Beidou].','Allemaal GNSS-systemen.');
+cloze('pb','Vul de tekst aan.','De hoogte van de [Poolster/Polaris] boven de horizon is gelijk aan je [breedtegraad/breedte]. De horizontale coördinaten van een hemellichaam zijn de [azimut] en de [hoogte].','Horizontale coördinaten hangen af van plaats en tijd.');
+cloze('sr','Vul de tekst aan.','Donkere lijnen in een spectrum heten [Fraunhoferlijnen/fraunhofer/absorptielijnen]; ze tonen de [chemische samenstelling/samenstelling/elementen]. Lijnen verschoven naar rood betekenen dat het object van ons [weg/wegbeweegt/af] beweegt: het [dopplereffect/doppler].','Blauwverschuiving = naar ons toe.');
+
+/* --- Schema's --- */
+const SVG_ZON='<svg viewBox="0 0 320 320" role="img" aria-label="Doorsnede van de zon met genummerde lagen" class="diag">'+
+ '<circle cx="160" cy="160" r="150" class="d-c1"/><circle cx="160" cy="160" r="128" class="d-c2"/><circle cx="160" cy="160" r="110" class="d-c3"/>'+
+ '<circle cx="160" cy="160" r="96" class="d-c4"/><circle cx="160" cy="160" r="66" class="d-c5"/><circle cx="160" cy="160" r="34" class="d-c6"/>'+
+ [[160,160,'1'],[160,110,'2'],[206,94,'3'],[257,125,'4'],[275,191,'5'],[249,266,'6']].map(p=>'<g><circle cx="'+p[0]+'" cy="'+p[1]+'" r="9" class="d-dot"/><text x="'+p[0]+'" y="'+(p[1]+4)+'" class="d-num">'+p[2]+'</text></g>').join('')+
+ '</svg>';
+diagram('zo','Benoem de genummerde lagen van de zon (1 = centrum).',SVG_ZON,[['1','Kern'],['2','Stralingszone'],['3','Convectiezone'],['4','Fotosfeer'],['5','Chromosfeer'],['6','Corona']],'Van binnen naar buiten: kern, stralingszone, convectiezone, fotosfeer, chromosfeer, corona.');
+const SVG_BAAN='<svg viewBox="0 0 340 260" role="img" aria-label="Elliptische baan van de aarde rond de zon met punten A en B" class="diag">'+
+ '<ellipse cx="170" cy="130" rx="150" ry="120" class="d-orbit"/><circle cx="260" cy="130" r="15" class="d-sun"/><text x="260" y="165" class="d-lbl">zon</text>'+
+ '<circle cx="320" cy="130" r="8" class="d-earth"/><circle cx="20" cy="130" r="8" class="d-earth"/>'+
+ '<g><circle cx="320" cy="104" r="9" class="d-dot"/><text x="320" y="108" class="d-num">A</text></g><g><circle cx="20" cy="104" r="9" class="d-dot"/><text x="20" y="108" class="d-num">B</text></g>'+
+ '</svg>';
+diagram('pl','De baan is overdreven elliptisch getekend. Benoem de punten A en B.',SVG_BAAN,[['A','Perihelium (begin januari)'],['B','Aphelium (begin juli)']],'De zon staat in een brandpunt, niet in het midden. A ligt het dichtst bij de zon: het perihelium, begin januari. B ligt het verst: het aphelium, begin juli.');
+const SVG_HR='<svg viewBox="0 0 340 260" role="img" aria-label="Schematisch Hertzsprung-Russelldiagram met genummerde gebieden" class="diag">'+
+ '<line x1="40" y1="230" x2="320" y2="230" class="d-ax"/><line x1="40" y1="230" x2="40" y2="15" class="d-ax"/>'+
+ '<text x="182" y="248" class="d-lbl">temperatuur / spectraalklasse</text><text x="18" y="125" class="d-lbl" transform="rotate(-90 18 125)">lichtkracht</text>'+
+ '<path d="M60 40 Q160 120 300 215" class="d-band"/>'+
+ '<ellipse cx="250" cy="85" rx="40" ry="20" class="d-zone"/><ellipse cx="190" cy="32" rx="95" ry="13" class="d-zone"/><ellipse cx="95" cy="200" rx="32" ry="14" class="d-zone"/>'+
+ [[175,128,'1'],[250,85,'2'],[190,32,'3'],[95,200,'4'],[52,244,'5'],[312,244,'6']].map(p=>'<g><circle cx="'+p[0]+'" cy="'+p[1]+'" r="9" class="d-dot"/><text x="'+p[0]+'" y="'+(p[1]+4)+'" class="d-num">'+p[2]+'</text></g>').join('')+
+ '</svg>';
+diagram('st','Schematisch HR-diagram. Benoem de genummerde gebieden en uiteinden van de assen.',SVG_HR,[['1','Hoofdreeks (ca. 90% van de sterren)'],['2','Reuzen (rode reuzen)'],['3','Superreuzen'],['4','Witte dwergen'],['5','Hete, blauwe kant'],['6','Koele, rode kant']],'Links = heet en blauw, rechts = koel en rood. Boven = lichtsterk. Witte dwergen zijn heet maar klein, dus lichtzwak (linksonder). Reuzen zijn koel maar enorm groot, dus lichtsterk (rechtsboven).');
+
+/* ============ LOGICA ============ */
+const LS='aar-kosmografie-quiz-v1';
+const ROUND=12;
+let P={};
+try{P=JSON.parse(localStorage.getItem(LS)||'{}')||{}}catch(e){P={}}
+function save(){try{localStorage.setItem(LS,JSON.stringify(P))}catch(e){}}
+const TB={};TOPICS.forEach(t=>TB[t.id]=t);
+const QB={};const cnt={};
+Qs.forEach(q=>{cnt[q.t]=(cnt[q.t]||0)+1;q.id=q.t+'-'+cnt[q.t];QB[q.id]=q;});
+const app=document.getElementById('app');
+const TYPE={mc:'Meerkeuze',tf:'Juist of onjuist',multi:'Meerdere antwoorden juist',fill:'Invullen',match:'Koppelen',open:'Open vraag',order:'Rangschikken',num:'Rekenen',cloze:'Invultekst'};
+const MCT=['mc','tf','multi'];
+const KIND={nomc:q=>!MCT.includes(q.type),open:q=>q.type==='open',mc:q=>MCT.includes(q.type)};
+
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function h(tag,cls,html){const e=document.createElement(tag);if(cls)e.className=cls;if(html!==undefined)e.innerHTML=html;return e}
+const SUB={'₀':'0','₁':'1','₂':'2','₃':'3','₄':'4','₅':'5','₆':'6','₇':'7','₈':'8','₉':'9','⁻':'','⁺':''};
+function norm(s){return String(s).toLowerCase().replace(/[₀-₉⁻⁺]/g,c=>SUB[c]).normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9αβ]/g,'')}
+function lev(a,b){const m=a.length,n=b.length;if(!m)return n;if(!n)return m;let p=[];for(let j=0;j<=n;j++)p[j]=j;for(let i=1;i<=m;i++){let c=[i];for(let j=1;j<=n;j++)c[j]=Math.min(p[j]+1,c[j-1]+1,p[j-1]+(a[i-1]===b[j-1]?0:1));p=c}return p[n]}
+function stat(ids){let m=0;ids.forEach(id=>{if(P[id]&&P[id].mastered)m++});return {m,n:ids.length}}
+const idsOf=(t,k)=>Qs.filter(q=>(!t||q.t===t)&&(!k||KIND[k](q))).map(q=>q.id);
+function weakIds(){return Qs.filter(q=>P[q.id]&&P[q.id].wrong>0&&!P[q.id].mastered).map(q=>q.id)}
+
+function correctHTML(q){
+  if(q.type==='mc')return esc(q.opts[0]);
+  if(q.type==='tf')return q.val?'Juist':'Onjuist';
+  if(q.type==='fill')return esc(q.show);
+  if(q.type==='open')return esc(q.model)+'<ul>'+q.points.map(p=>'<li>'+esc(p)+'</li>').join('')+'</ul>';
+  if(q.type==='order')return '<ol>'+q.items.map(t=>'<li>'+esc(t)+'</li>').join('')+'</ol>';
+  if(q.type==='num')return fmtNum(q.ans)+(q.unit?' '+esc(q.unit):'');
+  if(q.type==='cloze')return clozeParts(q.text).map(p=>typeof p==='string'?esc(p):'<b>'+esc(p.show)+'</b>').join('');
+  if(q.type==='multi')return '<ul>'+q.good.map(g=>'<li>'+esc(g)+'</li>').join('')+'</ul>';
+  return '<ul>'+q.pairs.map(p=>'<li>'+esc(p[0])+' → '+esc(p[1])+'</li>').join('')+'</ul>';
+}
+
+/* ---- widgets ---- */
+function wChoice(q,ctx){
+  const opts=q.type==='tf'?[{text:'Juist',ok:q.val===true},{text:'Onjuist',ok:q.val===false}]:shuffle(q.opts.map((t,i)=>({text:t,ok:i===0,i})));
+  const root=h('div','opts');let sel=null,locked=false;const btns=[];
+  opts.forEach((o,i)=>{
+    const b=h('button','opt','<span class="key">'+(i+1)+'</span><span class="txt">'+esc(o.text)+'</span>');b.type='button';
+    b.onclick=()=>{if(locked)return;sel=o;btns.forEach(x=>x.classList.remove('sel'));b.classList.add('sel');if(!ctx.exam)ctx.submit(api.getRes());else ctx.changed()};
+    btns.push(b);root.appendChild(b)});
+  const api={root,confirm:ctx.exam,ready:()=>sel!==null,
+    getRes:()=>({ok:sel.ok,user:sel.text,why:sel.ok?[]:[q.type==='tf'?'Je koos "'+sel.text+'", maar de stelling is '+(q.val?'juist':'onjuist')+'.':((q.why||[])[sel.i-1]||'Dit antwoord klopt niet.')]}),
+    reveal(res){locked=true;btns.forEach((b,i)=>{b.disabled=true;b.classList.remove('sel');if(opts[i].ok)b.classList.add('good');else if(opts[i]===sel)b.classList.add('bad')})},
+    key(n){if(btns[n-1])btns[n-1].click()},focus(){}};
+  return api;
+}
+function wMulti(q,ctx){
+  const opts=shuffle([...q.good.map(t=>({text:t,ok:true})),...q.bad.map((t,bi)=>({text:t,ok:false,bi}))]);
+  const root=h('div','opts');const hint=h('div','hintline','Er zijn '+q.good.length+' juiste antwoorden.');root.appendChild(hint);
+  let locked=false;const btns=[];
+  opts.forEach((o,i)=>{const b=h('button','opt','<span class="key">'+(i+1)+'</span><span class="txt">'+esc(o.text)+'</span>');b.type='button';o.on=false;
+    b.setAttribute('aria-pressed','false');
+    b.onclick=()=>{if(locked)return;o.on=!o.on;b.classList.toggle('sel',o.on);b.setAttribute('aria-pressed',o.on);ctx.changed()};
+    btns.push(b);root.appendChild(b)});
+  return {root,confirm:true,ready:()=>opts.some(o=>o.on),
+    getRes:()=>({ok:opts.every(o=>o.on===o.ok),user:opts.filter(o=>o.on).map(o=>o.text).join(', ')||'(niets)',why:[...opts.filter(o=>o.on&&!o.ok).map(o=>'Je koos "'+o.text+'": '+((q.why||[])[o.bi]||'dit hoort er niet bij.')),...opts.filter(o=>!o.on&&o.ok).map(o=>'Je miste "'+o.text+'", dat hoort er wel bij.')]}),
+    reveal(){locked=true;btns.forEach((b,i)=>{b.disabled=true;b.classList.remove('sel');const o=opts[i];if(o.ok&&o.on)b.classList.add('good');else if(o.ok&&!o.on)b.classList.add('missed');else if(!o.ok&&o.on)b.classList.add('bad')})},
+    key(n){if(btns[n-1])btns[n-1].click()},focus(){}};
+}
+function wFill(q,ctx){
+  const root=h('div','fillrow');const inp=h('input');inp.type='text';inp.id='fill-in';inp.autocomplete='off';inp.autocapitalize='off';inp.spellcheck=false;inp.placeholder='Typ je antwoord';
+  inp.setAttribute('aria-label','Antwoord');root.appendChild(inp);
+  inp.addEventListener('input',()=>ctx.changed());
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();ctx.confirmNow()}});
+  return {root,confirm:true,ready:()=>inp.value.trim()!=='',
+    getRes(){const u=norm(inp.value);let ok=false,note='';
+      const acc=q.acc.map(norm);
+      if(acc.includes(u))ok=true;
+      else if(u.length>=6&&acc.some(a=>a.length>=6&&lev(u,a)<=1)){ok=true;note='Bijna perfect geschreven. Juiste spelling: '+q.show+'.'}
+      return {ok,user:inp.value.trim(),note,why:ok?[]:['Je typte "'+inp.value.trim()+'". Dat is niet het gevraagde begrip, of het is te ver van de juiste spelling verwijderd.']}},
+    reveal(res){inp.disabled=true;inp.classList.add(res.ok?'good':'bad')},
+    key(){},focus(){inp.focus()}};
+}
+function wMatch(q,ctx){
+  const rights=shuffle(q.pairs.map(p=>p[1]));
+  const root=h('div','matchrows');const sels=[];
+  q.pairs.forEach((p,i)=>{
+    const row=h('div','mrow');const l=h('div','l',esc(p[0]));
+    const s=h('select');s.id='m-'+i;s.setAttribute('aria-label',p[0]);
+    s.innerHTML='<option value="">Kies...</option>'+rights.map(r=>'<option value="'+esc(r)+'">'+esc(r)+'</option>').join('');
+    s.onchange=()=>ctx.changed();sels.push(s);row.appendChild(l);row.appendChild(s);root.appendChild(row)});
+  return {root,confirm:true,ready:()=>sels.every(s=>s.value!==''),
+    getRes:()=>({ok:sels.every((s,i)=>s.value===q.pairs[i][1]),user:q.pairs.map((p,i)=>p[0]+' → '+sels[i].value).join('; '),why:q.pairs.map((p,i)=>sels[i].value!==p[1]?p[0]+' hoort bij "'+p[1]+'", niet bij "'+sels[i].value+'".':null).filter(Boolean)}),
+    reveal(){sels.forEach((s,i)=>{s.disabled=true;const good=s.value===q.pairs[i][1];s.classList.add(good?'good':'bad');if(!good){const f=h('div','fix','Juist: '+esc(q.pairs[i][1]));s.parentNode.appendChild(f)}})},
+    key(){},focus(){}};
+}
+function fmtNum(x){const s=String(x).split('.');if(Math.abs(x)>=10000)s[0]=s[0].replace(/\B(?=(\d{3})+(?!\d))/g,' ');return s.join(',')}
+function clozeParts(text){return text.split(/\[([^\]]+)\]/).map((p,i)=>i%2?{acc:p.split('/'),show:p.split('/')[0]}:p)}
+function accepts(user,acc){const u=norm(user);const a=acc.map(norm);if(a.includes(u))return {ok:true};
+  if(u.length>=6&&a.some(x=>x.length>=6&&lev(u,x)<=1))return {ok:true,close:true};return {ok:false}}
+function wOpen(q,ctx){
+  const root=h('div','openq');
+  const ta=h('textarea');ta.rows=5;ta.id='open-in';ta.placeholder='Schrijf je antwoord in eigen woorden en leg uit waarom.';ta.setAttribute('aria-label','Antwoord');
+  const box=h('div','selfcheck');root.append(ta,box);
+  ta.addEventListener('input',()=>ctx.changed());
+  let hits=[];
+  const api={root,confirm:true,label:'Vergelijk met modelantwoord',ready:()=>ta.value.trim().length>=8,
+    step(){
+      ta.disabled=true;const u=norm(ta.value);
+      hits=q.points.map((p,i)=>((q.kw||[])[i]||[]).some(k=>u.includes(norm(k))));
+      const n=hits.filter(Boolean).length;
+      box.innerHTML='<div class="fb neutral"><div class="h">Vergelijk met het modelantwoord</div><div><b>Modelantwoord:</b> '+esc(q.model)+'</div>'+
+        '<div><b>Kernpunten</b> (✓ = herkend in jouw antwoord):<ul class="kp">'+q.points.map((p,i)=>'<li class="'+(hits[i]?'hit':'miss')+'"><span>'+(hits[i]?'✓':'✗')+'</span> '+esc(p)+'</li>').join('')+'</ul></div>'+
+        '<div class="muted">'+n+' van '+q.points.length+' kernpunten herkend. De herkenning zoekt naar kernwoorden en kan zich vergissen: beoordeel jezelf eerlijk.</div></div>';
+      const row=h('div','actions-row');
+      const yes=h('button','btn'+(n===q.points.length?' primary':''),'Ik had alle kernpunten');yes.type='button';
+      const no=h('button','btn'+(n<q.points.length?' primary':''),'Er ontbrak iets');no.type='button';
+      yes.onclick=()=>ctx.submit({ok:true,user:ta.value.trim(),why:[]});
+      no.onclick=()=>ctx.submit({ok:false,user:ta.value.trim(),why:q.points.filter((p,i)=>!hits[i]).map(p=>'Kernpunt dat (misschien) ontbrak: '+p)});
+      row.append(yes,no);box.firstChild.appendChild(row);(n===q.points.length?yes:no).focus();
+    },
+    getRes:()=>({ok:false,user:ta.value.trim(),why:[]}),
+    reveal(){const r=box.querySelector('.actions-row');if(r)r.remove()},key(){},focus(){ta.focus()}};
+  return api;
+}
+function wOrder(q,ctx){
+  let cur=shuffle(q.items.map((t,i)=>({t,i})));
+  if(cur.every((o,k)=>o.i===k))cur.reverse();
+  const root=h('div','order');root.appendChild(h('div','hintline','Zet in de juiste volgorde met de pijltjes (1 = eerst).'));
+  const list=h('ol','olist');root.appendChild(list);let locked=false;
+  function draw(focusI,dir){list.innerHTML='';cur.forEach((o,k)=>{
+    const li=h('li','oitem'+(locked?(o.i===k?' good':' bad'):''));
+    li.innerHTML='<span class="key">'+(k+1)+'</span><span class="txt">'+esc(o.t)+(locked&&o.i!==k?'<span class="fixpos">Hoort op plaats '+(o.i+1)+'</span>':'')+'</span>';
+    if(!locked){
+      const up=h('button','btn small mv','↑');up.type='button';up.disabled=k===0;up.setAttribute('aria-label','Omhoog: '+o.t);
+      const dn=h('button','btn small mv','↓');dn.type='button';dn.disabled=k===cur.length-1;dn.setAttribute('aria-label','Omlaag: '+o.t);
+      up.onclick=()=>{[cur[k-1],cur[k]]=[cur[k],cur[k-1]];draw(o.i,'up')};
+      dn.onclick=()=>{[cur[k+1],cur[k]]=[cur[k],cur[k+1]];draw(o.i,'dn')};
+      li.append(up,dn);
+      if(focusI===o.i)setTimeout(()=>{const b=dir==='up'?up:dn;(b.disabled?(dir==='up'?dn:up):b).focus()},0);
+    }
+    list.appendChild(li)})}
+  draw();
+  return {root,confirm:true,ready:()=>true,
+    getRes:()=>{const ok=cur.every((o,k)=>o.i===k);return {ok,user:cur.map(o=>o.t).join(' → '),why:ok?[]:cur.map((o,k)=>o.i!==k?'"'+o.t+'" stond op plaats '+(k+1)+', maar hoort op plaats '+(o.i+1)+'.':null).filter(Boolean)}},
+    reveal(){locked=true;draw()},key(){},focus(){}};
+}
+function wNum(q,ctx){
+  const root=h('div','fillrow numrow');const inp=h('input');inp.type='text';inp.inputMode='decimal';inp.autocomplete='off';inp.id='num-in';inp.placeholder='Getal';
+  inp.setAttribute('aria-label','Antwoord'+(q.unit?' in '+q.unit:''));root.appendChild(inp);
+  if(q.unit)root.appendChild(h('span','unit',esc(q.unit)));
+  inp.addEventListener('input',()=>ctx.changed());
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();ctx.confirmNow()}});
+  const val=()=>parseFloat(inp.value.replace(/\s/g,'').replace(',','.'));
+  return {root,confirm:true,ready:()=>!isNaN(val()),
+    getRes(){const v=val();const ok=Math.abs(v-q.ans)<=q.tol+1e-9;
+      return {ok,user:inp.value.trim()+(q.unit?' '+q.unit:''),why:ok?[]:['Je antwoord '+fmtNum(v)+' ligt te ver van '+fmtNum(q.ans)+(q.tol?' (we aanvaarden ±'+fmtNum(q.tol)+')':'')+'. Kijk hieronder hoe je het berekent.']}},
+    reveal(res){inp.disabled=true;inp.classList.add(res.ok?'good':'bad')},key(){},focus(){inp.focus()}};
+}
+function wCloze(q,ctx){
+  const parts=clozeParts(q.text);const root=h('p','cloze');const inps=[];
+  parts.forEach(p=>{if(typeof p==='string'){root.appendChild(document.createTextNode(p));return}
+    const i=h('input');i.type='text';i.autocomplete='off';i.autocapitalize='off';i.spellcheck=false;i.setAttribute('aria-label','Invulvak '+(inps.length+1));
+    i.style.width=Math.max(7,Math.min(18,p.show.length+3))+'ch';
+    i.addEventListener('input',()=>ctx.changed());
+    i.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();const k=inps.indexOf(i);if(k<inps.length-1)inps[k+1].focus();else ctx.confirmNow()}});
+    inps.push(i);i._p=p;root.appendChild(i)});
+  let res=[];
+  return {root,confirm:true,ready:()=>inps.every(i=>i.value.trim()!==''),
+    getRes(){res=inps.map(i=>accepts(i.value,i._p.acc));const ok=res.every(r=>r.ok);
+      return {ok,user:inps.map(i=>i.value.trim()).join(' / '),
+        note:ok&&res.some(r=>r.close)?'Bijna perfect geschreven. Kijk de spelling na in het juiste antwoord.':'',
+        why:ok?[]:inps.map((i,k)=>res[k].ok?null:'Invulvak '+(k+1)+': je typte "'+i.value.trim()+'", juist is "'+i._p.show+'".').filter(Boolean)}},
+    reveal(){inps.forEach((i,k)=>{i.disabled=true;i.classList.add(res[k].ok?'good':'bad')})},key(){},focus(){if(inps[0])inps[0].focus()}};
+}
+function makeWidget(q,ctx){
+  if(q.type==='match'&&q.svg){const w=wMatch(q,ctx);const o=h('div','diagq');const b=h('div','diagbox',q.svg);o.append(b,w.root);w.root=o;return w}
+  const F={fill:wFill,match:wMatch,multi:wMulti,open:wOpen,order:wOrder,num:wNum,cloze:wCloze};return (F[q.type]||wChoice)(q,ctx)}
+
+/* ---- sessie ---- */
+let S=null,CUR=null;
+function startLearn(ids,label){
+  const rank=id=>{const p=P[id]||{};return p.mastered?3:(p.wrong>0?0:(p.streak>0?1:2))};
+  let pool=shuffle(ids);
+  const open=pool.filter(id=>!(P[id]&&P[id].mastered));
+  let pick;
+  if(open.length){pick=open.sort((a,b)=>rank(a)-rank(b)).slice(0,ROUND)}
+  else pick=pool.slice(0,ROUND);
+  const items=shuffle(pick).map(id=>{const p=P[id]||{};return {id,need:p.mastered?1:Math.max(1,2-(p.streak||0))}});
+  S={mode:'learn',label,scope:ids,queue:items,total:items.length,done:0,first:{},log:[]};
+  showQ();
+}
+function startExam(ids,n,label){
+  const pick=shuffle(ids).slice(0,n);
+  S={mode:'exam',label,scope:ids,queue:pick.map(id=>({id,need:1})),total:pick.length,done:0,first:{},log:[]};
+  showQ();
+}
+function showQ(){
+  if(!S.queue.length){return finish()}
+  const item=S.queue[0],q=QB[item.id];window.scrollTo(0,0);
+  app.innerHTML='';
+  const exam=S.mode==='exam';
+  const top=h('div','topbar');
+  const stop=h('button','btn small','Stoppen');stop.type='button';stop.onclick=()=>{S.mode==='exam'&&S.log.length?finish(true):home()};
+  const bar=h('div','bar','<i style="width:'+Math.round(S.done/S.total*100)+'%"></i>');
+  const n=h('div','n',(exam?(S.done+1)+' / '+S.total:S.done+' / '+S.total+' klaar'));
+  top.append(stop,bar,n);
+  const card=h('div','panel qcard');
+  const meta=h('div','meta','<span class="chip a">'+esc(TB[q.t].title)+'</span><span class="chip">'+TYPE[q.type]+'</span>'+(exam?'<span class="chip">Toets</span>':''));
+  const qt=h('h2','qtext',esc(q.q));
+  const fbBox=h('div');
+  const actions=h('div','actions-row');
+  let locked=false;
+  const ctx={exam,
+    changed:()=>{if(conf)conf.disabled=!w.ready()},
+    submit:res=>{if(locked)return;locked=true;handle(res)},
+    confirmNow:()=>{if(conf&&!conf.disabled)conf.click()}};
+  const w=makeWidget(q,ctx);
+  let conf=null;
+  if(w.confirm){conf=h('button','btn primary',w.label||(exam?'Bevestig':'Controleer'));conf.type='button';conf.disabled=!w.ready();
+    conf.onclick=()=>{if(locked||!w.ready())return;if(w.step){conf.remove();conf=null;w.step();return}locked=true;handle(w.getRes())};actions.appendChild(conf)}
+  card.append(meta,qt,w.root,fbBox,actions);
+  app.append(top,card);
+  CUR={w,q,item};
+  if(w.focus)w.focus();
+  function handle(res){
+    if(conf)conf.disabled=true;
+    const p=P[item.id]||(P[item.id]={streak:0,mastered:false,wrong:0,seen:0});
+    p.seen++;if(S.first[item.id]===undefined)S.first[item.id]=res.ok;
+    S.log.push({id:item.id,ok:res.ok,user:res.user,why:res.why||[]});
+    if(res.ok){p.streak++;if(p.streak>=2)p.mastered=true;item.need--}
+    else{p.streak=0;p.mastered=false;p.wrong++;item.need=2}
+    save();
+    if(exam){S.queue.shift();S.done++;showQ();return}
+    w.reveal(res);
+    const fb=h('div','fb '+(res.ok?'good':'bad'));
+    fb.innerHTML='<div class="h">'+(res.ok?'Juist.':'Niet juist.')+'</div>'+
+      (res.ok&&!res.note||q.type==='open'?'':'<div class="ans"><b>Juiste antwoord:</b> '+correctHTML(q)+'</div>')+
+      (!res.ok&&res.why&&res.why.length?'<div class="why"><b>Waarom je fout zat:</b><ul>'+res.why.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>':'')+
+      (res.note?'<div>'+esc(res.note)+'</div>':'')+
+      '<div class="ex">'+(res.ok?'':'<b>Uitleg:</b> ')+esc(q.ex)+'</div>'+
+      (res.ok&&item.need>0?'<div class="muted">Nog één keer goed (later in deze ronde) om deze vraag te beheersen.</div>':'')+
+      (!res.ok?'<div class="muted">Deze vraag komt zo terug.</div>':'')+
+      (res.ok&&item.need<=0?'<div class="muted">Beheerst.</div>':'');
+    fbBox.appendChild(fb);
+    const nx=h('button','btn primary','Volgende');nx.type='button';
+    nx.onclick=()=>{S.queue.shift();
+      if(res.ok&&item.need<=0)S.done++;
+      else{const pos=Math.min(S.queue.length,res.ok?4+Math.floor(Math.random()*3):2+Math.floor(Math.random()*2));S.queue.splice(pos,0,item)}
+      showQ()};
+    actions.appendChild(nx);nx.focus();
+  }
+}
+document.addEventListener('keydown',e=>{
+  if(!S||!CUR||e.ctrlKey||e.metaKey||e.altKey)return;
+  const t=e.target;if(t&&(t.tagName==='INPUT'||t.tagName==='SELECT'||t.tagName==='TEXTAREA'))return;
+  if(/^[1-9]$/.test(e.key)&&CUR.w.key)CUR.w.key(+e.key);
+});
+
+function finish(early){
+  CUR=null;window.scrollTo(0,0);app.innerHTML='';
+  const exam=S.mode==='exam';
+  const all=idsOf();const st=stat(all);
+  if(exam){
+    const log=S.log;const ok=log.filter(l=>l.ok).length,n=log.length;
+    const pct=n?Math.round(ok/n*100):0;
+    const head=h('div','panel hero');
+    head.innerHTML='<div class="eyebrow">Toetsresultaat</div><div class="score"><div class="big">'+ok+' <small>/ '+n+'</small></div><div class="big">'+pct+'<small>%</small></div><div class="big">'+(n?(ok/n*20).toFixed(1).replace('.',','):'0')+'<small> / 20</small></div></div><p>'+(pct>=90?'Sterk. Zorg dat de fouten hieronder de volgende keer wel zitten.':pct>=70?'Goed op weg. Oefen de gemiste vragen en doe de toets opnieuw.':'Er is nog werk. Oefen de gemiste vragen in de oefenmodus en bekijk de theorie van de onderwerpen waar je fouten maakte.')+'</p>';
+    const acts=h('div','actions-row');
+    const wrong=log.filter(l=>!l.ok).map(l=>l.id);
+    if(wrong.length){const b=h('button','btn primary','Fouten oefenen ('+wrong.length+')');b.onclick=()=>startLearn(wrong,'Fouten uit toets');acts.appendChild(b)}
+    const again=h('button','btn','Nieuwe toets');again.onclick=()=>startExam(S.scope,S.total,S.label);
+    const bk=h('button','btn','Overzicht');bk.onclick=home;
+    acts.append(again,bk);head.appendChild(acts);
+    app.appendChild(head);
+    app.appendChild(h('h3',null,'Antwoorden'));
+    const rev=h('div','rev');
+    log.slice().sort((a,b)=>a.ok-b.ok).forEach(l=>rev.appendChild(reviewItem(l)));
+    app.appendChild(rev);
+  }else{
+    const total=S.total;const first=Object.values(S.first).filter(Boolean).length;
+    const head=h('div','panel hero');
+    head.innerHTML='<div class="eyebrow">Ronde klaar</div><div class="score"><div class="big">'+first+' <small>/ '+total+' meteen goed</small></div><div class="big">'+st.m+' <small>/ '+st.n+' beheerst</small></div></div><div class="bar"><i style="width:'+Math.round(st.m/st.n*100)+'%"></i></div>';
+    const acts=h('div','actions-row');
+    const nextOpen=S.scope.filter(id=>!(P[id]&&P[id].mastered)).length;
+    const nb=h('button','btn primary',nextOpen?'Volgende ronde ('+nextOpen+' open)':'Alles hier beheerst. Herhaal');
+    nb.onclick=()=>startLearn(S.scope,S.label);
+    const bk=h('button','btn','Overzicht');bk.onclick=home;
+    acts.append(nb,bk);head.appendChild(acts);app.appendChild(head);
+    const missed=[...new Set(S.log.filter(l=>!l.ok).map(l=>l.id))];
+    if(missed.length){
+      app.appendChild(h('h3',null,'Hier ging het fout'));
+      const rev=h('div','rev');
+      missed.forEach(id=>rev.appendChild(reviewItem({id,ok:false,user:null})));
+      app.appendChild(rev);
+    }
+  }
+}
+function reviewItem(l){
+  const q=QB[l.id];const d=h('details','r '+(l.ok?'ok':'no'));
+  if(!l.ok)d.open=true;
+  d.innerHTML='<summary><span class="mark">'+(l.ok?'✓':'✗')+'</span><span>'+esc(q.q)+'</span></summary><div class="body">'+
+    (l.user!==null&&!l.ok?'<div><b>Jouw antwoord:</b> '+esc(l.user)+'</div>':'')+
+    '<div><b>Juist:</b> '+correctHTML(q)+'</div>'+(!l.ok&&l.why&&l.why.length?'<div class="why"><b>Waarom fout:</b><ul>'+l.why.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul></div>':'')+'<div class="muted">'+esc(q.ex)+'</div></div>';
+  return d;
+}
+
+/* ---- schermen ---- */
+function theory(tid){
+  window.scrollTo(0,0);app.innerHTML='';CUR=null;
+  const t=TB[tid];
+  const top=h('div','topbar');const back=h('button','btn small','Overzicht');back.onclick=home;top.appendChild(back);
+  const p=h('div','panel theory');
+  p.innerHTML='<div class="eyebrow">'+esc(t.tag)+'</div><h2>'+esc(t.title)+'</h2><ul>'+t.sum.map(s=>'<li>'+s+'</li>').join('')+'</ul>';
+  const acts=h('div','actions-row');
+  const go=h('button','btn primary','Oefen dit onderwerp ('+cnt[tid]+' vragen)');go.onclick=()=>startLearn(idsOf(tid),t.title);
+  acts.appendChild(go);p.appendChild(acts);
+  app.append(top,p);
+}
+function home(){
+  S=null;CUR=null;window.scrollTo(0,0);app.innerHTML='';
+  const all=idsOf();const st=stat(all);const pct=Math.round(st.m/st.n*100);
+  const back=h('a','back','← Alle vakken');back.href='../#aardrijkskunde';app.appendChild(back);
+  const hero=h('div','panel hero');
+  const tcount={};Qs.forEach(q=>{const k=q.type==='tf'?'mc':q.type;tcount[k]=(tcount[k]||0)+1});
+  const TNAME={open:'open vragen',fill:'invulvragen',cloze:'invulteksten',num:'rekenvragen',order:'rangschikvragen',match:'koppel- en schemavragen',multi:'meerdere juist',mc:'meerkeuze / juist-onjuist'};
+  hero.innerHTML='<div class="eyebrow">Aardrijkskunde · Kosmografie · Hoofdstuk 1 tot 6</div><h1>Structuur van het heelal en het zonnestelsel</h1><p>'+all.length+' vragen over alle slides: bewegingen van de aarde, afstanden, sterren, het zonnestelsel, de zon, de Melkweg, de oerknal, waarnemen en plaatsbepaling. Heel specifieke getallen staan in de vraag, de rest moet je kennen. Een vraag telt als beheerst na twee keer na elkaar juist. Een fout zet hem terug op nul en hij komt in dezelfde ronde terug.</p><div class="types">'+Object.keys(TNAME).filter(k=>tcount[k]).map(k=>'<span class="chip">'+tcount[k]+' '+TNAME[k]+'</span>').join('')+'</div>';
+  app.appendChild(hero);
+
+  const m=h('div','panel mastery');
+  m.innerHTML='<div class="mastery-top"><div class="big">'+st.m+' <small>/ '+st.n+' beheerst</small></div><div class="muted">'+pct+'% van de leerstof</div></div><div class="bar"><i style="width:'+pct+'%"></i></div>';
+  const acts=h('div','row');
+  const a1=h('button','btn primary',st.m===st.n?'Alles herhalen':'Alles oefenen');a1.onclick=()=>startLearn(all,'Alle onderwerpen');
+  const wk=weakIds();
+  const a2=h('button','btn','Zwakke punten ('+wk.length+')');a2.disabled=!wk.length;a2.onclick=()=>startLearn(wk,'Zwakke punten');
+  const a3=h('button','btn small','Voortgang wissen');let armed=false,tm;
+  a3.onclick=()=>{if(!armed){armed=true;a3.textContent='Zeker weten? Klik nogmaals';tm=setTimeout(()=>{armed=false;a3.textContent='Voortgang wissen'},4000)}else{clearTimeout(tm);P={};save();home()}};
+  const a4=h('button','btn','Oefenen zonder meerkeuze');a4.onclick=()=>startLearn(idsOf('','nomc'),'Zonder meerkeuze');
+  const a5=h('button','btn','Alleen open vragen');a5.onclick=()=>startLearn(idsOf('','open'),'Open vragen');
+  acts.append(a1,a4,a5,a2,a3);m.appendChild(acts);app.appendChild(m);
+
+  const ex=h('div','panel');
+  ex.innerHTML='<h3>Toets</h3><p class="muted" style="margin:4px 0 14px">Zonder uitleg tijdens het maken (bij open vragen beoordeel je jezelf met het modelantwoord). Score op 20 en uitleg achteraf.</p>';
+  const grid=h('div','exam');
+  const f1=h('div','field','<label for="ex-scope">Onderwerp</label>');
+  const s1=h('select');s1.id='ex-scope';s1.innerHTML='<option value="">Alles</option>'+TOPICS.map(t=>'<option value="'+t.id+'">'+esc(t.title)+'</option>').join('');f1.appendChild(s1);
+  const f2=h('div','field','<label for="ex-n">Aantal vragen</label>');
+  const s2=h('select');s2.id='ex-n';s2.innerHTML='<option value="10">10</option><option value="20" selected>20</option><option value="40">40</option><option value="999">Alle</option>';f2.appendChild(s2);
+  const f3=h('div','field','<label for="ex-kind">Soort vragen</label>');
+  const s3=h('select');s3.id='ex-kind';s3.innerHTML='<option value="">Alle soorten door elkaar</option><option value="nomc">Zonder meerkeuze</option><option value="open">Alleen open vragen</option><option value="mc">Alleen meerkeuze</option>';f3.appendChild(s3);
+  const go=h('button','btn primary','Start toets');go.onclick=()=>{const ids=idsOf(s1.value,s3.value);if(!ids.length)return;startExam(ids,Math.min(+s2.value,ids.length),s1.value?TB[s1.value].title:'Alle onderwerpen')};
+  grid.append(f1,f3,f2,go);ex.appendChild(grid);app.appendChild(ex);
+
+  app.appendChild(h('h3',null,'Per onderwerp'));
+  const tg=h('div','topics');
+  TOPICS.forEach(t=>{
+    const ids=idsOf(t.id);const s=stat(ids);
+    const c=h('div','panel topic'+(s.m===s.n?' done':''));
+    c.innerHTML='<div><div class="tag">'+esc(t.tag)+'</div><h3>'+esc(t.title)+'</h3></div><div><div class="count"><span>'+s.m+' / '+s.n+' beheerst</span><span>'+Math.round(s.m/s.n*100)+'%</span></div><div class="bar thin"><i style="width:'+Math.round(s.m/s.n*100)+'%"></i></div></div>';
+    const ac=h('div','actions');
+    const b1=h('button','btn small','Theorie');b1.onclick=()=>theory(t.id);
+    const b2=h('button','btn small primary',s.m===s.n?'Herhalen':'Oefenen');b2.onclick=()=>startLearn(ids,t.title);
+    ac.append(b1,b2);c.appendChild(ac);tg.appendChild(c);
+  });
+  app.appendChild(tg);
+}
+home();
+</script>
+</body>
+</html>
