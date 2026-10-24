@@ -53,6 +53,7 @@ a.card:hover{border-color:var(--accent);transform:translateY(-2px)}
 .list{display:flex;flex-direction:column;gap:12px}
 .quiz{flex-direction:row;align-items:center;gap:16px}
 .quiz .txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+@media (max-width:520px){.quiz{flex-wrap:wrap}.quiz .txt{flex-basis:100%}}
 .quiz .due{font-family:var(--font-mono);font-size:12px;padding:3px 9px;border-radius:999px;background:var(--accent-soft);color:var(--accent);white-space:nowrap}
 .quiz .go{font-weight:600;color:var(--accent);white-space:nowrap}
 .tag{font-family:var(--font-mono);font-size:12px;color:var(--muted);letter-spacing:.05em}
@@ -99,7 +100,7 @@ function menu(){
 
 /* Aantal vragen dat vandaag te herhalen is, uit de voortgang die de quiz zelf bewaart. */
 function due(q){if(!q.ls)return '';try{const o=JSON.parse(localStorage.getItem(q.ls)||'{}');const D=Math.floor((Date.now()-new Date().getTimezoneOffset()*60000)/864e5);
-  const n=Object.values(o.P||{}).filter(p=>p.seen&&p.due<=D).length;return n?'<span class="due">'+n+' te herhalen</span>':''}catch(e){return ''}}
+  const n=Object.values(o.P||{}).filter(p=>p&&p.seen&&p.due<=D).length;return n?'<span class="due">'+n+' te herhalen</span>':''}catch(e){return ''}}
 function vak(v){
   document.title=v.naam+' · QuizMore';
   app.innerHTML='<a class="back" href="#">← Alle vakken</a>'+
